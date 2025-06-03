@@ -201,7 +201,14 @@ const BriefManagementGrid: React.FC = () => {
           {filteredBriefs.map((brief: Brief) => (
             <div 
               key={brief.id}
-              className="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition"
+              className="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition cursor-pointer relative"
+              onClick={(e) => {
+                // Prevent navigation if clicking on action buttons
+                if ((e.target as Element).closest('button') || (e.target as Element).closest('a')) {
+                  return;
+                }
+                window.location.href = `/dashboard/briefs/${brief.id}`;
+              }}
             >
               <div className="flex justify-between items-start">
                 <div>
@@ -217,11 +224,12 @@ const BriefManagementGrid: React.FC = () => {
                   </div>
                 </div>
                 
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 z-10">
                   <Link
                     to={`/dashboard/briefs/${brief.id}`}
                     className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition"
                     title="View Brief"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -230,7 +238,10 @@ const BriefManagementGrid: React.FC = () => {
                   </Link>
                   
                   <button
-                    onClick={() => handleDuplicate(brief.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDuplicate(brief.id);
+                    }}
                     className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition"
                     title="Duplicate Brief"
                   >
@@ -240,7 +251,10 @@ const BriefManagementGrid: React.FC = () => {
                   </button>
                   
                   <button
-                    onClick={() => handleDelete(brief.id)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(brief.id);
+                    }}
                     className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition"
                     title="Delete Brief"
                   >
