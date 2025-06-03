@@ -10,14 +10,17 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
-  'http://127.0.0.1:52531' // Additional local development port
+  'http://127.0.0.1:52531', // Additional local development port
+  'https://hypsights-v2.vercel.app',
+  'https://hypsights.com'
 ];
 
 // Define the base CORS headers structure
 const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-locale, x-request-id',
   'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Credentials': 'true'
+  'Access-Control-Allow-Credentials': 'true',
+  'Access-Control-Max-Age': '86400'
 };
 
 // Function to get allowed origin based on the request
@@ -39,6 +42,17 @@ function getCorsHeaders(req: Request) {
     ...corsHeaders,
     'Access-Control-Allow-Origin': getAllowedOrigin(req)
   };
+}
+
+// Helper function to handle OPTIONS preflight requests
+function handleOptions(req: Request) {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: getCorsHeaders(req)
+    });
+  }
+  return null;
 }
 
 class HttpError extends Error {
@@ -82,174 +96,136 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
   }
 }
 
-// Form options translations as fallback if database doesn't have them
-function getFormOptionsTranslations(locale: string) {
-  const formOptions = {
-    en: {
-      // Maturity options
-      maturity: {
-        commercial: 'Commercial',
-        commercial_ots: 'Commercial / Off-the-shelf to adapt',
-        proof_concept: 'Proof of Concept (Feasibility)',
-        prototype: 'Prototype',
-        research: 'Research'
-      },
-      // Capabilities options
-      capabilities: {
-        consulting: 'Consulting or expertise',
-        manufacturing: 'Manufacturing capabilities',
-        new_technology: 'New Technology',
-        outsourced: 'Outsourced capability',
-        process: 'Process',
-        product: 'Product',
-        prototyping: 'Prototyping capabilities',
-        supplier: 'Supplier'
-      },
-      // Organization types
-      organization_types: {
-        consulting: 'Consulting',
-        cro: 'CRO',
-        encyclopedia: 'Encyclopedia',
-        large_company: 'Large Company',
-        marketplace: 'Marketplace',
-        not_specified: 'Not Specified',
-        research_institute: 'Research Institute or Laboratory',
-        small_business: 'Small Business'
-      },
-      // Geographies
-      geographies: {
-        anywhere: 'Anywhere',
-        asia_pacific: 'Asia-Pacific',
-        europe: 'Europe',
-        latin_america: 'Latin America',
-        middle_east_africa: 'Middle East and Africa',
-        north_america: 'North America'
-      }
-    },
-    fr: {
-      // Maturity options
-      maturity: {
-        commercial: 'Commercial',
-        commercial_ots: 'Commercial / Prêt à adapter',
-        proof_concept: 'Preuve de Concept (Faisabilité)',
-        prototype: 'Prototype',
-        research: 'Recherche'
-      },
-      // Capabilities options
-      capabilities: {
-        consulting: 'Conseil ou expertise',
-        manufacturing: 'Capacités de fabrication',
-        new_technology: 'Nouvelle Technologie',
-        outsourced: 'Capacité externalisée',
-        process: 'Processus',
-        product: 'Produit',
-        prototyping: 'Capacités de prototypage',
-        supplier: 'Fournisseur'
-      },
-      // Organization types
-      organization_types: {
-        consulting: 'Conseil',
-        cro: 'CRO',
-        encyclopedia: 'Encyclopédie',
-        large_company: 'Grande Entreprise',
-        marketplace: 'Place de marché',
-        not_specified: 'Non spécifié',
-        research_institute: 'Institut de Recherche ou Laboratoire',
-        small_business: 'Petite Entreprise'
-      },
-      // Geographies
-      geographies: {
-        anywhere: 'N\'importe où',
-        asia_pacific: 'Asie-Pacifique',
-        europe: 'Europe',
-        latin_america: 'Amérique latine',
-        middle_east_africa: 'Moyen-Orient et Afrique',
-        north_america: 'Amérique du Nord'
-      }
-    }
-  };
-  
-  return formOptions[locale] || formOptions['en']; // Fallback to English
+async function getTranslations(locale: string = 'en') {
+  try {
+    const supabaseAdmin = createSupabaseClient(true);
+    const { data: translations, error } = await supabaseAdmin
+      .from('translations')
+      .select('key, value')
+      .eq('locale', locale);
+
+    if (error) throw new Error(`Failed to get translations: ${error.message}`);
+
+    // Convert to key-value object
+    const translationsMap = translations?.reduce((acc, item) => {
+      acc[item.key] = item.value;
+      return acc;
+    }, {} as Record<string, string>) || {};
+
+    return translationsMap;
+  } catch (error) {
+    console.error('Error getting translations:', error);
+    return {}; // Return empty object as fallback
+  }
 }
 
-async function getLanguages(supabaseAdmin: SupabaseClient) {
+async function getFormOptions(locale: string = 'en') {
+  try {
+    // Get form options from translations
+    const supabaseAdmin = createSupabaseClient(true);
+    const { data: options, error } = await supabaseAdmin
+      .from('translations')
+      .select('key, value')
+      .eq('locale', locale)
+      .or('key.like.geography.%,key.like.org_type.%,key.like.capability.%');
+
+    if (error) {
+      console.log('Database error, using fallback options:', error);
+      return getFallbackFormOptions(locale);
+    }
+
+    // Group options by category
+    const formOptions = {
+      geographies: [],
+      organization_types: [],
+      capabilities: []
+    };
+
+    options?.forEach(option => {
+      const [category, key] = option.key.split('.');
+      
+      switch (category) {
+        case 'geography':
+          formOptions.geographies.push({ key, label: option.value });
+          break;
+        case 'org_type':
+          formOptions.organization_types.push({ key, label: option.value });
+          break;
+        case 'capability':
+          formOptions.capabilities.push({ key, label: option.value });
+          break;
+      }
+    });
+
+    return formOptions;
+  } catch (error) {
+    console.error('Error getting form options:', error);
+    return getFallbackFormOptions(locale);
+  }
+}
+
+function getFallbackFormOptions(locale: string) {
+  // Fallback with default options if translations fail
+  return {
+    geographies: [
+      { key: 'europe', label: locale === 'fr' ? 'Europe' : 'Europe' },
+      { key: 'north_america', label: locale === 'fr' ? 'Amérique du Nord' : 'North America' },
+      { key: 'asia', label: locale === 'fr' ? 'Asie' : 'Asia' },
+      { key: 'africa', label: locale === 'fr' ? 'Afrique' : 'Africa' }
+    ],
+    organization_types: [
+      { key: 'startup', label: locale === 'fr' ? 'Startup' : 'Startup' },
+      { key: 'sme', label: locale === 'fr' ? 'PME' : 'SME' },
+      { key: 'enterprise', label: locale === 'fr' ? 'Grande Entreprise' : 'Enterprise' }
+    ],
+    capabilities: [
+      { key: 'software', label: locale === 'fr' ? 'Développement Logiciel' : 'Software Development' },
+      { key: 'hardware', label: locale === 'fr' ? 'Fabrication Matériel' : 'Hardware Manufacturing' },
+      { key: 'consulting', label: locale === 'fr' ? 'Services de Conseil' : 'Consulting Services' }
+    ]
+  };
+}
+
+async function getLanguages() {
   // Get available languages
-  const languages = [
+  return [
     { code: 'en', name: 'English', flag: '🇬🇧' },
     { code: 'fr', name: 'Français', flag: '🇫🇷' }
   ];
-  
-  return { languages };
 }
 
-async function getUserLocale(supabaseAdmin: SupabaseClient, userId: string) {
-  // Get user's preferred locale from users_metadata
-  const { data, error } = await supabaseAdmin
-    .from('users_metadata')
-    .select('preferred_locale')
-    .eq('user_id', userId)
-    .single();
+async function getUserLocale(userId: string) {
+  try {
+    const supabaseAdmin = createSupabaseClient(true);
+    // Get user's preferred locale from users_metadata
+    const { data, error } = await supabaseAdmin
+      .from('users_metadata')
+      .select('preferred_locale')
+      .eq('user_id', userId)
+      .single();
+      
+    if (error) {
+      console.error('Failed to get user locale:', error);
+      return 'en'; // Default to English
+    }
     
-  if (error) {
-    console.error('Failed to get user locale:', error);
-    return { locale: 'en' }; // Default to English
+    return data?.preferred_locale || 'en';
+  } catch (error) {
+    console.error('Error getting user locale:', error);
+    return 'en'; // Default to English on error
   }
-  
-  return { locale: data.preferred_locale || 'en' };
-}
-
-async function setUserLocale(supabaseAdmin: SupabaseClient, userId: string, locale: string) {
-  // Update user's preferred locale in users_metadata
-  const { error } = await supabaseAdmin
-    .from('users_metadata')
-    .update({ preferred_locale: locale })
-    .eq('user_id', userId);
-    
-  if (error) throw new HttpError('Failed to update user locale', 500);
-  
-  return { success: true, locale };
-}
-
-async function getTranslations(supabaseAdmin: SupabaseClient, locale: string, group?: string) {
-  // Get translations for specified locale
-  let query = supabaseAdmin
-    .from('translations')
-    .select('key, value')
-    .eq('locale', locale);
-    
-  // Filter by group if specified
-  if (group) {
-    query = query.eq('group', group);
-  }
-  
-  const { data, error } = await query;
-  if (error) throw new HttpError('Failed to fetch translations', 500);
-  
-  // Convert translations array to object
-  const translations = {};
-  for (const row of data || []) {
-    translations[row.key] = row.value;
-  }
-  
-  // If this is for form options and we don't have translations, return the hardcoded defaults
-  if (group === 'form_options' && Object.keys(translations).length === 0) {
-    return { translations: getFormOptionsTranslations(locale) };
-  }
-  
-  return { translations };
 }
 
 serve(async (req: Request) => {
   // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: getCorsHeaders(req) });
-  }
+  const preflightResponse = handleOptions(req);
+  if (preflightResponse) return preflightResponse;
+  
+  // Get the CORS headers for this request
+  const dynamicCorsHeaders = getCorsHeaders(req);
   
   try {
-    // 1. Authentication
-    const user = await authenticateUser(req);
-    
-    // 2. Parse request body
+    // Parse request body
     let requestBody = {};
     try {
       if (req.method === 'POST') {
@@ -259,57 +235,75 @@ serve(async (req: Request) => {
       throw new HttpError('Invalid request body', 400);
     }
     
-    const { action, locale } = requestBody as any;
+    const { action, locale = 'en' } = requestBody as any;
     
     if (!action) {
       throw new HttpError('Missing required parameter: action', 400);
     }
     
-    // Create supabase admin client for database operations
-    const supabaseAdmin = createSupabaseClient(true);
-    
-    // 3. Business logic based on action
+    // Business logic based on action
     let result;
+    let userId = 'anonymous';
+    
+    // Try to authenticate for user-specific actions
+    // But don't require auth for basic translations
+    try {
+      const user = await authenticateUser(req);
+      userId = user.id;
+    } catch (authError) {
+      // For actions requiring authentication, fail
+      if (action === 'set_user_locale') {
+        throw new HttpError('Authentication required for this action', 401);
+      }
+      // For other actions, continue anonymously
+      console.log('Anonymous request for translations');
+    }
     
     switch (action) {
       case 'get_languages':
-        result = await getLanguages(supabaseAdmin);
+        result = {
+          languages: await getLanguages()
+        };
         break;
         
       case 'get_user_locale':
-        result = await getUserLocale(supabaseAdmin, user.id);
-        break;
-        
-      case 'set_user_locale':
-        if (!locale) throw new HttpError('Missing required parameter: locale', 400);
-        result = await setUserLocale(supabaseAdmin, user.id, locale);
+        result = {
+          locale: await getUserLocale(userId)
+        };
         break;
         
       case 'get_translations':
-        const userLocale = locale || (await getUserLocale(supabaseAdmin, user.id)).locale;
-        const group = requestBody.group;
-        result = await getTranslations(supabaseAdmin, userLocale, group);
+        result = {
+          locale,
+          translations: await getTranslations(locale)
+        };
         break;
         
       case 'get_form_options':
-        const formOptionsLocale = locale || (await getUserLocale(supabaseAdmin, user.id)).locale;
-        result = { formOptions: getFormOptionsTranslations(formOptionsLocale) };
+        result = {
+          formOptions: await getFormOptions(locale)
+        };
         break;
         
       default:
         throw new HttpError(`Unsupported action: ${action}`, 400);
     }
     
-    // 4. Analytics tracking
-    await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_${action}_success`, user.id, { locale });
+    // Analytics tracking
+    try {
+      const supabaseAdmin = createSupabaseClient(true);
+      await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_${action}_success`, userId, { locale });
+    } catch (trackError) {
+      console.error('Failed to track event:', trackError);
+    }
     
-    // 5. Response
+    // Response
     return new Response(JSON.stringify({
       success: true,
-      ...result
+      data: result
     }), {
       headers: {
-        ...getCorsHeaders(req),
+        ...dynamicCorsHeaders,
         'Content-Type': 'application/json'
       }
     });
@@ -333,7 +327,7 @@ serve(async (req: Request) => {
     }), {
       status: statusCode,
       headers: {
-        ...getCorsHeaders(req),
+        ...dynamicCorsHeaders,
         'Content-Type': 'application/json'
       }
     });
