@@ -220,6 +220,8 @@ async function duplicateBrief(supabaseAdmin: SupabaseClient, briefId: string, us
   return { brief: data };
 }
 
+// Utilisation de la fonction importée - pas besoin de redéfinir
+
 serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -298,14 +300,34 @@ serve(async (req: Request) => {
 
     // 5. Response
     // Create a properly structured response for the frontend
-    const responseBody = {
+    // Standardize response structure for all actions
+    let responseBody = {
       success: true,
-      data: result,
-      // Make sure brief is available at the top level for the frontend to access
-      brief: result?.brief,
-      // Also explicitly include brief_id at top level for simpler frontend access
-      brief_id: result?.brief?.id
+      data: result
     };
+    
+    // For list_briefs action, ensure briefs are available at the expected path
+    if (action === 'list_briefs') {
+      responseBody = {
+        success: true,
+        briefs: result.briefs,
+        data: {
+          briefs: result.briefs
+        }
+      };
+    }
+    // For other actions, make sure brief data is accessible at multiple paths for compatibility
+    else if (result?.brief) {
+      responseBody = {
+        success: true,
+        data: {
+          brief: result.brief,
+          brief_id: result.brief.id
+        },
+        brief: result.brief,
+        brief_id: result.brief.id
+      };
+    }
 
     // Log the response structure to help with debugging
     console.log('Response structure:', JSON.stringify(responseBody, null, 2));
