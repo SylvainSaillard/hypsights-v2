@@ -207,7 +207,7 @@ const BriefManagementGrid: React.FC = () => {
                 if ((e.target as Element).closest('button') || (e.target as Element).closest('a')) {
                   return;
                 }
-                window.location.href = `/dashboard/briefs/${brief.id}`;
+                window.location.href = `/dashboard/briefs/${brief.id}/chat`;
               }}
             >
               <div className="flex justify-between items-start">
