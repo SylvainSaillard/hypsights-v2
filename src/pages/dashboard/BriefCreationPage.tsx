@@ -34,7 +34,7 @@ const BriefCreationPage: React.FC = () => {
     data: submitResponse
   } = useEdgeFunction(
     'brief-operations',
-    briefActionParams, // Parameters will be updated by form submission
+    { action: 'init', ...briefActionParams }, // Toujours inclure une action, même si vide
     'POST'
   );
 
