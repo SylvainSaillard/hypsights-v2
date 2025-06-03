@@ -1,0 +1,144 @@
+import { Routes, Route, Navigate, Outlet, Link } from 'react-router-dom';
+import { useAuth } from './contexts/AuthContext'; // Import useAuth
+import LoginPage from './pages/auth/LoginPage'; // Import the new LoginPage
+import SignupPage from './pages/auth/SignupPage'; // Import the new SignupPage
+import LandingPage from './pages/auth/LandingPage'; // Import the new LandingPage
+import ResetPasswordPage from './pages/auth/ResetPasswordPage'; // Import the new ResetPasswordPage
+
+// Brief and search pages
+import BriefCreationPage from './pages/dashboard/BriefCreationPage';
+import BriefChatPage from './pages/dashboard/BriefChatPage';
+import SearchResultsPage from './pages/dashboard/SearchResultsPage';
+
+// Debug components
+import CorsTest from './components/debug/CorsTest';
+
+// Other placeholder components
+import NotificationSystem from './components/layout/NotificationSystem';
+import LanguageSelector from './components/layout/LanguageSelector';
+
+const DashboardLayout = () => {
+  const { user, logout } = useAuth();
+  
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // The AuthContext will handle redirecting to login via ProtectedRoute
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+  
+  return (
+    <div className="min-h-screen bg-hypsights-background">
+      <nav className="bg-card shadow-md p-4">
+        <div className="container mx-auto max-w-container flex justify-between items-center">
+          <div className="flex items-center">
+            <span className="text-xl font-bold text-primary">Hypsights</span>
+            <span className="ml-1 text-xs bg-gray-100 px-1 rounded">v2</span>
+          </div>
+          <div className="flex items-center gap-4 space-x-4">
+            <div className="flex space-x-2">
+              <Link to="/dashboard" className="px-3 py-2 text-sm rounded-md hover:bg-gray-100">Dashboard</Link>
+              <Link to="/dashboard/debug" className="px-3 py-2 text-sm rounded-md hover:bg-gray-100 text-primary">Debug</Link>
+            </div>
+            <LanguageSelector />
+            <NotificationSystem />
+            {user && <span className="text-sm hidden md:inline">Logged in as: {user.email}</span>}
+            <button 
+              onClick={handleLogout}
+              className="px-3 py-2 text-sm font-medium bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700"
+            >
+              Sign out
+            </button>
+          </div>
+        </div>
+      </nav>
+      <main className="container mx-auto max-w-container p-4 md:p-6">
+        <Outlet /> 
+      </main>
+    </div>
+  );
+};
+
+import KpiCards from './components/dashboard/KpiCards';
+import BriefManagementGrid from './components/dashboard/BriefManagementGrid';
+import CreateBriefButton from './components/dashboard/CreateBriefButton';
+
+const DashboardOverviewPage = () => {
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <CreateBriefButton />
+      </div>
+      
+      <KpiCards />
+      
+      <div className="mb-8 bg-card rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+        <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-500 text-center">
+          Your recent activities will appear here
+        </div>
+      </div>
+      
+      <BriefManagementGrid />
+    </div>
+  );
+};
+
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const { user, isLoading } = useAuth(); // Use actual useAuth
+
+  if (isLoading) {
+    // You can return a loading spinner or a blank page here
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+
+  if (!user) { // Check for user instead of just isAuthenticated flag
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+function App() {
+  const { user, isLoading } = useAuth(); // Use actual useAuth
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading application...</div>;
+  }
+
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/" element={user ? <Navigate to="/dashboard" /> : <LandingPage />} />
+      <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} />
+      <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <SignupPage />} />
+      <Route path="/reset-password" element={user ? <Navigate to="/dashboard" /> : <ResetPasswordPage />} />
+
+      {/* Protected Dashboard Routes */}
+      <Route 
+        path="/dashboard" 
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<DashboardOverviewPage />} />
+        <Route path="debug" element={<CorsTest />} />
+        
+        {/* Brief management routes */}
+        <Route path="briefs/new" element={<BriefCreationPage />} />
+        <Route path="briefs/:briefId/edit" element={<BriefCreationPage />} />
+        <Route path="briefs/:briefId/chat" element={<BriefChatPage />} />
+        <Route path="briefs/:briefId/search" element={<SearchResultsPage />} />
+      </Route>
+      
+      <Route path="*" element={<Navigate to={user ? "/dashboard" : "/"} replace />} />
+    </Routes>
+  );
+}
+
+export default App;
+
