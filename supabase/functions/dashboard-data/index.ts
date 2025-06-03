@@ -1,21 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2';
-
-// Define CORS headers directly in this file
-const corsHeaders = {
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-locale',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Credentials': 'true'
-};
-
-// Function to get dynamic CORS headers based on the request
-function getCorsHeaders(req: Request) {
-  const origin = req.headers.get('origin');
-  return {
-    ...corsHeaders,
-    'Access-Control-Allow-Origin': origin || '*'
-  };
-};
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 const FUNCTION_NAME = 'dashboard-data';
 

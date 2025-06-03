@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/cors.ts';
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 const FUNCTION_NAME = 'ai-chat-handler';
 
@@ -289,7 +289,7 @@ async function checkSearchQuota(supabaseAdmin: SupabaseClient, userId: string) {
 serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
   
   try {
@@ -358,7 +358,7 @@ serve(async (req: Request) => {
       ...result
     }), {
       headers: {
-        ...corsHeaders,
+        ...getCorsHeaders(req),
         'Content-Type': 'application/json'
       }
     });
@@ -382,7 +382,7 @@ serve(async (req: Request) => {
     }), {
       status: statusCode,
       headers: {
-        ...corsHeaders,
+        ...getCorsHeaders(req),
         'Content-Type': 'application/json'
       }
     });

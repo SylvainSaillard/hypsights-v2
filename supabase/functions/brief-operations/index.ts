@@ -1,12 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2';
-
-// Define CORS headers directly in this file instead of importing
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-locale, x-request-id',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
-};
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 const FUNCTION_NAME = 'brief-operations';
 
@@ -229,7 +223,7 @@ async function duplicateBrief(supabaseAdmin: SupabaseClient, briefId: string, us
 serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
   
   try {
@@ -318,7 +312,7 @@ serve(async (req: Request) => {
 
     const responseFinal = new Response(JSON.stringify(responseBody), {
       headers: {
-        ...corsHeaders,
+        ...getCorsHeaders(req),
         'Content-Type': 'application/json'
       }
     });
@@ -358,7 +352,7 @@ serve(async (req: Request) => {
     }), {
       status: statusCode,
       headers: {
-        ...corsHeaders,
+        ...getCorsHeaders(req),
         'Content-Type': 'application/json'
       }
     });
