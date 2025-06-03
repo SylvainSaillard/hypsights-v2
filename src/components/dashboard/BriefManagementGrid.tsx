@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
+import { executeEdgeAction } from '../../lib/edgeActionHelper';
 
 type Brief = {
   id: string;
@@ -31,45 +32,31 @@ const BriefManagementGrid: React.FC = () => {
     }
     
     try {
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/brief-operations`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'delete_brief',
-          brief_id: briefId
-        })
+      // Utiliser l'helper executeEdgeAction qui gère correctement l'authentification
+      await executeEdgeAction('brief-operations', 'delete_brief', {
+        brief_id: briefId
       });
       
       // Refresh the briefs list
       refresh();
       
-    } catch (error) {
-      console.error('Failed to delete brief:', error);
+    } catch (error: any) {
+      console.error('Failed to delete brief:', error.message || error);
     }
   };
   
   const handleDuplicate = async (briefId: string) => {
     try {
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/brief-operations`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'duplicate_brief',
-          brief_id: briefId
-        })
+      // Utiliser l'helper executeEdgeAction qui gère correctement l'authentification
+      await executeEdgeAction('brief-operations', 'duplicate_brief', {
+        brief_id: briefId
       });
       
       // Refresh the briefs list
       refresh();
       
-    } catch (error) {
-      console.error('Failed to duplicate brief:', error);
+    } catch (error: any) {
+      console.error('Failed to duplicate brief:', error.message || error);
     }
   };
   

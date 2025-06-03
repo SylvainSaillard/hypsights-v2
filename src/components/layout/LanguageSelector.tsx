@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
+import { executeEdgeAction } from '../../lib/edgeActionHelper';
 
 type Language = {
   code: string;
@@ -52,17 +53,9 @@ const LanguageSelector: React.FC = () => {
       localStorage.setItem('locale', locale);
       setCurrentLocale(locale);
       
-      // Notify the Edge Function about the language change
-      await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/i18n-handler`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('supabase.auth.token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          action: 'set_user_locale',
-          locale
-        })
+      // Notify the Edge Function about the language change using our helper
+      await executeEdgeAction('i18n-handler', 'set_user_locale', {
+        locale
       });
       
       // Reload the page to apply translations
