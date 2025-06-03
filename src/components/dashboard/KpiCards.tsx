@@ -47,6 +47,7 @@ const KpiCards: React.FC = () => {
     );
   }
 
+  // L'Edge Function renvoie les données dans data.dashboard.metrics
   const metrics = data?.dashboard?.metrics || {
     activeBriefs: 0,
     completedSearches: 0,
