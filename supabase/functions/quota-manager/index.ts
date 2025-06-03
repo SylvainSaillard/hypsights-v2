@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2';
-import { corsHeaders } from '../_shared/cors.ts';
+import { getCorsHeaders } from '../_shared/cors.ts';
 
 const FUNCTION_NAME = 'quota-manager';
 
@@ -46,107 +46,93 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
 }
 
 async function getUserQuota(supabaseAdmin: SupabaseClient, userId: string) {
-  // Get user quota from users_metadata
-  const { data, error } = await supabaseAdmin
-    .from('users_metadata')
-    .select('fast_searches_quota, fast_searches_used')
+  // Get user's quota
+  const { data: userQuota, error } = await supabaseAdmin
+    .from('user_quotas')
+    .select('*')
     .eq('user_id', userId)
     .single();
     
-  if (error) throw new HttpError('Failed to fetch user quota', 500);
-  
-  return {
-    quota: {
-      limit: data.fast_searches_quota,
-      used: data.fast_searches_used,
-      remaining: data.fast_searches_quota - data.fast_searches_used
-    }
-  };
-}
-
-async function checkQuotaAvailability(supabaseAdmin: SupabaseClient, userId: string) {
-  // Check if user has available quota for a fast search
-  const { data, error } = await supabaseAdmin
-    .from('users_metadata')
-    .select('fast_searches_quota, fast_searches_used')
-    .eq('user_id', userId)
-    .single();
-    
-  if (error) throw new HttpError('Failed to fetch user quota', 500);
-  
-  const available = data.fast_searches_used < data.fast_searches_quota;
-  
-  return {
-    available,
-    quota: {
-      limit: data.fast_searches_quota,
-      used: data.fast_searches_used,
-      remaining: data.fast_searches_quota - data.fast_searches_used
-    }
-  };
-}
-
-async function incrementQuotaUsage(supabaseAdmin: SupabaseClient, userId: string) {
-  // First check if quota is available
-  const { available, quota } = await checkQuotaAvailability(supabaseAdmin, userId);
-  
-  if (!available) {
-    throw new HttpError('Fast search quota exceeded', 403);
+  if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+    throw new HttpError('Failed to fetch user quota', 500);
   }
   
-  // Increment quota usage
-  const { data, error } = await supabaseAdmin
-    .from('users_metadata')
+  // If user doesn't have a quota record yet, create one
+  if (!userQuota) {
+    const defaultQuota = {
+      user_id: userId,
+      fast_search_quota: 3, // Default 3 free searches
+      fast_search_used: 0,
+      deep_search_quota: 0, // Default no deep searches without payment
+      deep_search_used: 0,
+      reset_date: null, // No reset by default - one-time quota
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
+    const { data: newQuota, error: insertError } = await supabaseAdmin
+      .from('user_quotas')
+      .insert(defaultQuota)
+      .select()
+      .single();
+      
+    if (insertError) throw new HttpError('Failed to create user quota', 500);
+    
+    return {
+      quota: newQuota
+    };
+  }
+  
+  return {
+    quota: userQuota
+  };
+}
+
+async function checkQuota(supabaseAdmin: SupabaseClient, userId: string, quotaType: 'fast_search' | 'deep_search') {
+  // Get user's quota
+  const { quota } = await getUserQuota(supabaseAdmin, userId);
+  
+  // Check if user has quota left
+  const quotaField = `${quotaType}_quota`;
+  const usedField = `${quotaType}_used`;
+  
+  const hasQuotaLeft = quota[quotaField] > quota[usedField];
+  
+  return {
+    quota,
+    hasQuotaLeft,
+    remaining: quota[quotaField] - quota[usedField]
+  };
+}
+
+async function consumeQuota(supabaseAdmin: SupabaseClient, userId: string, quotaType: 'fast_search' | 'deep_search') {
+  // Check quota first
+  const { quota, hasQuotaLeft } = await checkQuota(supabaseAdmin, userId, quotaType);
+  
+  if (!hasQuotaLeft) {
+    throw new HttpError(`No ${quotaType} quota left`, 403);
+  }
+  
+  // Increment usage
+  const usedField = `${quotaType}_used`;
+  const { error } = await supabaseAdmin
+    .from('user_quotas')
     .update({
-      fast_searches_used: quota.used + 1,
-      last_active_at: new Date().toISOString()
+      [usedField]: quota[usedField] + 1,
+      updated_at: new Date().toISOString()
     })
-    .eq('user_id', userId)
-    .select('fast_searches_quota, fast_searches_used')
-    .single();
+    .eq('user_id', userId);
     
   if (error) throw new HttpError('Failed to update quota usage', 500);
   
-  return {
-    success: true,
-    quota: {
-      limit: data.fast_searches_quota,
-      used: data.fast_searches_used,
-      remaining: data.fast_searches_quota - data.fast_searches_used
-    }
-  };
-}
-
-async function resetQuota(supabaseAdmin: SupabaseClient, userId: string, isAdmin: boolean) {
-  // Only admins can reset quota
-  if (!isAdmin) {
-    throw new HttpError('Unauthorized - Admin access required', 403);
-  }
-  
-  // Reset quota usage
-  const { data, error } = await supabaseAdmin
-    .from('users_metadata')
-    .update({ fast_searches_used: 0 })
-    .eq('user_id', userId)
-    .select('fast_searches_quota, fast_searches_used')
-    .single();
-    
-  if (error) throw new HttpError('Failed to reset quota', 500);
-  
-  return {
-    success: true,
-    quota: {
-      limit: data.fast_searches_quota,
-      used: data.fast_searches_used,
-      remaining: data.fast_searches_quota - data.fast_searches_used
-    }
-  };
+  // Get updated quota
+  return await getUserQuota(supabaseAdmin, userId);
 }
 
 serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
   
   try {
@@ -163,7 +149,7 @@ serve(async (req: Request) => {
       throw new HttpError('Invalid request body', 400);
     }
     
-    const { action, user_id } = requestBody as any;
+    const { action, quota_type } = requestBody as any;
     
     if (!action) {
       throw new HttpError('Missing required parameter: action', 400);
@@ -172,30 +158,28 @@ serve(async (req: Request) => {
     // Create supabase admin client for database operations
     const supabaseAdmin = createSupabaseClient(true);
     
-    // Check if user is admin (for specific actions)
-    const isAdmin = user.app_metadata?.role === 'admin';
-    
-    // Use the specified user_id if admin, otherwise use the authenticated user's id
-    const targetUserId = (isAdmin && user_id) ? user_id : user.id;
-    
     // 3. Business logic based on action
     let result;
     
     switch (action) {
       case 'get_quota':
-        result = await getUserQuota(supabaseAdmin, targetUserId);
+        result = await getUserQuota(supabaseAdmin, user.id);
         break;
         
-      case 'check_availability':
-        result = await checkQuotaAvailability(supabaseAdmin, targetUserId);
+      case 'check_quota':
+        if (!quota_type) throw new HttpError('Missing required parameter: quota_type', 400);
+        if (!['fast_search', 'deep_search'].includes(quota_type)) {
+          throw new HttpError('Invalid quota_type, must be "fast_search" or "deep_search"', 400);
+        }
+        result = await checkQuota(supabaseAdmin, user.id, quota_type);
         break;
         
-      case 'increment_usage':
-        result = await incrementQuotaUsage(supabaseAdmin, targetUserId);
-        break;
-        
-      case 'reset_quota':
-        result = await resetQuota(supabaseAdmin, targetUserId, isAdmin);
+      case 'consume_quota':
+        if (!quota_type) throw new HttpError('Missing required parameter: quota_type', 400);
+        if (!['fast_search', 'deep_search'].includes(quota_type)) {
+          throw new HttpError('Invalid quota_type, must be "fast_search" or "deep_search"', 400);
+        }
+        result = await consumeQuota(supabaseAdmin, user.id, quota_type);
         break;
         
       default:
@@ -203,7 +187,7 @@ serve(async (req: Request) => {
     }
     
     // 4. Analytics tracking
-    await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_${action}_success`, user.id, { targetUserId });
+    await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_${action}_success`, user.id, { quota_type });
     
     // 5. Response
     return new Response(JSON.stringify({
@@ -211,7 +195,7 @@ serve(async (req: Request) => {
       ...result
     }), {
       headers: {
-        ...corsHeaders,
+        ...getCorsHeaders(req),
         'Content-Type': 'application/json'
       }
     });
@@ -235,7 +219,7 @@ serve(async (req: Request) => {
     }), {
       status: statusCode,
       headers: {
-        ...corsHeaders,
+        ...getCorsHeaders(req),
         'Content-Type': 'application/json'
       }
     });
