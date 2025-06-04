@@ -4,28 +4,11 @@
 
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { getCorsHeaders, handleOptions, corsResponse } from '../_shared/cors.ts';
 
 const FUNCTION_NAME = 'test-cors';
 
-// This should use the client's actual origin in production
-// For local development and testing, we can use a more permissive setting
-const corsHeaders = {
-  'Access-Control-Allow-Origin': req => req.headers.get('origin') || '*', // Dynamically set from request origin
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-locale',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Credentials': 'true' // Required for cookies/authorization
-};
-
-// Helper to get CORS headers based on the request
-const getCorsHeaders = (req: Request) => {
-  const origin = req.headers.get('origin');
-  return {
-    'Access-Control-Allow-Origin': origin || '*',
-    'Access-Control-Allow-Headers': corsHeaders['Access-Control-Allow-Headers'],
-    'Access-Control-Allow-Methods': corsHeaders['Access-Control-Allow-Methods'],
-    'Access-Control-Allow-Credentials': corsHeaders['Access-Control-Allow-Credentials']
-  };
-};
+// CORS handling now moved to _shared/cors.ts
 
 // Authenticate user from request
 async function authenticateUser(req: Request) {
@@ -65,10 +48,7 @@ async function trackEvent(event: { event_name: string, user_id: string | undefin
 }
 
 serve(async (req: Request) => {
-  const responseHeaders = {
-    ...getCorsHeaders(req),
-    'Content-Type': 'application/json'
-  };
+  // Log every request in detail
 
   // Log every request in detail
   console.log(`${FUNCTION_NAME} received ${req.method} request from ${req.headers.get('origin') || 'unknown origin'}`);
@@ -77,7 +57,7 @@ serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     console.log('Handling OPTIONS preflight request');
-    return new Response('ok', { headers: responseHeaders });
+    return handleOptions(req);
   }
   
   try {
@@ -108,7 +88,7 @@ serve(async (req: Request) => {
     });
     
     // Return response with auth status and request details
-    return new Response(JSON.stringify({
+    return corsResponse({
       success: true,
       message: 'CORS test successful',
       authenticated: !!user,
@@ -117,7 +97,7 @@ serve(async (req: Request) => {
       params: params,
       headers_received: Object.fromEntries(req.headers.entries()),
       timestamp: new Date().toISOString()
-    }), { headers: responseHeaders });
+    }, req);
     
   } catch (error) {
     console.error(`${FUNCTION_NAME} error:`, error);
@@ -130,12 +110,9 @@ serve(async (req: Request) => {
     });
     
     // Return error response
-    return new Response(JSON.stringify({
+    return corsResponse({
       success: false,
       error: error.message
-    }), { 
-      status: 500,
-      headers: responseHeaders
-    });
+    }, req, { status: 500 });
   }
 });

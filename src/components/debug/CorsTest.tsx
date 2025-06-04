@@ -9,7 +9,8 @@ const edgeFunctions = [
   { name: 'notifications', action: 'list_notifications', params: {} },
   { name: 'dashboard-data', action: 'get_dashboard_data', params: {} },
   { name: 'chat-handler', action: 'get_history', params: { brief_id: 'any' } },
-  { name: 'search-handler', action: 'check_quota', params: {} }
+  { name: 'search-handler', action: 'check_quota', params: {} },
+  { name: 'ai-chat-handler', action: 'test_n8n_webhook', params: {}, highlight: true }
 ];
 
 // Different fetch configurations to test
@@ -244,7 +245,7 @@ const CorsTest: React.FC = () => {
       
       <div className="space-y-4">
         {edgeFunctions.map(func => (
-          <div key={func.name} className="border p-4 rounded">
+          <div key={func.name} className={`border p-4 rounded ${func.highlight ? 'bg-blue-50 border-blue-300 shadow-sm' : ''}`}>
             <div className="flex justify-between items-center mb-2">
               <h3 className="text-lg font-semibold">{func.name}</h3>
               <div className="flex space-x-2">

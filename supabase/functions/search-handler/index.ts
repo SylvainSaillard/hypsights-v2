@@ -1,60 +1,60 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
-const FUNCTION_NAME = 'search-handler';
-
-// Define the allowed origins for CORS
+// CORS Template v1.0 (2025-06-04) - Standardized implementation
 const ALLOWED_ORIGINS = [
   'https://hypsights-v2.netlify.app',
+  'https://hypsights.com',
+  'https://hypsights-v2.vercel.app',
   'http://localhost:3000',
   'http://localhost:5173',
   'http://127.0.0.1:3000',
   'http://127.0.0.1:5173',
-  'http://127.0.0.1:52531', // Additional local development port
-  'https://hypsights-v2.vercel.app',
-  'https://hypsights.com'
+  'http://127.0.0.1:52531'
 ];
 
-// Define the base CORS headers structure
-const corsHeaders = {
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-locale, x-request-id',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+const CORS_HEADERS = {
+  'Access-Control-Allow-Headers': [
+    'authorization', 'x-client-info', 'apikey', 'content-type',
+    'x-user-locale', 'x-request-id', 'accept', 'accept-encoding',
+    'accept-language', 'cache-control', 'pragma'
+  ].join(', '),
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
   'Access-Control-Allow-Credentials': 'true',
-  'Access-Control-Max-Age': '86400'
+  'Access-Control-Max-Age': '86400',
+  'Vary': 'Origin'
 };
 
-// Function to get allowed origin based on the request
 function getAllowedOrigin(req: Request): string {
   const origin = req.headers.get('origin') || '';
-  
-  // Return the origin if it's in the allowed list
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
-    return origin;
-  }
-  
-  // Default to the production URL
-  return 'https://hypsights-v2.netlify.app';
+  return (origin && ALLOWED_ORIGINS.includes(origin)) 
+    ? origin 
+    : 'https://hypsights-v2.netlify.app';
 }
 
-// Function to get production-optimized CORS headers based on the request
-function getCorsHeaders(req: Request) {
+function getCorsHeaders(req: Request): Record<string, string> {
   return {
-    ...corsHeaders,
+    ...CORS_HEADERS,
     'Access-Control-Allow-Origin': getAllowedOrigin(req)
   };
 }
 
-// Helper function to handle OPTIONS preflight requests
-function handleOptions(req: Request) {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: getCorsHeaders(req)
-    });
-  }
-  return null;
+function corsResponse(data: any, req: Request, init: ResponseInit = {}): Response {
+  return new Response(
+    typeof data === 'string' ? data : JSON.stringify(data),
+    {
+      ...init,
+      headers: {
+        ...getCorsHeaders(req),
+        'Content-Type': 'application/json',
+        ...(init.headers || {})
+      }
+    }
+  );
 }
+
+const FUNCTION_NAME = 'search-handler';
 
 class HttpError extends Error {
   status: number;
@@ -361,12 +361,10 @@ async function requestDeepSearch(supabaseAdmin, briefId, userId, contactInfo) {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  const preflightResponse = handleOptions(req);
-  if (preflightResponse) return preflightResponse;
-  
-  // Get the CORS headers for this request
-  const dynamicCorsHeaders = getCorsHeaders(req);
+  // Handle OPTIONS
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: getCorsHeaders(req) });
+  }
   
   try {
     // 1. Authentication
@@ -374,16 +372,10 @@ serve(async (req) => {
     try {
       user = await authenticateUser(req);
     } catch (authError) {
-      return new Response(JSON.stringify({
+      return corsResponse({
         success: false,
         error: 'Authentication failed. Please log in again.'
-      }), {
-        status: 401,
-        headers: {
-          ...dynamicCorsHeaders,
-          'Content-Type': 'application/json'
-        }
-      });
+      }, req, { status: 401 });
     }
     
     // 2. Input validation
@@ -423,40 +415,26 @@ serve(async (req) => {
     });
     
     // 5. Response
-    return new Response(JSON.stringify({
-      success: true,
-      data: result
-    }), {
-      headers: {
-        ...dynamicCorsHeaders,
-        'Content-Type': 'application/json'
-      }
-    });
+    return corsResponse({ success: true, data: result }, req);
   } catch (error) {
     console.error(`Error in ${FUNCTION_NAME}:`, error);
     
-    const statusCode = error instanceof HttpError ? error.status : 500;
-    const errorMessage = error.message || 'An unexpected error occurred';
+    const isHttpError = error instanceof HttpError;
+    const statusCode = isHttpError ? error.status : 500;
+    const errorMessage = isHttpError ? error.message : 'An unexpected error occurred. Please try again.';
     
-    // Create supabase admin client for error logging
+    // Error analytics
     try {
       const supabaseAdmin = createSupabaseClient(true);
-      await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_error`, 'system', {
-        error: errorMessage
+      await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_error`, undefined, {
+        error: errorMessage,
+        status: statusCode
       });
-    } catch (loggingError) {
-      console.error('Failed to log error event:', loggingError);
+    } catch (trackError) {
+      console.error('Failed to track error:', trackError);
     }
     
-    return new Response(JSON.stringify({
-      success: false,
-      error: errorMessage
-    }), {
-      status: statusCode,
-      headers: {
-        ...dynamicCorsHeaders,
-        'Content-Type': 'application/json'
-      }
-    });
+    // Error response with CORS headers
+    return corsResponse({ success: false, error: errorMessage }, req, { status: statusCode });
   }
 });
