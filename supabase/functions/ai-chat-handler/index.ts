@@ -336,13 +336,22 @@ serve(async (req: Request) => {
         
         console.log(`[${FUNCTION_NAME}] Getting chat messages for brief:`, brief_id);
         
-        // Get chat messages
+        // Get chat messages using the helper function
         const messages = await getChatMessages(supabaseAdmin, brief_id);
         
-        result = { messages };
+        // Get brief data for context
+        const brief = await getBriefData(supabaseAdmin, brief_id);
+        
+        result = { 
+          messages,
+          brief
+        };
         
         // Track analytics
-        await trackAnalytics(supabaseAdmin, 'get_chat_messages', user.id, { brief_id });
+        await trackAnalytics(supabaseAdmin, 'get_chat_messages', user.id, { 
+          brief_id,
+          message_count: messages?.length || 0
+        });
         break;
       }
       
@@ -351,47 +360,128 @@ serve(async (req: Request) => {
           throw new HttpError('Missing required parameter: brief_id or message_content', 400);
         }
         
-        console.log(`[${FUNCTION_NAME}] Processing new message for brief:`, brief_id);
+        if (typeof message_content !== 'string' || !message_content.trim()) {
+          throw new HttpError('Message is required and must be a non-empty string', 400);
+        }
         
-        // Insert user message
-        const { data: newMessage, error: messageError } = await supabaseAdmin
+        console.log(`[${FUNCTION_NAME}] Processing send_message for brief_id: ${brief_id}`);
+        
+        // Get brief data to send to n8n
+        const { data: briefData, error: briefError } = await supabaseAdmin
+          .from('briefs')
+          .select('*')
+          .eq('id', brief_id)
+          .single();
+          
+        if (briefError) {
+          console.error(`[${FUNCTION_NAME}] Failed to fetch brief data:`, briefError);
+          throw new HttpError('Failed to fetch brief data', 500);
+        }
+        
+        // Store user message first
+        const { data: userMessageData, error: storeError } = await supabaseAdmin
           .from('chat_messages')
           .insert({
             brief_id,
             user_id: user.id,
-            content: message_content,
-            type: 'user'
+            message_text: message_content.trim(),
+            is_from_user: true
           })
           .select()
           .single();
           
-        if (messageError) {
-          throw new HttpError('Failed to save message', 500);
+        if (storeError) {
+          console.error(`[${FUNCTION_NAME}] Failed to store user message:`, storeError);
+          throw new HttpError('Failed to store message', 500);
         }
         
-        // Get brief data for n8n
-        const briefData = await getBriefData(supabaseAdmin, brief_id);
+        // Prepare payload for n8n webhook
+        const webhookPayload = {
+          brief: briefData,
+          user: {
+            id: user.id,
+            email: user.email
+          },
+          message: {
+            id: userMessageData.id,
+            text: message_content.trim(),
+            timestamp: new Date().toISOString()
+          },
+          requestId: crypto ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15)
+        };
         
-        if (briefData) {
-          // Call n8n webhook to process the message
-          const n8nResult = await callN8nWebhook({
-            brief: briefData,
-            message: newMessage
+        // Call n8n webhook asynchronously
+        console.log(`[${FUNCTION_NAME}] Sending brief data to n8n webhook`);
+        const webhookPromise = callN8nWebhook(webhookPayload);
+        
+        // Store immediate acknowledgement message from AI
+        const acknowledgementMessage = "Je vais réfléchir à votre demande... Un instant.";
+        
+        const { error: aiStoreError } = await supabaseAdmin
+          .from('chat_messages')
+          .insert({
+            brief_id,
+            user_id: user.id,
+            message_text: acknowledgementMessage,
+            is_from_user: false,
+            message_type: 'acknowledgement'
           });
           
-          // The n8n webhook will insert the AI response into the database
-          // For now, we'll continue without waiting for that
+        if (aiStoreError) {
+          console.error(`[${FUNCTION_NAME}] Failed to store AI acknowledgement:`, aiStoreError);
+          throw new HttpError('Failed to store AI response', 500);
         }
-        
-        // Get updated messages
-        const messages = await getChatMessages(supabaseAdmin, brief_id);
-        result = { messages };
         
         // Track analytics
         await trackAnalytics(supabaseAdmin, 'send_message', user.id, { 
           brief_id,
-          message_length: message_content.length 
+          message_length: message_content.trim().length,
+          timestamp: new Date().toISOString()
         });
+        
+        // Return all chat messages immediately without waiting for n8n response
+        const { data: chatMessages, error: fetchError } = await supabaseAdmin
+          .from('chat_messages')
+          .select('*')
+          .eq('brief_id', brief_id)
+          .order('created_at', { ascending: true });
+          
+        if (fetchError) {
+          console.error(`[${FUNCTION_NAME}] Failed to fetch chat messages:`, fetchError);
+          throw new HttpError('Failed to fetch chat history', 500);
+        }
+        
+        // Handle webhook response in background
+        webhookPromise.then(async (webhookResponse) => {
+          console.log(`[${FUNCTION_NAME}] Received n8n webhook response:`, webhookResponse);
+          
+          // n8n will update the database directly with AI response, no need to handle here
+          // This is just for logging
+          if (!webhookResponse.success) {
+            console.error(`[${FUNCTION_NAME}] n8n webhook failed:`, webhookResponse.error);
+            
+            // Track webhook failure
+            await trackAnalytics(supabaseAdmin, 'webhook_failure', user.id, { 
+              brief_id,
+              error: webhookResponse.error,
+              status: webhookResponse.status
+            });
+          }
+        }).catch(error => {
+          console.error(`[${FUNCTION_NAME}] Error handling n8n webhook:`, error);
+          
+          // Track error
+          trackAnalytics(supabaseAdmin, 'webhook_error', user.id, { 
+            brief_id,
+            error: String(error)
+          }).catch(e => console.error('Failed to track analytics:', e));
+        });
+        
+        result = { 
+          chatMessages,
+          processingStatus: 'acknowledged',
+          message: 'Message received and processing started'
+        };
         break;
       }
       
