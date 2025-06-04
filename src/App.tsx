@@ -8,6 +8,7 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage'; // Import the ne
 // Brief and search pages
 import BriefCreationPage from './pages/dashboard/BriefCreationPage';
 import BriefChatPage from './pages/dashboard/BriefChatPage';
+import SimplifiedBriefPage from './pages/dashboard/SimplifiedBriefPage';
 import SearchResultsPage from './pages/dashboard/SearchResultsPage';
 
 // Debug components
@@ -132,6 +133,7 @@ function App() {
         <Route path="briefs/new" element={<BriefCreationPage />} />
         <Route path="briefs/:briefId/edit" element={<BriefCreationPage />} />
         <Route path="briefs/:briefId/chat" element={<BriefChatPage />} />
+        <Route path="briefs/:briefId/visual" element={<SimplifiedBriefPage />} />
         <Route path="briefs/:briefId/search" element={<SearchResultsPage />} />
       </Route>
       

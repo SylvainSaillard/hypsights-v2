@@ -3,7 +3,11 @@ import { useParams, useNavigate } from 'react-router-dom';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 // Import components
 import { Message } from '../../components/chat/ChatInterface';
+import SimplifiedChatView from '../../components/chat/SimplifiedChatView';
 import { devLog } from '../../lib/devTools';
+
+// Mode simplifié sans appels n8n - activé par défaut
+const SIMPLIFIED_MODE = true; // Mettre à false pour réactiver les appels au backend
 
 interface Solution {
   id: string;
@@ -59,13 +63,18 @@ const BriefChatPage: React.FC = () => {
     'POST'
   );
 
-  // Fetch chat messages - now using mock data in development mode
+  // Fetch chat messages - conditionnellement en fonction du mode
   const {
     data: chatData,
     loading: chatLoading,
     error: chatError,
     refresh: refreshChat
-  } = useEdgeFunction(
+  } = SIMPLIFIED_MODE ? {
+    data: { messages: [] },
+    loading: false,
+    error: null,
+    refresh: () => Promise.resolve()
+  } : useEdgeFunction(
     'ai-chat-handler',
     { 
       action: 'get_messages', 
@@ -74,13 +83,18 @@ const BriefChatPage: React.FC = () => {
     'POST'
   );
 
-  // Fetch solutions - now using mock data in development mode
+  // Fetch solutions - conditionnellement en fonction du mode
   const {
     data: solutionsData,
     loading: solutionsLoading,
     error: solutionsError,
     refresh: refreshSolutions
-  } = useEdgeFunction(
+  } = SIMPLIFIED_MODE ? {
+    data: { solutions: [] },
+    loading: false,
+    error: null,
+    refresh: () => Promise.resolve()
+  } : useEdgeFunction(
     'ai-chat-handler',
     { 
       action: 'get_solutions', 
@@ -89,12 +103,14 @@ const BriefChatPage: React.FC = () => {
     'POST'
   );
   
-  // Check search quota from real Edge Function data
+  // Check search quota - simulé en mode simplifié
   const {
     data: quotaData
     // We intentionally don't destructure loading and error states
     // as they're handled by the parent loading and error UI states
-  } = useEdgeFunction(
+  } = SIMPLIFIED_MODE ? {
+    data: { used: 0, limit: 3, remaining: 3 }
+  } : useEdgeFunction(
     'ai-chat-handler',
     { 
       action: 'check_search_quota'
@@ -102,7 +118,7 @@ const BriefChatPage: React.FC = () => {
     'POST'
   );
   
-  // Extract data from the useEdgeFunction response
+  // Extract data from the response
   const searchQuota: SearchQuota = {
     used: quotaData?.used || 0,
     limit: quotaData?.limit || 3,
@@ -273,8 +289,17 @@ const BriefChatPage: React.FC = () => {
             <p className="mt-4 text-gray-700">{brief.description}</p>
           </div>
           
-          {/* Main Content Grid */}
-          <div className="grid md:grid-cols-2 gap-6">
+          {/* Mode simplifié ou mode complet */}
+          {SIMPLIFIED_MODE ? (
+            // Mode simplifié - juste l'interface visuelle sans appels à n8n
+            <SimplifiedChatView
+              briefTitle={brief.title}
+              briefDescription={brief.description}
+              briefId={briefId || '0'}
+            />
+          ) : (
+            // Mode complet avec toutes les fonctionnalités
+            <div className="grid md:grid-cols-2 gap-6">
             {/* Left Column: Chat Interface */}
             <div className="bg-gray-50 rounded-lg p-4 h-[500px] flex flex-col">
               <h2 className="text-xl font-semibold mb-3">AI Assistant Chat</h2>
@@ -397,34 +422,37 @@ const BriefChatPage: React.FC = () => {
                 )}
               </div>
             </div>
-          </div>
-          
-          {/* Fast Search Section */}
-          {hasValidatedSolutions && (
-            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-green-800">Ready to Search</h3>
-                  <p className="text-sm text-green-700">
-                    You've validated solutions and can now proceed with the Fast Search.
-                  </p>
-                  <div className="mt-2 text-xs text-gray-600">
-                    Search quota: {searchQuota.used} of {searchQuota.limit} used ({searchQuota.remaining} remaining)
-                  </div>
-                </div>
-                <button
-                  onClick={handleStartSearch}
-                  disabled={searchQuota.remaining <= 0}
-                  className={`px-4 py-2 rounded-md shadow-sm text-sm font-medium ${
-                    searchQuota.remaining > 0 
-                      ? 'bg-primary text-primary-foreground hover:scale-105 transition duration-200' 
-                      : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                  }`}
-                >
-                  Launch Fast Search
-                </button>
-              </div>
+              </>
+            )}
             </div>
+            
+            {/* Fast Search Section */}
+            {hasValidatedSolutions && (
+              <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-semibold text-green-800">Ready to Search</h3>
+                    <p className="text-sm text-green-700">
+                      You've validated solutions and can now proceed with the Fast Search.
+                    </p>
+                    <div className="mt-2 text-xs text-gray-600">
+                      Search quota: {searchQuota.used} of {searchQuota.limit} used ({searchQuota.remaining} remaining)
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleStartSearch}
+                    disabled={searchQuota.remaining <= 0}
+                    className={`px-4 py-2 rounded-md shadow-sm text-sm font-medium ${
+                      searchQuota.remaining > 0 
+                        ? 'bg-primary text-primary-foreground hover:scale-105 transition duration-200' 
+                        : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                    }`}
+                  >
+                    Launch Fast Search
+                  </button>
+                </div>
+              </div>
+            )}
           )}
         </div>
       </div>
