@@ -97,22 +97,17 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
     setIsSending(true);
 
     try {
-      // 2. Appel Edge Function (qui déclenche webhook N8n)
-      const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch('/functions/v1/ai-chat-handler', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({
-          action: 'send_message',
-          brief_id: briefId,
-          content: userMessage.content
-        })
+      // 2. Appel Edge Function (qui déclenche webhook N8n) via client Supabase
+      const { error: invokeError } = await supabase.functions.invoke('ai-chat-handler', {
+        body: { 
+          action: 'send_message', 
+          brief_id: briefId, 
+          content: userMessage.content 
+        }
       });
 
-      if (!response.ok) throw new Error('Send failed');
+      if (invokeError) throw new Error(`Send failed: ${invokeError.message}`);
+
 
       // 3. PAS DE REFRESH - La réponse IA arrivera via real-time
       // Le webhook N8n va insérer la réponse dans la table
