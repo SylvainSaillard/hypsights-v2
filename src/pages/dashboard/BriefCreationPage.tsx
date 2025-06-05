@@ -10,51 +10,51 @@ const BriefCreationPage: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // If editing, fetch the existing brief
+  // Si on édite, charger le brief existant
   const { 
     data: existingBriefData, 
     loading: briefLoading, 
     error: briefError 
   } = useEdgeFunction(
     'brief-operations', 
-    isEditing ? { action: 'get_brief', brief_id: briefId } : {},
+    isEditing ? { action: 'get_brief', brief_id: briefId } : {}, // Utiliser objet vide pour respecter le type attendu
     'POST'
   );
 
-  // Extract the brief data from the response
+  // Extraire les données du brief
   const existingBrief = existingBriefData?.brief || existingBriefData?.data?.brief;
 
-  // Hook for brief creation/update using the simplified approach
-  const [briefActionParams, setBriefActionParams] = useState<Record<string, any>>({});
+  // Créer un état pour stocker les paramètres de soumission
+  const [submitParams, setSubmitParams] = useState<Record<string, any>>({});
   
+  // Hook pour la création/mise à jour du brief
   const { 
-    refresh: submitBrief,
     loading: submitting,
     error: submitError,
     data: submitResponse
   } = useEdgeFunction(
     'brief-operations',
-    { action: 'init', ...briefActionParams }, // Toujours inclure une action, même si vide
+    submitParams, // Utiliser l'état pour les paramètres
     'POST'
   );
 
-  // Handle effect when submit response is received
+  // Gestion de la réponse après soumission
   useEffect(() => {
     if (submitResponse && !submitting) {
-      // Extract brief ID from the response
+      // Extraire l'ID du brief de la réponse
       let briefId = submitResponse.brief_id || 
                    (submitResponse.brief && submitResponse.brief.id) || 
                    (submitResponse.data && submitResponse.data.brief_id);
       
       if (briefId) {
-        console.log('Successfully created/updated brief with ID:', briefId);
-        // Navigate to the brief chat page
+        console.log('Brief créé/mis à jour avec succès, ID:', briefId);
+        // Redirection vers la page de chat du brief
         navigate(`/dashboard/briefs/${briefId}/chat`);
       }
     }
   }, [submitResponse, submitting, navigate]);
 
-  // Handle effect when submit error occurs
+  // Gestion des erreurs de soumission
   useEffect(() => {
     if (submitError) {
       setError(submitError);
@@ -62,27 +62,23 @@ const BriefCreationPage: React.FC = () => {
     }
   }, [submitError]);
 
-  // Add a manual refresh capability for edge cases, like retrying after a failure
-  const handleManualRefresh = () => {
-    submitBrief();
-  };
-
+  // Fonction de soumission du formulaire
   const handleFormSubmit = async (briefData: any) => {
     if (isSubmitting) return;
     
     setIsSubmitting(true);
     setError(null);
     
-    // Set parameters for the Edge Function call
-    // This will trigger the useEdgeFunction hook to refresh with new params
-    setBriefActionParams({
+    // Définir les paramètres pour l'appel à la fonction Edge
+    setSubmitParams({
       action: isEditing ? 'update_brief' : 'create_brief',
       brief_id: isEditing ? briefId : undefined,
       brief_data: briefData
-      // No need to manually set request_id - it's added automatically by useEdgeFunction
     });
     
-    // The actual API call happens automatically through the useEffect dependency on briefActionParams
+    // L'appel sera déclenché automatiquement quand submitParams change grâce au useEffect du hook
+    
+    // La redirection est gérée par l'useEffect sur submitResponse
   };
 
   if (isEditing && briefLoading) {

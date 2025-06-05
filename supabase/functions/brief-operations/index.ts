@@ -143,30 +143,31 @@ async function createBrief(supabaseAdmin: SupabaseClient, briefData: any, userId
   
   console.log('Creating brief with data:', JSON.stringify(briefData, null, 2));
   
-  // Extract the main fields that exist as direct columns
-  const { title, description } = briefData;
+  // Extract all fields to store as columns
+  const { 
+    title, 
+    description,
+    reference_companies = [],
+    maturity = [],
+    geographies = [],
+    organization_types = [],
+    capabilities = [],
+    locale = 'en' // Default locale si non spécifié
+  } = briefData;
   
-  // Store all form-specific fields in the requirements JSONB field
-  // This follows the table schema design where these fields aren't direct columns
-  const requirements = {
-    reference_companies: briefData.reference_companies || [],
-    maturity: briefData.maturity || [],
-    geographies: briefData.geographies || [],
-    organization_types: briefData.organization_types || [],
-    capabilities: briefData.capabilities || [],
-    // Include any existing requirements data
-    ...(briefData.requirements || {})
-  };
-  
-  // Prepare the brief record according to the actual database schema
+  // Prepare the brief record with individual columns (plus de JSONB requirements)
   const briefRecord = {
     id: briefId,
     user_id: userId,
     title: title || 'Untitled Brief',
     description: description || '',
+    reference_companies,
+    maturity,
+    geographies,
+    organization_types,
+    capabilities,
     status: 'draft',
-    requirements,
-    locale: 'en', // Default locale
+    default_locale: locale,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()
   };
@@ -182,6 +183,42 @@ async function createBrief(supabaseAdmin: SupabaseClient, briefData: any, userId
   if (error) {
     console.error('Error creating brief:', error);
     throw new HttpError(`Failed to create brief: ${error.message}`, 500);
+  }
+  
+  // Gestion du multilinguisme via la table translations si des traductions sont fournies
+  if (briefData.translations) {
+    const translationsToAdd = [];
+    
+    // Pour chaque langue supportée
+    for (const lang in briefData.translations) {
+      if (lang === locale) continue; // Skip la langue par défaut
+      
+      const transData = briefData.translations[lang];
+      
+      // Pour chaque champ traduisible
+      for (const field of ['title', 'description']) {
+        if (transData[field]) {
+          translationsToAdd.push({
+            key: `brief:${briefId}:${field}`,
+            locale: lang,
+            value: transData[field],
+            context: 'brief.' + field
+          });
+        }
+      }
+    }
+    
+    // Ajouter les traductions à la table translations
+    if (translationsToAdd.length > 0) {
+      const { error: transError } = await supabaseAdmin
+        .from('translations')
+        .insert(translationsToAdd);
+        
+      if (transError) {
+        console.error('Error adding translations:', transError);
+        // On ne lance pas d'erreur pour ne pas bloquer la création du brief
+      }
+    }
   }
   
   return { brief: data };
