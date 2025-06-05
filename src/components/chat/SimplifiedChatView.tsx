@@ -112,6 +112,58 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
     };
   }, [briefId]);
   
+  // Fonction de test pour l'Edge Function avec authentification
+  const testEdgeFunction = useCallback(async () => {
+    console.log('DEBUG TEST - Testing Edge Function directly');
+    try {
+      // Récupérer explicitement la session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.error('DEBUG TEST - No active session found');
+        return;
+      }
+      
+      console.log('DEBUG TEST - User session:', { 
+        userId: session.user.id,
+        email: session.user.email,
+        hasToken: !!session.access_token
+      });
+      
+      // Appel direct avec token explicite
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-chat-handler`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          action: 'get_chat_messages',
+          brief_id: briefId
+        })
+      });
+      
+      const data = await response.json();
+      console.log('DEBUG TEST - Direct API response:', data);
+      
+      // Test avec client supabase
+      const { data: functionData, error: functionError } = await supabase.functions.invoke(
+        'ai-chat-handler',
+        {
+          body: {
+            action: 'get_chat_messages',
+            brief_id: briefId
+          }
+        }
+      );
+      
+      console.log('DEBUG TEST - Client invoke response:', { data: functionData, error: functionError });
+      
+    } catch (error) {
+      console.error('DEBUG TEST - Test failed:', error);
+    }
+  }, [briefId]);
+  
   // Fonction pour envoyer un message (déclenche webhook N8n)
   const handleSendMessage = useCallback(async () => {
     if (!inputValue.trim() || isSending) return;
@@ -185,8 +237,15 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
   return (
     <div className={styles.container}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4 border-b border-gray-200 flex justify-between items-center">
         <h3 className="text-lg font-semibold">Assistant IA</h3>
+        {/* Bouton temporaire pour tester l'Edge Function */}
+        <button 
+          onClick={testEdgeFunction}
+          className="px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded-md hover:bg-gray-300"
+        >
+          Test API
+        </button>
       </div>
 
       {/* Messages Area */}
