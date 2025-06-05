@@ -55,9 +55,19 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
         return;
       }
       
+      // Logs pour examiner la structure exacte de la réponse
+      console.log('=== RAW DATA STRUCTURE ===');
+      console.log('data:', JSON.stringify(data, null, 2));
+      console.log('data.data:', data.data);
+      console.log('data.data.messages:', data.data?.messages);
+      
+      // Vérifier différentes structures de données possibles
       if (data?.messages && Array.isArray(data.messages)) {
-        console.log('DEBUG SimplifiedChatView - Successfully loaded messages:', data.messages.length);
+        console.log('DEBUG SimplifiedChatView - Successfully loaded messages (data.messages):', data.messages.length);
         setMessages(data.messages);
+      } else if (data?.data?.messages && Array.isArray(data.data.messages)) {
+        console.log('DEBUG SimplifiedChatView - Successfully loaded messages (data.data.messages):', data.data.messages.length);
+        setMessages(data.data.messages);
       } else {
         console.warn('DEBUG SimplifiedChatView - Invalid response format:', data);
         setLoadError('Format de réponse invalide');
@@ -71,11 +81,13 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
     }
   }, [briefId, isLoading]);
   
-  // Charger les messages au chargement du composant et quand briefId change
+  // Charger les messages uniquement au montage initial du composant
+  // ⚠️ IMPORTANT: Désactivé la dépendance [briefId, loadMessages] qui causait une boucle infinie
   useEffect(() => {
-    console.log('DEBUG SimplifiedChatView - Brief ID changed, loading messages');
+    console.log('DEBUG SimplifiedChatView - Component mounted, initial message load');
     loadMessages();
-  }, [briefId, loadMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);  // Dépendance vide pour exécuter une seule fois
   
   // Scroll automatique vers le bas lorsque les messages changent
   useEffect(() => {
