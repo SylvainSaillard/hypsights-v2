@@ -1,78 +1,189 @@
-import React from 'react';
-import { Message } from './ChatInterface';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import type { ChatMessage } from './ChatInterface';
+import useEdgeFunction from '../../hooks/useEdgeFunction';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialisation du client Supabase pour les appels authentifiés
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 interface SimplifiedChatViewProps {
-  briefTitle?: string;
-  briefDescription?: string;
-  briefId?: string;
+  briefId: string;
+  onMessageSent?: () => void;
 }
 
 /**
- * Version simplifiée du chat qui affiche uniquement l'en-tête du brief
- * et un message de statut sans fonctionnalité de chat active
+ * Composant de chat simplifié pour l'interaction avec l'IA dans le contexte d'un brief
  * Conforme au principe KISS et Thin Client / Fat Edge
  */
 const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
-  briefTitle = "Titre du brief",
-  briefDescription = "Description du brief en cours d'exploration",
-  briefId = "ID-placeholder"
+  briefId,
+  onMessageSent
 }) => {
+  // États locaux
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [inputValue, setInputValue] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  
+  // Référence pour faire défiler vers le bas automatiquement
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  // Hook pour récupérer les messages existants
+  const { 
+    data, 
+    loading, 
+    error, 
+    refresh 
+  } = useEdgeFunction('ai-chat-handler', {
+    action: 'get_chat_messages',
+    brief_id: briefId
+  });
+  
+  // Synchronisation des messages depuis la réponse de l'API
+  useEffect(() => {
+    if (data?.messages) {
+      setMessages(data.messages);
+    }
+  }, [data]);
+  
+  // Scroll automatique vers le bas lorsque les messages changent
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+  
+  // REAL-TIME SUBSCRIPTION pour nouvelles réponses IA
+  useEffect(() => {
+    const channel = supabase
+      .channel('chat_messages')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public', 
+        table: 'chat_messages',
+        filter: `brief_id=eq.${briefId}`
+      }, (payload) => {
+        const newMessage = payload.new as ChatMessage;
+        setMessages(prev => {
+          // Éviter les doublons
+          if (prev.find(m => m.id === newMessage.id)) return prev;
+          return [...prev, newMessage];
+        });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [briefId]);
+  
+  // Fonction pour envoyer un message (déclenche webhook N8n)
+  const handleSendMessage = useCallback(async () => {
+    if (!inputValue.trim() || isSending) return;
+
+    const userMessage: ChatMessage = {
+      id: `temp-${Date.now()}`,
+      brief_id: briefId,
+      user_id: undefined, // Sera défini côté serveur
+      content: inputValue.trim(),
+      is_ai: false,
+      created_at: new Date().toISOString()
+    };
+
+    // 1. Optimistic UI update
+    setMessages(prev => [...prev, userMessage]);
+    setInputValue('');
+    setIsSending(true);
+
+    try {
+      // 2. Appel Edge Function (qui déclenche webhook N8n)
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch('/functions/v1/ai-chat-handler', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          action: 'send_message',
+          brief_id: briefId,
+          content: userMessage.content
+        })
+      });
+
+      if (!response.ok) throw new Error('Send failed');
+
+      // 3. PAS DE REFRESH - La réponse IA arrivera via real-time
+      // Le webhook N8n va insérer la réponse dans la table
+      // Le composant l'affichera automatiquement via subscription
+
+      onMessageSent?.();
+
+    } catch (error) {
+      // 4. Rollback en cas d'erreur
+      setMessages(prev => prev.filter(m => m.id !== userMessage.id));
+      console.error('Error sending message:', error);
+    } finally {
+      setIsSending(false);
+    }
+  }, [briefId, inputValue, isSending, onMessageSent]);
+  
+  // Styles Tailwind à utiliser selon le design system
+  const styles = {
+    container: "flex flex-col h-96 border border-gray-200 rounded-lg",
+    messagesArea: "flex-1 overflow-y-auto p-4 space-y-3",
+    userMessage: "ml-auto max-w-xs bg-primary text-primary-foreground p-3 rounded-lg",
+    aiMessage: "mr-auto max-w-xs bg-gray-100 text-gray-800 p-3 rounded-lg",
+    inputArea: "border-t border-gray-200 p-4",
+    input: "w-full border border-gray-300 rounded-md p-2",
+    sendButton: "bg-primary text-primary-foreground px-4 py-2 rounded-md ml-2"
+  };
   
   return (
-    <div className="flex flex-col h-full">
-      {/* En-tête du brief */}
-      <div className="bg-primary bg-opacity-5 p-6 border-b">
-        <h2 className="text-xl font-semibold text-primary">{briefTitle}</h2>
-        <p className="text-sm text-gray-600 mt-2">{briefDescription}</p>
-        <div className="mt-3 flex items-center text-xs text-gray-500">
-          <span className="mr-3">Brief #{briefId.slice(0, 8)}</span>
-          <span className="px-2 py-1 rounded-full bg-yellow-100 text-yellow-800">
-            En développement
-          </span>
-        </div>
+    <div className={styles.container}>
+      {/* Header */}
+      <div className="p-4 border-b border-gray-200">
+        <h3 className="text-lg font-semibold">Assistant IA</h3>
       </div>
-      
-      {/* Zone de chat désactivée */}
-      <div className="flex-1 p-4 overflow-y-auto">
-        <div className="h-full flex flex-col items-center justify-center text-center p-6">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="h-8 w-8 text-gray-400" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                strokeWidth={1.5} 
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" 
-              />
-            </svg>
+
+      {/* Messages Area */}
+      <div className={styles.messagesArea}>
+        {loading && <div>Chargement des messages...</div>}
+        {error && <div className="text-red-500">Erreur: {error}</div>}
+        
+        {messages.map((message) => (
+          <div
+            key={message.id}
+            className={message.is_ai ? styles.aiMessage : styles.userMessage}
+          >
+            <div className="text-sm">{message.content}</div>
+            <div className="text-xs opacity-70 mt-1">
+              {new Date(message.created_at).toLocaleTimeString()}
+            </div>
           </div>
-          <h3 className="text-lg font-medium text-gray-700 mb-1">Interface de dialogue</h3>
-          <p className="text-sm text-gray-500 max-w-sm">
-            La fonctionnalité de chat est actuellement désactivée pour visualiser l'interface. 
-            Le backend n8n n'est pas appelé dans cette version.
-          </p>
-        </div>
+        ))}
+        <div ref={messagesEndRef}></div>
       </div>
-      
-      {/* Zone de saisie désactivée */}
-      <div className="border-t p-4">
-        <div className="flex gap-2">
+
+      {/* Input Area */}
+      <div className={styles.inputArea}>
+        <div className="flex">
           <input
             type="text"
-            placeholder="Fonctionnalité temporairement désactivée..."
-            className="flex-1 px-4 py-2 border border-gray-200 rounded-md bg-gray-50 text-gray-400"
-            disabled
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+            placeholder="Tapez votre message..."
+            className={styles.input}
+            disabled={isSending}
           />
           <button
-            disabled
-            className="px-4 py-2 bg-gray-200 text-gray-500 rounded-md cursor-not-allowed"
+            onClick={handleSendMessage}
+            disabled={!inputValue.trim() || isSending}
+            className={styles.sendButton}
           >
-            Envoyer
+            {isSending ? 'Envoi...' : 'Envoyer'}
           </button>
         </div>
       </div>
