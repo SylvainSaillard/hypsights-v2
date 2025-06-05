@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { ChatMessage } from './ChatInterface';
-import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { createClient } from '@supabase/supabase-js';
 
 // Initialisation du client Supabase pour les appels authentifiés
@@ -28,45 +27,55 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   
   // Référence pour faire défiler vers le bas automatiquement
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  // Hook pour récupérer les messages existants
-  const { 
-    data, 
-    loading, 
-    error, 
-    refresh 
-  } = useEdgeFunction('ai-chat-handler', {
-    action: 'get_chat_messages',
-    brief_id: briefId
-  });
-  
-  // Log pour debugging
-  useEffect(() => {
-    console.log('DEBUG SimplifiedChatView - Status:', {
-      briefId, 
-      loading, 
-      hasData: !!data, 
-      messagesCount: data?.messages?.length || 0,
-      error
-    });
-  }, [briefId, data, loading, error]);
-  
-  // Synchronisation des messages depuis la réponse de l'API
-  useEffect(() => {
-    if (data?.messages) {
-      console.log('DEBUG SimplifiedChatView - Received messages:', data.messages.length);
-      setMessages(data.messages);
+  // Fonction pour charger les messages directement via supabase.functions.invoke
+  const loadMessages = useCallback(async () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    setLoadError(null);
+    console.log('DEBUG SimplifiedChatView - Loading messages for briefId:', briefId);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-chat-handler', {
+        body: {
+          action: 'get_chat_messages',
+          brief_id: briefId
+        }
+      });
+      
+      if (error) {
+        console.error('DEBUG SimplifiedChatView - Error loading messages:', error);
+        setLoadError(`Erreur: ${error.message || 'Impossible de charger les messages'}`);
+        return;
+      }
+      
+      if (data?.messages && Array.isArray(data.messages)) {
+        console.log('DEBUG SimplifiedChatView - Successfully loaded messages:', data.messages.length);
+        setMessages(data.messages);
+      } else {
+        console.warn('DEBUG SimplifiedChatView - Invalid response format:', data);
+        setLoadError('Format de réponse invalide');
+      }
+      
+    } catch (err) {
+      console.error('DEBUG SimplifiedChatView - Exception during message loading:', err);
+      setLoadError(`Exception: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setIsLoading(false);
     }
-  }, [data]);
+  }, [briefId, isLoading]);
   
-  // Force refresh when briefId changes
+  // Charger les messages au chargement du composant et quand briefId change
   useEffect(() => {
-    console.log('DEBUG SimplifiedChatView - Brief ID changed, forcing refresh');
-    refresh();
-  }, [briefId, refresh]);
+    console.log('DEBUG SimplifiedChatView - Brief ID changed, loading messages');
+    loadMessages();
+  }, [briefId, loadMessages]);
   
   // Scroll automatique vers le bas lorsque les messages changent
   useEffect(() => {
@@ -239,19 +248,48 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
       {/* Header */}
       <div className="p-4 border-b border-gray-200 flex justify-between items-center">
         <h3 className="text-lg font-semibold">Assistant IA</h3>
-        {/* Bouton temporaire pour tester l'Edge Function */}
-        <button 
-          onClick={testEdgeFunction}
-          className="px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded-md hover:bg-gray-300"
-        >
-          Test API
-        </button>
+        <div className="flex gap-2">
+          {/* Bouton de refresh */}
+          <button 
+            onClick={loadMessages}
+            disabled={isLoading}
+            className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-md hover:bg-blue-200 disabled:opacity-50"
+            title="Rafraîchir les messages"
+          >
+            {isLoading ? 'Chargement...' : 'Rafraîchir'}
+          </button>
+          {/* Bouton temporaire pour tester l'Edge Function */}
+          <button 
+            onClick={testEdgeFunction}
+            className="px-3 py-1 bg-gray-200 text-gray-800 text-xs rounded-md hover:bg-gray-300"
+          >
+            Test API
+          </button>
+        </div>
       </div>
 
       {/* Messages Area */}
       <div className={styles.messagesArea}>
-        {loading && <div>Chargement des messages...</div>}
-        {error && <div className="text-red-500">Erreur: {error}</div>}
+        {isLoading && messages.length === 0 && (
+          <div className="p-4 text-center text-gray-500">
+            <svg className="animate-spin h-5 w-5 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Chargement des messages...
+          </div>
+        )}
+        {loadError && (
+          <div className="p-4 text-center text-red-500 bg-red-50 rounded-md m-4">
+            <p className="text-sm">{loadError}</p>
+            <button
+              onClick={loadMessages}
+              className="mt-2 text-xs bg-red-100 text-red-800 px-3 py-1 rounded-md hover:bg-red-200"
+            >
+              Réessayer
+            </button>
+          </div>
+        )}
         
         {messages.map((message) => (
           <div
