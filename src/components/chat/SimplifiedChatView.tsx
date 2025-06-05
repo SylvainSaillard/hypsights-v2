@@ -102,7 +102,7 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
         body: { 
           action: 'send_message', 
           brief_id: briefId, 
-          content: userMessage.content 
+          message_content: userMessage.content 
         }
       });
 
