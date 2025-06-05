@@ -125,16 +125,48 @@ async function listBriefs(supabaseAdmin: SupabaseClient, userId: string) {
 }
 
 async function getBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: string) {
+  console.log(`Fetching brief ${briefId} for user ${userId}`);
+  
+  // Select all columns explicitly to ensure we get the new columns
   const { data, error } = await supabaseAdmin
     .from('briefs')
-    .select('*')
+    .select(`
+      id, 
+      user_id,
+      title, 
+      description,
+      reference_companies,
+      maturity,
+      geographies,
+      organization_types,
+      capabilities,
+      default_locale,
+      status,
+      created_at,
+      updated_at
+    `)
     .eq('id', briefId)
     .eq('user_id', userId)
     .single();
     
-  if (error) throw new HttpError('Brief not found', 404);
+  if (error) {
+    console.error('Error fetching brief:', error);
+    throw new HttpError('Brief not found', 404);
+  }
   
-  return { brief: data };
+  // Format array fields for frontend display
+  const formattedBrief = {
+    ...data,
+    reference_companies: data.reference_companies || [],
+    maturity: data.maturity || [],
+    geographies: data.geographies || [],
+    organization_types: data.organization_types || [],
+    capabilities: data.capabilities || []
+  };
+  
+  console.log('Formatted brief data:', JSON.stringify(formattedBrief, null, 2));
+  
+  return { brief: formattedBrief };
 }
 
 async function createBrief(supabaseAdmin: SupabaseClient, briefData: any, userId: string) {
@@ -142,6 +174,11 @@ async function createBrief(supabaseAdmin: SupabaseClient, briefData: any, userId
   const briefId = crypto.randomUUID();
   
   console.log('Creating brief with data:', JSON.stringify(briefData, null, 2));
+  
+  // Normalisation : si briefData est déjà structuré ou s'il contient brief_data
+  const sourceData = briefData.brief_data || briefData;
+  
+  console.log('Source data structure:', JSON.stringify(sourceData, null, 2));
   
   // Extract all fields to store as columns
   const { 
@@ -152,8 +189,9 @@ async function createBrief(supabaseAdmin: SupabaseClient, briefData: any, userId
     geographies = [],
     organization_types = [],
     capabilities = [],
-    locale = 'en' // Default locale si non spécifié
-  } = briefData;
+    locale = 'en', // Default locale si non spécifié
+    translations
+  } = sourceData;
   
   // Prepare the brief record with individual columns (plus de JSONB requirements)
   const briefRecord = {
@@ -228,25 +266,91 @@ async function updateBrief(supabaseAdmin: SupabaseClient, briefId: string, brief
   // First, check if the brief exists and belongs to the user
   const { data: existingBrief, error: checkError } = await supabaseAdmin
     .from('briefs')
-    .select('id')
+    .select('id, default_locale')
     .eq('id', briefId)
     .eq('user_id', userId)
     .single();
     
   if (checkError || !existingBrief) throw new HttpError('Brief not found', 404);
   
+  // Extract all fields from brief_data to store as columns
+  const { 
+    title, 
+    description,
+    reference_companies,
+    maturity,
+    geographies,
+    organization_types,
+    capabilities,
+    locale = existingBrief.default_locale || 'en',
+    translations
+  } = briefData.brief_data || {};
+  
+  // Prepare the update record with individual columns
+  const updateRecord: Record<string, any> = {
+    updated_at: new Date().toISOString()
+  };
+  
+  // Ajouter seulement les champs qui sont présents
+  if (title !== undefined) updateRecord.title = title;
+  if (description !== undefined) updateRecord.description = description;
+  if (reference_companies !== undefined) updateRecord.reference_companies = reference_companies;
+  if (maturity !== undefined) updateRecord.maturity = maturity;
+  if (geographies !== undefined) updateRecord.geographies = geographies;
+  if (organization_types !== undefined) updateRecord.organization_types = organization_types;
+  if (capabilities !== undefined) updateRecord.capabilities = capabilities;
+  if (locale !== undefined) updateRecord.default_locale = locale;
+  
+  console.log('Updating brief with data:', JSON.stringify(updateRecord, null, 2));
+  
   // Update the brief
   const { data, error } = await supabaseAdmin
     .from('briefs')
-    .update({
-      ...briefData,
-      updated_at: new Date().toISOString()
-    })
+    .update(updateRecord)
     .eq('id', briefId)
     .select()
     .single();
     
-  if (error) throw new HttpError('Failed to update brief', 500);
+  if (error) {
+    console.error('Error updating brief:', error);
+    throw new HttpError(`Failed to update brief: ${error.message}`, 500);
+  }
+  
+  // Gestion du multilinguisme via la table translations si des traductions sont fournies
+  if (translations) {
+    const translationsToAdd = [];
+    
+    // Pour chaque langue supportée
+    for (const lang in translations) {
+      if (lang === locale) continue; // Skip la langue par défaut
+      
+      const transData = translations[lang];
+      
+      // Pour chaque champ traduisible
+      for (const field of ['title', 'description']) {
+        if (transData[field]) {
+          translationsToAdd.push({
+            key: `brief:${briefId}:${field}`,
+            locale: lang,
+            value: transData[field],
+            context: 'brief.' + field
+          });
+        }
+      }
+    }
+    
+    // Ajouter ou mettre à jour les traductions
+    if (translationsToAdd.length > 0) {
+      const { error: transError } = await supabaseAdmin
+        .from('translations')
+        .upsert(translationsToAdd, { onConflict: 'key,locale' });
+        
+      if (transError) {
+        console.error('Error updating translations:', transError);
+        // On ne lance pas d'erreur pour ne pas bloquer la mise à jour du brief
+      }
+    }
+  }
   
   return { brief: data };
 }

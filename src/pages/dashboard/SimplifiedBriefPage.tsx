@@ -40,20 +40,67 @@ const SimplifiedBriefPage: React.FC = () => {
           {/* Brief Header */}
           <div className="mb-6 pb-6 border-b border-gray-200">
             <h1 className="text-2xl font-bold mb-2">{briefData?.brief?.title || 'Brief en cours de chargement'}</h1>
-            <div className="flex flex-wrap gap-2 text-sm">
-              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                {briefData?.brief?.industry || 'Industrie'}
+            <p className="text-gray-600 mb-3">{briefData?.brief?.description || 'Aucune description'}</p>
+            
+            {/* Tags section */}
+            <div className="flex flex-wrap gap-2 text-sm mb-3">
+              {/* Status */}
+              <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
+                {briefData?.brief?.status === 'draft' ? 'Brouillon' : 'Actif'}
               </span>
-              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">
-                {briefData?.brief?.budget_range || 'Budget'}
+              
+              {/* Locale */}
+              <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
+                {briefData?.brief?.default_locale === 'fr' ? '🇫🇷 Français' : '🇬🇧 English'}
               </span>
-              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">
-                {briefData?.brief?.timeline || 'Timeline'}
-              </span>
+
+              {/* Visuel uniquement */}
               <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
                 Mode visuel uniquement
               </span>
             </div>
+            
+            {/* Capabilities */}
+            {briefData?.brief?.capabilities && briefData.brief.capabilities.length > 0 && (
+              <div className="mb-2">
+                <h3 className="text-sm font-semibold text-gray-600 mb-1">Compétences recherchées:</h3>
+                <div className="flex flex-wrap gap-1">
+                  {briefData.brief.capabilities.map((cap: string, idx: number) => (
+                    <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                      {cap}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Maturity */}
+            {briefData?.brief?.maturity && briefData.brief.maturity.length > 0 && (
+              <div className="mb-2">
+                <h3 className="text-sm font-semibold text-gray-600 mb-1">Maturité:</h3>
+                <div className="flex flex-wrap gap-1">
+                  {briefData.brief.maturity.map((mat: string, idx: number) => (
+                    <span key={idx} className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                      {mat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Geographies */}
+            {briefData?.brief?.geographies && briefData.brief.geographies.length > 0 && (
+              <div className="mb-2">
+                <h3 className="text-sm font-semibold text-gray-600 mb-1">Zones géographiques:</h3>
+                <div className="flex flex-wrap gap-1">
+                  {briefData.brief.geographies.map((geo: string, idx: number) => (
+                    <span key={idx} className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                      {geo}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Simplified Chat View */}
