@@ -384,8 +384,8 @@ serve(async (req: Request) => {
           .insert({
             brief_id,
             user_id: user.id,
-            message_text: message_content.trim(),
-            is_from_user: true
+            content: message_content.trim(),
+            is_ai: false
           })
           .select()
           .single();
@@ -404,7 +404,7 @@ serve(async (req: Request) => {
           },
           message: {
             id: userMessageData.id,
-            text: message_content.trim(),
+            content: message_content.trim(),
             timestamp: new Date().toISOString()
           },
           requestId: crypto ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15)
@@ -422,9 +422,9 @@ serve(async (req: Request) => {
           .insert({
             brief_id,
             user_id: user.id,
-            message_text: acknowledgementMessage,
-            is_from_user: false,
-            message_type: 'acknowledgement'
+            content: acknowledgementMessage,
+            is_ai: true,
+            metadata: { type: 'acknowledgement' }
           });
           
         if (aiStoreError) {
