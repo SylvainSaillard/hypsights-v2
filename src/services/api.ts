@@ -30,15 +30,28 @@ export const api = {
       throw new Error(error.message || 'Impossible de charger les messages');
     }
     
-    // Vérifier différentes structures de données possibles
-    if (data?.messages && Array.isArray(data.messages)) {
+    console.log('API - Raw messages response:', data);
+    
+    // Gestion des différentes structures de réponse possibles
+    if (data?.success === true && Array.isArray(data.data?.chatMessages)) {
+      // Format {success: true, data: {chatMessages: Array<ChatMessage>}}
+      return data.data.chatMessages;
+    } else if (data?.success === true && Array.isArray(data.data)) {
+      // Format {success: true, data: Array<ChatMessage>}
+      return data.data;
+    } else if (data?.chatMessages && Array.isArray(data.chatMessages)) {
+      // Format {chatMessages: Array<ChatMessage>}
+      return data.chatMessages;
+    } else if (data?.messages && Array.isArray(data.messages)) {
+      // Format {messages: Array<ChatMessage>}
       return data.messages;
-    } else if (data?.data?.messages && Array.isArray(data.data.messages)) {
-      return data.data.messages;
-    } else {
-      console.warn('API - Invalid response format:', data);
-      throw new Error('Format de réponse invalide');
+    } else if (Array.isArray(data)) {
+      // Format Array<ChatMessage> directement
+      return data;
     }
+    
+    console.warn('API - Unexpected messages format:', data);
+    return [];
   },
   
   /**
@@ -51,7 +64,7 @@ export const api = {
       body: {
         action: 'send_message',
         brief_id: briefId,
-        message
+        message_content: message
       }
     });
     

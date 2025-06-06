@@ -253,39 +253,180 @@ function getPlaceholderSolutions() {
   };
 }
 
+// Fonction pour envoyer un message
+async function sendMessage(supabaseAdmin: SupabaseClient, briefId: string, userId: string, messageContent: string) {
+  console.log(`[${FUNCTION_NAME}] Storing user message for brief ${briefId}`);
+  
+  try {
+    // 1. Stocker le message de l'utilisateur
+    const { data: userMessageData, error: storeError } = await supabaseAdmin
+      .from('chat_messages')
+      .insert({
+        brief_id: briefId,
+        user_id: userId,
+        content: messageContent.trim(),
+        is_ai: false
+      })
+      .select()
+      .single();
+      
+    if (storeError) {
+      console.error(`[${FUNCTION_NAME}] Failed to store user message:`, storeError);
+      throw new HttpError('Failed to store message', 500);
+    }
+    
+    // 2. Préparer les données pour le webhook n8n
+    const { data: briefData, error: briefError } = await supabaseAdmin
+      .from('briefs')
+      .select('*')
+      .eq('id', briefId)
+      .single();
+      
+    if (briefError) {
+      console.error(`[${FUNCTION_NAME}] Failed to fetch brief data:`, briefError);
+      throw new HttpError('Failed to fetch brief data', 500);
+    }
+    
+    // 3. Préparer le payload pour n8n
+    const webhookPayload = {
+      brief: briefData,
+      user: {
+        id: userId
+      },
+      message: {
+        id: userMessageData.id,
+        content: messageContent.trim(),
+        timestamp: new Date().toISOString()
+      },
+      requestId: crypto ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15)
+    };
+    
+    // 4. Envoyer les données au webhook n8n en arrière-plan
+    console.log(`[${FUNCTION_NAME}] Sending brief data to n8n webhook`);
+    const webhookPromise = callN8nWebhook(webhookPayload);
+    
+    // 5. Stocker un message d'accusé de réception immédiat
+    const acknowledgementMessage = "Je vais réfléchir à votre demande... Un instant.";
+    
+    const { error: aiStoreError } = await supabaseAdmin
+      .from('chat_messages')
+      .insert({
+        brief_id: briefId,
+        user_id: userId,
+        content: acknowledgementMessage,
+        is_ai: true,
+        metadata: { type: 'acknowledgement' }
+      });
+      
+    if (aiStoreError) {
+      console.error(`[${FUNCTION_NAME}] Failed to store AI acknowledgement:`, aiStoreError);
+      throw new HttpError('Failed to store AI response', 500);
+    }
+    
+    // 6. Récupérer tous les messages mis à jour
+    const { data: chatMessages, error: fetchError } = await supabaseAdmin
+      .from('chat_messages')
+      .select('*')
+      .eq('brief_id', briefId)
+      .order('created_at', { ascending: true });
+      
+    if (fetchError) {
+      console.error(`[${FUNCTION_NAME}] Failed to fetch chat messages:`, fetchError);
+      throw new HttpError('Failed to fetch chat history', 500);
+    }
+    
+    // 7. Gérer la réponse du webhook en arrière-plan (sans bloquer)
+    webhookPromise.catch(error => {
+      console.error(`[${FUNCTION_NAME}] Error handling n8n webhook:`, error);
+      
+      // Track error
+      trackAnalytics(supabaseAdmin, 'webhook_error', userId, { 
+        brief_id: briefId,
+        error: String(error)
+      }).catch(e => console.error('Failed to track analytics:', e));
+    });
+    
+    return {
+      chatMessages,
+      processingStatus: 'acknowledged',
+      message: 'Message received and processing started'
+    };
+    
+  } catch (error) {
+    console.error(`[${FUNCTION_NAME}] Error in sendMessage:`, error);
+    throw error;
+  }
+}
+
 serve(async (req: Request) => {
-  // Handle OPTIONS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) });
   }
   
   try {
-    // 1. Authentication
+    // 1. Authenticate user
     const user = await authenticateUser(req);
     
     // 2. Parse request body
-    let requestBody = {};
+    let requestBody;
     try {
-      if (req.method === 'POST') {
-        requestBody = await req.json();
-      }
+      requestBody = await req.json();
     } catch (error) {
       throw new HttpError('Invalid request body', 400);
     }
     
-    const { action, brief_id, solution_id, message_content } = requestBody as any;
+    const { action, brief_id, message_content, solution_id } = requestBody;
     
     if (!action) {
       throw new HttpError('Missing required parameter: action', 400);
     }
     
-    // Create supabase admin client for database operations
+    console.log(`[${FUNCTION_NAME}] Processing action: ${action}`);
+    
+    // 3. Create admin Supabase client for database operations
     const supabaseAdmin = createSupabaseClient(true);
     
-    // 3. Business logic based on action
-    let result = {};
+    // 4. Process action
+    let result;
     
     switch (action) {
+      case 'get_chat_messages': {
+        if (!brief_id) {
+          throw new HttpError('Missing required parameter: brief_id', 400);
+        }
+        
+        console.log(`[${FUNCTION_NAME}] Fetching chat messages for brief:`, brief_id);
+        
+        result = await getChatMessages(supabaseAdmin, brief_id);
+        
+        // Track analytics
+        await trackAnalytics(supabaseAdmin, 'get_chat_messages', user.id, { brief_id });
+        break;
+      }
+      
+      case 'send_message': {
+        if (!brief_id || !message_content) {
+          throw new HttpError('Missing required parameters: brief_id or message_content', 400);
+        }
+        
+        if (typeof message_content !== 'string' || !message_content.trim()) {
+          throw new HttpError('Message is required and must be a non-empty string', 400);
+        }
+        
+        console.log(`[${FUNCTION_NAME}] Processing message for brief:`, brief_id);
+        
+        result = await sendMessage(supabaseAdmin, brief_id, user.id, message_content);
+        
+        // Track analytics
+        await trackAnalytics(supabaseAdmin, 'send_message', user.id, { 
+          brief_id,
+          message_length: message_content.trim().length,
+          timestamp: new Date().toISOString()
+        });
+        break;
+      }
+      
       case 'test_n8n_webhook': {
         console.log(`[${FUNCTION_NAME}] Testing n8n webhook connection`);
         
@@ -329,162 +470,6 @@ serve(async (req: Request) => {
         break;
       }
         
-      case 'get_chat_messages': {
-        if (!brief_id) {
-          throw new HttpError('Missing required parameter: brief_id', 400);
-        }
-        
-        console.log(`[${FUNCTION_NAME}] Getting chat messages for brief:`, brief_id);
-        
-        // Get chat messages using the helper function
-        const messages = await getChatMessages(supabaseAdmin, brief_id);
-        
-        // Get brief data for context
-        const brief = await getBriefData(supabaseAdmin, brief_id);
-        
-        result = { 
-          messages,
-          brief
-        };
-        
-        // Track analytics
-        await trackAnalytics(supabaseAdmin, 'get_chat_messages', user.id, { 
-          brief_id,
-          message_count: messages?.length || 0
-        });
-        break;
-      }
-      
-      case 'send_message': {
-        if (!brief_id || !message_content) {
-          throw new HttpError('Missing required parameter: brief_id or message_content', 400);
-        }
-        
-        if (typeof message_content !== 'string' || !message_content.trim()) {
-          throw new HttpError('Message is required and must be a non-empty string', 400);
-        }
-        
-        console.log(`[${FUNCTION_NAME}] Processing send_message for brief_id: ${brief_id}`);
-        
-        // Get brief data to send to n8n
-        const { data: briefData, error: briefError } = await supabaseAdmin
-          .from('briefs')
-          .select('*')
-          .eq('id', brief_id)
-          .single();
-          
-        if (briefError) {
-          console.error(`[${FUNCTION_NAME}] Failed to fetch brief data:`, briefError);
-          throw new HttpError('Failed to fetch brief data', 500);
-        }
-        
-        // Store user message first
-        const { data: userMessageData, error: storeError } = await supabaseAdmin
-          .from('chat_messages')
-          .insert({
-            brief_id,
-            user_id: user.id,
-            content: message_content.trim(),
-            is_ai: false
-          })
-          .select()
-          .single();
-          
-        if (storeError) {
-          console.error(`[${FUNCTION_NAME}] Failed to store user message:`, storeError);
-          throw new HttpError('Failed to store message', 500);
-        }
-        
-        // Prepare payload for n8n webhook
-        const webhookPayload = {
-          brief: briefData,
-          user: {
-            id: user.id,
-            email: user.email
-          },
-          message: {
-            id: userMessageData.id,
-            content: message_content.trim(),
-            timestamp: new Date().toISOString()
-          },
-          requestId: crypto ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15)
-        };
-        
-        // Call n8n webhook asynchronously
-        console.log(`[${FUNCTION_NAME}] Sending brief data to n8n webhook`);
-        const webhookPromise = callN8nWebhook(webhookPayload);
-        
-        // Store immediate acknowledgement message from AI
-        const acknowledgementMessage = "Je vais réfléchir à votre demande... Un instant.";
-        
-        const { error: aiStoreError } = await supabaseAdmin
-          .from('chat_messages')
-          .insert({
-            brief_id,
-            user_id: user.id,
-            content: acknowledgementMessage,
-            is_ai: true,
-            metadata: { type: 'acknowledgement' }
-          });
-          
-        if (aiStoreError) {
-          console.error(`[${FUNCTION_NAME}] Failed to store AI acknowledgement:`, aiStoreError);
-          throw new HttpError('Failed to store AI response', 500);
-        }
-        
-        // Track analytics
-        await trackAnalytics(supabaseAdmin, 'send_message', user.id, { 
-          brief_id,
-          message_length: message_content.trim().length,
-          timestamp: new Date().toISOString()
-        });
-        
-        // Return all chat messages immediately without waiting for n8n response
-        const { data: chatMessages, error: fetchError } = await supabaseAdmin
-          .from('chat_messages')
-          .select('*')
-          .eq('brief_id', brief_id)
-          .order('created_at', { ascending: true });
-          
-        if (fetchError) {
-          console.error(`[${FUNCTION_NAME}] Failed to fetch chat messages:`, fetchError);
-          throw new HttpError('Failed to fetch chat history', 500);
-        }
-        
-        // Handle webhook response in background
-        webhookPromise.then(async (webhookResponse) => {
-          console.log(`[${FUNCTION_NAME}] Received n8n webhook response:`, webhookResponse);
-          
-          // n8n will update the database directly with AI response, no need to handle here
-          // This is just for logging
-          if (!webhookResponse.success) {
-            console.error(`[${FUNCTION_NAME}] n8n webhook failed:`, webhookResponse.error);
-            
-            // Track webhook failure
-            await trackAnalytics(supabaseAdmin, 'webhook_failure', user.id, { 
-              brief_id,
-              error: webhookResponse.error,
-              status: webhookResponse.status
-            });
-          }
-        }).catch(error => {
-          console.error(`[${FUNCTION_NAME}] Error handling n8n webhook:`, error);
-          
-          // Track error
-          trackAnalytics(supabaseAdmin, 'webhook_error', user.id, { 
-            brief_id,
-            error: String(error)
-          }).catch(e => console.error('Failed to track analytics:', e));
-        });
-        
-        result = { 
-          chatMessages,
-          processingStatus: 'acknowledged',
-          message: 'Message received and processing started'
-        };
-        break;
-      }
-      
       case 'validate_solution': {
         if (!brief_id || !solution_id) {
           throw new HttpError('Missing required parameter: brief_id or solution_id', 400);
@@ -507,7 +492,7 @@ serve(async (req: Request) => {
         throw new HttpError(`Unknown action: ${action}`, 400);
     }
     
-    // 4. Return success response with CORS headers
+    // 5. Return success response with CORS headers
     return corsResponse(req, { success: true, data: result });
     
   } catch (error) {
