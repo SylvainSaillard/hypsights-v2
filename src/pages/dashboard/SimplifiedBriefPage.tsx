@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
-import SimplifiedChatView from '../../components/chat/SimplifiedChatView';
+import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 
 /**
@@ -103,11 +103,16 @@ const SimplifiedBriefPage: React.FC = () => {
             )}
           </div>
           
-          {/* Simplified Chat View */}
-          <SimplifiedChatView 
-            briefTitle={briefData?.brief?.title || 'Interface simplifiée'} 
-            briefDescription={briefData?.brief?.description || 'Mode visuel sans appels n8n'} 
-            briefId={briefId || 'unknown'} 
+          {/* Enhanced Chat View avec solutions */}
+          <EnhancedChatView 
+            briefId={briefId || 'unknown'}
+            onSolutionValidated={(solutionId) => {
+              console.log('Solution validée:', solutionId);
+              // Si besoin de mettre à jour le statut du brief, on peut le faire ici
+            }}
+            onMessageSent={() => {
+              console.log('Message envoyé');
+            }}
           />
         </div>
       </div>
