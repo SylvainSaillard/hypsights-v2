@@ -82,7 +82,21 @@ export const api = {
       throw new Error(error.message || 'Erreur lors de la récupération des solutions');
     }
     
-    return data || [];
+    console.log('API - Raw solutions response:', data);
+    
+    // Vérifier la structure de la réponse et extraire le tableau de solutions
+    if (data && typeof data === 'object') {
+      if (data.success && Array.isArray(data.data)) {
+        // Format {success: true, data: Array<Solution>}
+        return data.data;
+      } else if (Array.isArray(data)) {
+        // Format Array<Solution> directement
+        return data;
+      }
+    }
+    
+    console.warn('API - Unexpected solutions format:', data);
+    return [];
   },
   
   /**
