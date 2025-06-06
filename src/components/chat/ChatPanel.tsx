@@ -37,7 +37,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [messages]);
   
   return (
-    <div className="flex flex-col h-full border rounded-lg overflow-hidden bg-white w-3/5">
+    <div className="flex flex-col h-full border rounded-lg overflow-hidden bg-white w-full">
       <div className="p-4 bg-blue-50 border-b">
         <h2 className="font-semibold text-lg">AI Assistant Chat</h2>
         <div className="flex gap-2 mt-2">
@@ -62,8 +62,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         )}
       </div>
       
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Messages - hauteur fixe avec défilement */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[450px]">
         {messages.length === 0 && !isLoading && (
           <div className="text-center text-gray-500 py-8">
             Aucun message. Commencez la conversation !
@@ -81,13 +81,13 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
           <div 
             key={message.id} 
             className={`p-4 rounded-lg max-w-[80%] ${
-              message.role === 'user' 
+              !message.is_ai 
                 ? 'bg-blue-100 ml-auto' 
                 : 'bg-gray-100 mr-auto'
             }`}
           >
             <div className="font-semibold text-sm mb-1">
-              {message.role === 'user' ? 'Vous' : 'AI Assistant'}
+              {!message.is_ai ? 'Vous' : 'AI Assistant'}
             </div>
             <div className="text-sm whitespace-pre-wrap">{message.content}</div>
             <div className="text-xs text-gray-500 mt-1">
