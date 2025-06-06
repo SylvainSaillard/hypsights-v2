@@ -7,8 +7,8 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Constante pour le nom du channel avec timestamp unique pour éviter les conflits
-const REALTIME_CHANNEL_PREFIX = 'chat_messages_';
+// Utiliser un nom de channel simple et constant
+const REALTIME_CHANNEL_NAME = 'chat_messages';
 
 interface SimplifiedChatViewProps {
   briefId: string;
@@ -96,30 +96,46 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
     }
   }, [messages]);
   
-  // REAL-TIME SUBSCRIPTION avec nom unique pour éviter les conflits
+  // REAL-TIME SUBSCRIPTION simplifiée - écoute tous les événements (*)
   useEffect(() => {
-    // Canal unique par instance et briefId
-    const channelName = `${REALTIME_CHANNEL_PREFIX}${briefId}_${Date.now()}`;
-    console.log('DEBUG SimplifiedChatView - Creating realtime channel:', channelName);
+    console.log('DEBUG SimplifiedChatView - Setting up realtime subscription for brief_id:', briefId);
     
     const channel = supabase
-      .channel(channelName)
+      .channel(REALTIME_CHANNEL_NAME)
       .on('postgres_changes', {
-        event: 'INSERT',
+        event: '*', // Écoute tous les événements (INSERT, UPDATE, DELETE)
         schema: 'public', 
         table: 'chat_messages',
         filter: `brief_id=eq.${briefId}`
       }, (payload) => {
-        console.log('DEBUG SimplifiedChatView - Realtime message received:', payload.new);
+        console.log('DEBUG SimplifiedChatView - REALTIME EVENT RECEIVED:', {
+          eventType: payload.eventType,
+          table: payload.table,
+          schema: payload.schema,
+          newRecord: payload.new,
+          oldRecord: payload.old
+        });
+        
+        // Ne traiter que les nouveaux messages (INSERT ou UPDATE)
+        if (!payload.new) {
+          console.log('DEBUG SimplifiedChatView - No new data in payload, ignoring');
+          return;
+        }
         
         const newMessage = payload.new as ChatMessage;
+        console.log('DEBUG SimplifiedChatView - Processing message:', {
+          id: newMessage.id,
+          is_ai: newMessage.is_ai,
+          content_preview: newMessage.content?.substring(0, 50) + '...',
+        });
+        
         setMessages(prev => {
           // Vérifier si le message existe déjà par ID
           if (prev.some(m => m.id === newMessage.id)) {
             console.log('DEBUG SimplifiedChatView - Duplicate message detected, ignoring');
             return prev;
           }
-          console.log('DEBUG SimplifiedChatView - Adding new message to state');
+          console.log('DEBUG SimplifiedChatView - Adding new message to state, now total:', prev.length + 1);
           return [...prev, newMessage];
         });
       })
@@ -128,9 +144,45 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
       });
 
     return () => {
-      console.log('DEBUG SimplifiedChatView - Removing channel:', channelName);
+      console.log('DEBUG SimplifiedChatView - Unsubscribing from realtime channel');
       supabase.removeChannel(channel);
     };
+  }, [briefId]);
+  
+  // Fonction de test pour vérifier la subscription real-time
+  const testRealtimeSubscription = useCallback(async () => {
+    console.log('DEBUG SimplifiedChatView - Testing realtime subscription...');
+    try {
+      // Récupérer la liste actuelle des channels
+      const channels = supabase.getChannels();
+      console.log('DEBUG SimplifiedChatView - Active channels:', channels.map(c => ({ 
+        name: c.name, 
+        state: c.state,
+        topic: c._topic
+      })));
+      
+      // Tester si on peut insérer un message de test directement
+      // Ceci n'est qu'un diagnostic, en production il faut passer par l'Edge Function
+      console.log('DEBUG SimplifiedChatView - Testing direct message insert...');
+      const testContent = `Test message ${Date.now()}`;
+      
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      
+      // Insertion test via Edge Function
+      const { data, error } = await supabase.functions.invoke('ai-chat-handler', {
+        body: {
+          action: 'send_message',
+          brief_id: briefId,
+          message_content: testContent
+        }
+      });
+      
+      console.log('DEBUG SimplifiedChatView - Test message result:', { data, error });
+      
+    } catch (error) {
+      console.error('DEBUG SimplifiedChatView - Realtime test error:', error);
+    }
   }, [briefId]);
   
   // Fonction de test pour l'Edge Function avec authentification
@@ -269,6 +321,13 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
             title="Rafraîchir les messages"
           >
             {isLoading ? 'Chargement...' : 'Rafraîchir'}
+          </button>
+          {/* Bouton pour tester l'abonnement real-time */}
+          <button 
+            onClick={testRealtimeSubscription}
+            className="px-3 py-1 bg-green-100 text-green-800 text-xs rounded-md hover:bg-green-200"
+          >
+            Test RT
           </button>
           {/* Bouton temporaire pour tester l'Edge Function */}
           <button 
