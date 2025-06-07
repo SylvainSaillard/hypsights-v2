@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useChatMessages } from '../../hooks/useChatMessages';
 import { useSolutions } from '../../hooks/useSolutions';
+import { useFastSearchResults } from '../../hooks/useFastSearchResults';
+import { startFastSearch } from '../../services/fastSearchService';
 import ChatPanel from './ChatPanel';
 import SolutionsPanel from './SolutionsPanel';
 import FastSearchBar from './FastSearchBar';
+import FastSearchResultsPanel from './FastSearchResultsPanel';
+import { useI18n } from '../../contexts/I18nContext';
 import type { EnhancedChatViewProps } from './types';
 
 /**
@@ -17,9 +21,14 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   onSolutionValidated
 }) => {
   // États locaux
+  const { t } = useI18n();
   const [inputValue, setInputValue] = useState('');
   const [fastSearchQuota, setFastSearchQuota] = useState({ used: 0, total: 3 });
   const [isReadyForSearch, setIsReadyForSearch] = useState(false);
+  const [isSearchActive, setIsSearchActive] = useState(false);
+  // searchId est utilisé pour suivre l'ID de recherche actif et pourrait être utilisé
+  // pour des fonctionnalités futures comme l'annulation de recherche
+  const [searchId, setSearchId] = useState<string | null>(null);
   
   // Utilisation des hooks personnalisés pour la logique métier
   const {
@@ -43,11 +52,33 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   useEffect(() => {
     const hasValidatedSolutions = solutions.some(solution => solution.status === 'validated');
     setIsReadyForSearch(hasValidatedSolutions);
-    
-    // Charger le quota de Fast Search (à implémenter avec une API réelle)
-    // Pour l'instant, on utilise des valeurs statiques
-    setFastSearchQuota({ used: 1, total: 3 });
   }, [solutions]);
+  
+  // Charger le quota de Fast Search depuis le profil utilisateur
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const response = await fetch('/functions/v1/user-profile', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'get_user_profile' })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.data.user) {
+          setFastSearchQuota({
+            used: data.data.user.fast_search_used || 0,
+            total: data.data.user.fast_search_quota || 3
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch user profile:', error);
+      }
+    };
+    
+    fetchUserProfile();
+  }, []);
   
   // Gestionnaire d'envoi de message
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -68,15 +99,45 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   
   // Gestionnaire de lancement de Fast Search
   const handleLaunchFastSearch = async () => {
-    // À implémenter: appel à l'Edge Function pour lancer une Fast Search
-    console.log('Launching Fast Search for brief:', briefId);
+    if (!isReadyForSearch || fastSearchQuota.used >= fastSearchQuota.total) {
+      return;
+    }
     
-    // Simuler la mise à jour du quota
-    setFastSearchQuota(prev => ({ ...prev, used: prev.used + 1 }));
-    
-    // Ici, vous appelleriez votre Edge Function
-    // await api.launchFastSearch(briefId);
+    try {
+      // Récupérer les IDs des solutions validées
+      const validatedSolutionIds = solutions
+        .filter(solution => solution.status === 'validated')
+        .map(solution => solution.id);
+      
+      // Appeler l'Edge Function pour lancer la recherche
+      const result = await startFastSearch(briefId, validatedSolutionIds);
+      
+      // Mettre à jour l'état local
+      setSearchId(result.search_id);
+      setIsSearchActive(true);
+      
+      // Mettre à jour le quota
+      if (result.quota) {
+        setFastSearchQuota({
+          used: result.quota.used,
+          total: result.quota.total
+        });
+      } else {
+        // Fallback si le quota n'est pas retourné
+        setFastSearchQuota(prev => ({ ...prev, used: prev.used + 1 }));
+      }
+    } catch (error) {
+      console.error('Failed to launch Fast Search:', error);
+    }
   };
+  
+  // Utiliser le hook pour les résultats de recherche
+  const {
+    suppliers,
+    status: searchStatus,
+    loading: searchLoading,
+    error: searchError
+  } = useFastSearchResults(briefId, isSearchActive);
   
   return (
     <div className="flex flex-col h-full">
@@ -113,6 +174,22 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
           onRefresh={loadSolutions}
         />
       </div>
+      
+      {/* Panneau de résultats de recherche (visible uniquement quand une recherche est active) */}
+      {isSearchActive && (
+        <FastSearchResultsPanel
+          suppliers={suppliers}
+          status={searchStatus}
+          loading={searchLoading}
+        />
+      )}
+      
+      {/* Message d'erreur de recherche */}
+      {searchError && (
+        <div className="mt-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-md">
+          {t('fast_search.error', 'Error loading search results')}: {searchError}
+        </div>
+      )}
     </div>
   );
 };
