@@ -69,12 +69,11 @@ import { useI18n } from './contexts/I18nContext'; // Import useI18n
 
 const DashboardOverviewPage = () => {
   const { t, locale } = useI18n(); // Get the t function and locale
-  const pageTitle = t('dashboard.title', 'Dashboard');
-  console.log(`DashboardOverviewPage: Current locale: ${locale}, rendering title: '${pageTitle}'`);
+  console.log(`DashboardOverviewPage: Current locale: ${locale}, will call t('dashboard.title') directly in JSX.`);
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">{pageTitle}</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.title', 'Dashboard')}</h1>
         <CreateBriefButton />
       </div>
       
