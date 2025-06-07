@@ -10,7 +10,7 @@ interface I18nContextType {
   locale: string;
   translations: Translations;
   changeLocale: (newLocale: string) => Promise<void>;
-  t: (key: string, fallback?: string) => string;
+  t: (key: string, fallbackOrVariables?: string | Record<string, string | number>, variables?: Record<string, string | number>) => string;
   isLoading: boolean;
 }
 
@@ -85,9 +85,31 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const t = useCallback((key: string, fallback?: string): string => {
-    console.log(`I18nContext: t() called with key='${key}'. Current translations map:`, JSON.stringify(translations, null, 2));
-    return translations[key] || fallback || key;
+  const t = useCallback((key: string, fallbackOrVariables?: string | Record<string, string | number>, variables?: Record<string, string | number>): string => {
+    let text = translations[key];
+    let currentFallback: string | undefined = undefined;
+    let currentVariables: Record<string, string | number> | undefined = undefined;
+
+    if (typeof fallbackOrVariables === 'string') {
+      currentFallback = fallbackOrVariables;
+      currentVariables = variables;
+    } else if (typeof fallbackOrVariables === 'object') {
+      currentVariables = fallbackOrVariables;
+    } // else: fallbackOrVariables is undefined, variables is also undefined
+
+    if (!text) {
+      text = currentFallback || key;
+    }
+
+    if (currentVariables && text) {
+      Object.keys(currentVariables).forEach(varKey => {
+        const regex = new RegExp(`{${varKey}}`, 'g');
+        text = text.replace(regex, String(currentVariables![varKey]));
+      });
+    }
+    // console.log(`I18nContext: t() called with key='${key}', fallback='${currentFallback}', variables='${JSON.stringify(currentVariables)}'. Resolved text: '${text}'`);
+    return text;
+
   }, [translations]);
 
   const value = {

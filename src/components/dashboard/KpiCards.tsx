@@ -1,5 +1,6 @@
 import React from 'react';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
+import { useI18n } from '../../contexts/I18nContext';
 
 /**
  * KPI Cards component for the dashboard
@@ -12,7 +13,8 @@ import useEdgeFunction from '../../hooks/useEdgeFunction';
 const KpiCards: React.FC = () => {
   // Fetch dashboard data from edge function explicitly using POST method
   // This helps avoid CORS issues since our Edge Functions better support POST
-  const { data, loading, error, refresh } = useEdgeFunction('dashboard-data', { action: 'get_metrics' }, 'POST');
+  const { t } = useI18n();
+  const { data, loading, error, refresh: _refresh } = useEdgeFunction('dashboard-data', { action: 'get_metrics' }, 'POST');
   
   // Log debugging information for CORS issues
   React.useEffect(() => {
@@ -41,7 +43,7 @@ const KpiCards: React.FC = () => {
   if (error) {
     return (
       <div className="bg-red-100 text-red-800 p-4 rounded-lg mb-8">
-        <p className="font-medium">Failed to load dashboard data</p>
+        <p className="font-medium">{t('kpi.error.load_failed', 'Failed to load dashboard data')}</p>
         <p className="text-sm">{error}</p>
       </div>
     );
@@ -68,40 +70,40 @@ const KpiCards: React.FC = () => {
   
   const kpiCards = [
     {
-      title: 'Active Briefs',
+      title: t('kpi.card.active_briefs.title', 'Active Briefs'),
       value: metrics.activeBriefs,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
-      change: '+2 this week',
+      change: t('kpi.card.active_briefs.change_static_example', '+2 this week'),
       changeType: 'positive'
     },
     {
-      title: 'Completed Searches',
+      title: t('kpi.card.completed_searches.title', 'Completed Searches'),
       value: metrics.completedSearches,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       ),
-      change: metrics.completedSearches > 0 ? 'Last: Yesterday' : 'None yet',
+      change: metrics.completedSearches > 0 ? t('kpi.card.completed_searches.change_recent', 'Last: Yesterday') : t('kpi.card.change_none', 'None yet'),
       changeType: metrics.completedSearches > 0 ? 'neutral' : 'negative'
     },
     {
-      title: 'Suppliers Found',
+      title: t('kpi.card.suppliers_found.title', 'Suppliers Found'),
       value: metrics.suppliersFound,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-supplier-badge" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
       ),
-      change: metrics.suppliersFound > 0 ? `${Math.round(metrics.suppliersFound / Math.max(1, metrics.completedSearches))} per search` : 'None yet',
+      change: metrics.suppliersFound > 0 ? t('kpi.card.suppliers_found.change_per_search', '{count} per search', { count: Math.round(metrics.suppliersFound / Math.max(1, metrics.completedSearches)) }) : t('kpi.card.change_none', 'None yet'),
       changeType: metrics.suppliersFound > 0 ? 'positive' : 'neutral'
     },
     {
-      title: 'Fast Search Quota',
+      title: t('kpi.card.fast_search_quota.title', 'Fast Search Quota'),
       value: `${metrics.quotaUsed}/${metrics.quotaLimit}`,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 ${getQuotaStatusColor()}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -126,7 +128,7 @@ const KpiCards: React.FC = () => {
             </span>
           </div>
           {quotaPercentage >= 90 && (
-            <p className="text-xs text-red-600 mt-1">Consider upgrading your plan</p>
+            <p className="text-xs text-red-600 mt-1">{t('kpi.card.fast_search_quota.upgrade', 'Consider upgrading your plan')}</p>
           )}
         </div>
       )

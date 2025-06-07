@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useI18n } from '../../contexts/I18nContext';
 
 /**
  * Prominent Create Brief CTA button
  * Following Hypsights design system with primary color and hover animation
  */
 const CreateBriefButton: React.FC = () => {
+  const { t } = useI18n();
   return (
     <Link 
       to="/dashboard/briefs/new" 
@@ -25,7 +27,7 @@ const CreateBriefButton: React.FC = () => {
           d="M12 4v16m8-8H4" 
         />
       </svg>
-      Create Brief
+      {t('brief.button.create_new', 'Create Brief')}
     </Link>
   );
 };
