@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
-import { executeEdgeAction } from '../../lib/edgeActionHelper';
+import { useI18n } from '../../contexts/I18nContext';
 
 type Language = {
   code: string;
@@ -13,10 +13,10 @@ type Language = {
  * Allows users to switch between languages (FR/EN priority)
  * Integrates with i18n-handler.ts Edge Function
  */
-const LanguageSelector: React.FC = () => {
+const LanguageSelector = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentLocale, setCurrentLocale] = useState(localStorage.getItem('locale') || 'en');
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { locale: i18nLocale, changeLocale: i18nChangeLocale, isLoading: i18nIsLoading } = useI18n();
   
   // Fetch available languages
   const { 
@@ -46,30 +46,20 @@ const LanguageSelector: React.FC = () => {
     };
   }, []);
   
-  // Change language function
-  const changeLanguage = async (locale: string) => {
+  // Change language function using I18nContext
+  const handleLanguageSelect = async (newLocale: string) => {
+    if (i18nIsLoading) return; // Prevent changing language while translations are loading
     try {
-      // Store selected locale in localStorage
-      localStorage.setItem('locale', locale);
-      setCurrentLocale(locale);
-      
-      // Notify the Edge Function about the language change using our helper
-      await executeEdgeAction('i18n-handler', 'set_user_locale', {
-        locale
-      });
-      
-      // Reload the page to apply translations
-      window.location.reload();
-      
+      await i18nChangeLocale(newLocale);
     } catch (error) {
-      console.error('Failed to change language:', error);
+      console.error('Failed to change language via context:', error);
+      // Optionally, add user feedback here
     }
-    
     setIsOpen(false);
   };
   
   // Find current language object
-  const currentLanguage = languages.find(lang => lang.code === currentLocale) || languages[0];
+  const currentLanguage = languages.find(lang => lang.code === i18nLocale) || languages[0];
 
   // Handle loading and error states
   if (loading) {
@@ -94,7 +84,7 @@ const LanguageSelector: React.FC = () => {
         aria-label="Change language"
       >
         <span className="text-lg">{currentLanguage.flag}</span>
-        <span className="text-sm font-medium">{currentLanguage.code.toUpperCase()}</span>
+        <span className="text-sm font-medium">{i18nLocale.toUpperCase()}</span>
         <svg
           className={`w-4 h-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`}
           fill="none"
@@ -111,8 +101,8 @@ const LanguageSelector: React.FC = () => {
             {languages.map((language) => (
               <button
                 key={language.code}
-                className={`flex items-center w-full px-4 py-2 text-sm text-left hover:bg-gray-100 ${currentLocale === language.code ? 'bg-gray-50 font-medium' : ''}`}
-                onClick={() => changeLanguage(language.code)}
+                className={`flex items-center w-full px-4 py-2 text-sm text-left hover:bg-gray-100 ${i18nLocale === language.code ? 'bg-gray-50 font-medium' : ''}`}
+                onClick={() => handleLanguageSelect(language.code)}
               >
                 <span className="mr-2">{language.flag}</span>
                 <span>{language.name}</span>

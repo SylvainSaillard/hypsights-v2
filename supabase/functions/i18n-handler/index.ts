@@ -119,7 +119,18 @@ async function getTranslations(locale: string = 'en') {
   }
 }
 
-async function getFormOptions(locale: string = 'en') {
+interface FormOptionItem {
+  key: string;
+  label: string;
+}
+
+interface FormOptions {
+  geographies: FormOptionItem[];
+  organization_types: FormOptionItem[];
+  capabilities: FormOptionItem[];
+}
+
+async function getFormOptions(locale: string = 'en'): Promise<FormOptions> {
   try {
     // Get form options from translations
     const supabaseAdmin = createSupabaseClient(true);
@@ -135,7 +146,7 @@ async function getFormOptions(locale: string = 'en') {
     }
 
     // Group options by category
-    const formOptions = {
+    const formOptions: FormOptions = {
       geographies: [],
       organization_types: [],
       capabilities: []
@@ -216,6 +227,29 @@ async function getUserLocale(userId: string) {
   }
 }
 
+async function setUserLocale(userId: string, locale: string) {
+  try {
+    const supabaseAdmin = createSupabaseClient(true);
+    // Update user's preferred locale in users_metadata
+    const { data, error } = await supabaseAdmin
+      .from('users_metadata')
+      .upsert({ user_id: userId, preferred_locale: locale }, { onConflict: 'user_id' })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Failed to set user locale:', error);
+      throw new HttpError(`Failed to set user locale: ${error.message}`, 500);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error setting user locale:', error);
+    if (error instanceof HttpError) throw error;
+    throw new HttpError('Error setting user locale', 500);
+  }
+}
+
 serve(async (req) => {
   console.log(`${FUNCTION_NAME} received ${req.method} request from ${req.headers.get('origin') || 'unknown'}`);  
   
@@ -252,7 +286,7 @@ serve(async (req) => {
       userId = user.id;
     } catch (authError) {
       // For actions requiring authentication, fail
-      if (action === 'set_user_locale') {
+      if (action === 'get_user_locale' || action === 'set_user_locale') {
         throw new HttpError('Authentication required for this action', 401);
       }
       // For other actions, continue anonymously
@@ -282,6 +316,20 @@ serve(async (req) => {
       case 'get_form_options':
         result = {
           formOptions: await getFormOptions(locale)
+        };
+        break;
+
+      case 'set_user_locale':
+        if (userId === 'anonymous') { 
+          throw new HttpError('Authentication required to set user locale', 401);
+        }
+        if (!locale) { 
+            throw new HttpError('Missing required parameter: locale', 400);
+        }
+        await setUserLocale(userId, locale);
+        result = {
+          message: `User locale updated to ${locale}`,
+          locale: locale
         };
         break;
         

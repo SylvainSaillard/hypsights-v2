@@ -65,12 +65,14 @@ const DashboardLayout = () => {
 import KpiCards from './components/dashboard/KpiCards';
 import BriefManagementGrid from './components/dashboard/BriefManagementGrid';
 import CreateBriefButton from './components/dashboard/CreateBriefButton';
+import { useI18n } from './contexts/I18nContext'; // Import useI18n
 
 const DashboardOverviewPage = () => {
+  const { t } = useI18n(); // Get the t function
   return (
     <div>
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.title', 'Dashboard')}</h1>
         <CreateBriefButton />
       </div>
       
