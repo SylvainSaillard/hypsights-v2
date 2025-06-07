@@ -26,8 +26,8 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     try {
       const data = await executeEdgeAction('i18n-handler', 'get_translations', { locale: currentLocale });
-      if (data && data.translations) {
-        setTranslations(data.translations);
+      if (data && data.data) { // Changed data.translations to data.data
+        setTranslations(data.data); // Changed data.translations to data.data
       } else {
         setTranslations({}); // Fallback to empty if no translations found
         console.warn(`No translations found for locale: ${currentLocale}`);

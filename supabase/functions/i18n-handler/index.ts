@@ -97,6 +97,7 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
 }
 
 async function getTranslations(locale: string = 'en') {
+  console.log(`getTranslations: called with locale = '${locale}'`);
   try {
     const supabaseAdmin = createSupabaseClient(true);
     const { data: translations, error } = await supabaseAdmin
@@ -104,7 +105,11 @@ async function getTranslations(locale: string = 'en') {
       .select('key, value')
       .eq('locale', locale);
 
-    if (error) throw new Error(`Failed to get translations: ${error.message}`);
+    if (error) {
+      console.error(`getTranslations: database error for locale '${locale}':`, error.message);
+      throw new Error(`Failed to get translations: ${error.message}`);
+    }
+    console.log(`getTranslations: received ${translations?.length || 0} translation items from DB for locale '${locale}'`);
 
     // Convert to key-value object
     const translationsMap = translations?.reduce((acc, item) => {
