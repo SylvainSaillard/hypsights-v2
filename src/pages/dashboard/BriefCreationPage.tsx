@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import BriefForm from '../../components/briefs/BriefForm';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
+import { useI18n } from '../../contexts/I18nContext';
 
 const BriefCreationPage: React.FC = () => {
   const { briefId } = useParams<{ briefId?: string }>();
@@ -9,6 +10,7 @@ const BriefCreationPage: React.FC = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useI18n();
   
   // Si on édite, charger le brief existant
   const { 
@@ -84,7 +86,7 @@ const BriefCreationPage: React.FC = () => {
   if (isEditing && briefLoading) {
     return (
       <div className="flex items-center justify-center min-h-[50vh]">
-        <div className="animate-pulse text-lg">Loading brief data...</div>
+        <div className="animate-pulse text-lg">{t('brief.creation.loading_existing', 'Loading brief data...')}</div>
       </div>
     );
   }
@@ -92,13 +94,13 @@ const BriefCreationPage: React.FC = () => {
   if (isEditing && briefError) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-4 my-4">
-        <h2 className="text-lg font-medium text-red-800">Error Loading Brief</h2>
+        <h2 className="text-lg font-medium text-red-800">{t('brief.creation.error.load_title', 'Error Loading Brief')}</h2>
         <p className="text-sm text-red-700 mt-2">{briefError}</p>
         <button 
           onClick={() => navigate('/dashboard')}
           className="mt-4 px-4 py-2 bg-red-100 text-red-800 rounded-md hover:bg-red-200 transition"
         >
-          Return to Dashboard
+          {t('brief.creation.button.back_to_dashboard', 'Return to Dashboard')}
         </button>
       </div>
     );
@@ -107,7 +109,7 @@ const BriefCreationPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">
-        {isEditing ? 'Edit Brief' : 'Create New Brief'}
+        {isEditing ? t('brief.creation.title.edit', 'Edit Brief') : t('brief.creation.title.create', 'Create New Brief')}
       </h1>
       
       {error && (

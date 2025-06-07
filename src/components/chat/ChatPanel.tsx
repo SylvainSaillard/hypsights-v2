@@ -1,5 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import type { ChatMessage } from './ChatInterface';
+import { useI18n } from '../../contexts/I18nContext';
 
 interface ChatPanelProps {
   messages: ChatMessage[];
@@ -26,6 +27,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   onSendMessage,
   onRefresh
 }) => {
+  const { t } = useI18n();
   // Référence pour faire défiler vers le bas automatiquement
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -39,14 +41,14 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   return (
     <div className="flex flex-col h-full border rounded-lg overflow-hidden bg-white w-full">
       <div className="p-4 bg-blue-50 border-b">
-        <h2 className="font-semibold text-lg">AI Assistant Chat</h2>
+        <h2 className="font-semibold text-lg">{t('chat_panel.title', 'AI Assistant Chat')}</h2>
         <div className="flex gap-2 mt-2">
           <button 
             onClick={onRefresh}
             disabled={isLoading}
             className="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-md hover:bg-blue-200 disabled:opacity-50"
           >
-            {isLoading ? 'Chargement...' : 'Rafraîchir'}
+            {isLoading ? t('chat_panel.button.refresh_loading', 'Loading...') : t('chat_panel.button.refresh', 'Refresh')}
           </button>
         </div>
         {error && (
@@ -56,7 +58,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
               onClick={onRefresh}
               className="ml-2 underline"
             >
-              Réessayer
+              {t('chat_panel.button.retry', 'Retry')}
             </button>
           </div>
         )}
@@ -66,14 +68,14 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[450px]">
         {messages.length === 0 && !isLoading && (
           <div className="text-center text-gray-500 py-8">
-            Aucun message. Commencez la conversation !
+            {t('chat_panel.no_messages', 'No messages. Start the conversation!')}
           </div>
         )}
         
         {isLoading && messages.length === 0 && (
           <div className="text-center text-gray-500 py-8">
             <div className="animate-spin inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>
-            Chargement des messages...
+            {t('chat_panel.loading_messages', 'Loading messages...')}
           </div>
         )}
         
@@ -87,7 +89,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
             }`}
           >
             <div className="font-semibold text-sm mb-1">
-              {!message.is_ai ? 'Vous' : 'AI Assistant'}
+              {!message.is_ai ? t('chat_panel.user_name', 'You') : t('chat_panel.ai_name', 'AI Assistant')}
             </div>
             <div className="text-sm whitespace-pre-wrap">{message.content}</div>
             <div className="text-xs text-gray-500 mt-1">
@@ -107,7 +109,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
             type="text"
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
-            placeholder="Tapez votre message..."
+            placeholder={t('chat_panel.input.placeholder', 'Type your message...')}
             className="flex-1 px-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={isSending}
           />
@@ -116,7 +118,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
             disabled={isSending || !inputValue.trim()}
             className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
           >
-            {isSending ? 'Envoi...' : 'Envoyer'}
+            {isSending ? t('chat_panel.button.send_sending', 'Sending...') : t('chat_panel.button.send', 'Send')}
           </button>
         </form>
       </div>

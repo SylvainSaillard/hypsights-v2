@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Solution } from './types';
+import { useI18n } from '../../contexts/I18nContext';
 
 interface SolutionsPanelProps {
   solutions: Solution[];
@@ -20,17 +21,18 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
   onValidate,
   onRefresh
 }) => {
+  const { t } = useI18n();
   return (
     <div className="flex flex-col h-full border rounded-lg overflow-hidden bg-white w-2/5">
       <div className="p-4 bg-purple-50 border-b">
-        <h2 className="font-semibold text-lg">Suggested Solutions</h2>
+        <h2 className="font-semibold text-lg">{t('solutions_panel.title', 'Suggested Solutions')}</h2>
         <div className="flex gap-2 mt-2">
           <button 
             onClick={onRefresh}
             disabled={isLoading}
             className="px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-md hover:bg-purple-200 disabled:opacity-50"
           >
-            {isLoading ? 'Chargement...' : 'Rafraîchir'}
+            {isLoading ? t('solutions_panel.button.refresh_loading', 'Loading...') : t('solutions_panel.button.refresh', 'Refresh')}
           </button>
         </div>
         {error && (
@@ -40,7 +42,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
               onClick={onRefresh}
               className="ml-2 underline"
             >
-              Réessayer
+              {t('solutions_panel.button.retry', 'Retry')}
             </button>
           </div>
         )}
@@ -50,14 +52,14 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {solutions.length === 0 && !isLoading && (
           <div className="text-center text-gray-500 py-8">
-            Aucune solution proposée pour l'instant.
+            {t('solutions_panel.no_solutions', 'No solutions proposed yet.')}
           </div>
         )}
         
         {isLoading && solutions.length === 0 && (
           <div className="text-center text-gray-500 py-8">
             <div className="animate-spin inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full mr-2"></div>
-            Chargement des solutions...
+            {t('solutions_panel.loading_solutions', 'Loading solutions...')}
           </div>
         )}
         
@@ -71,7 +73,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
             <div className="flex justify-between items-start">
               <h3 className="font-semibold text-md">{solution.title}</h3>
               <div className="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                {Math.round(solution.ai_confidence * 100)}% Match
+                {Math.round(solution.ai_confidence * 100)}{t('solutions_panel.ai_confidence_match', '% Match')}
               </div>
             </div>
             
@@ -96,14 +98,14 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
-                  Solution Validée
+                  {t('solutions_panel.status.validated', 'Solution Validated')}
                 </div>
               ) : (
                 <button
                   onClick={() => onValidate(solution.id)}
                   className="px-4 py-2 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600"
                 >
-                  Valider Solution
+                  {t('solutions_panel.button.validate', 'Validate Solution')}
                 </button>
               )}
             </div>

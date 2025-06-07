@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
+import { useI18n } from '../../contexts/I18nContext';
 
 /**
  * Page simplifiée pour afficher uniquement l'interface visuelle du brief
@@ -9,6 +10,7 @@ import useEdgeFunction from '../../hooks/useEdgeFunction';
  */
 const SimplifiedBriefPage: React.FC = () => {
   const { briefId } = useParams<{ briefId: string }>();
+  const { t } = useI18n();
   
   // Fetch brief details only
   const { 
@@ -26,7 +28,7 @@ const SimplifiedBriefPage: React.FC = () => {
       <div className="flex justify-center items-center min-h-screen bg-hypsights-background">
         <div className="text-center">
           <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-lg text-gray-600">Chargement du brief...</p>
+          <p className="text-lg text-gray-600">{t('brief.simplified.loading', 'Loading brief...')}</p>
         </div>
       </div>
     );
@@ -39,31 +41,31 @@ const SimplifiedBriefPage: React.FC = () => {
         <div className="bg-white rounded-lg shadow-md p-6">
           {/* Brief Header */}
           <div className="mb-6 pb-6 border-b border-gray-200">
-            <h1 className="text-2xl font-bold mb-2">{briefData?.brief?.title || 'Brief en cours de chargement'}</h1>
-            <p className="text-gray-600 mb-3">{briefData?.brief?.description || 'Aucune description'}</p>
+            <h1 className="text-2xl font-bold mb-2">{briefData?.brief?.title || t('brief.simplified.title_loading', 'Brief loading')}</h1>
+            <p className="text-gray-600 mb-3">{briefData?.brief?.description || t('brief.simplified.no_description', 'No description')}</p>
             
             {/* Tags section */}
             <div className="flex flex-wrap gap-2 text-sm mb-3">
               {/* Status */}
               <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-                {briefData?.brief?.status === 'draft' ? 'Brouillon' : 'Actif'}
+                {briefData?.brief?.status === 'draft' ? t('brief.status.draft', 'Draft') : t('brief.status.active', 'Active')}
               </span>
               
               {/* Locale */}
               <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full">
-                {briefData?.brief?.default_locale === 'fr' ? '🇫🇷 Français' : '🇬🇧 English'}
+                {briefData?.brief?.default_locale === 'fr' ? t('brief.simplified.locale.fr', '🇫🇷 French') : t('brief.simplified.locale.en', '🇬🇧 English')}
               </span>
 
               {/* Visuel uniquement */}
               <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">
-                Mode visuel uniquement
+                {t('brief.simplified.visual_mode_only', 'Visual mode only')}
               </span>
             </div>
             
             {/* Capabilities */}
             {briefData?.brief?.capabilities && briefData.brief.capabilities.length > 0 && (
               <div className="mb-2">
-                <h3 className="text-sm font-semibold text-gray-600 mb-1">Compétences recherchées:</h3>
+                <h3 className="text-sm font-semibold text-gray-600 mb-1">{t('brief.simplified.section.capabilities', 'Capabilities sought:')}</h3>
                 <div className="flex flex-wrap gap-1">
                   {briefData.brief.capabilities.map((cap: string, idx: number) => (
                     <span key={idx} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
@@ -77,7 +79,7 @@ const SimplifiedBriefPage: React.FC = () => {
             {/* Maturity */}
             {briefData?.brief?.maturity && briefData.brief.maturity.length > 0 && (
               <div className="mb-2">
-                <h3 className="text-sm font-semibold text-gray-600 mb-1">Maturité:</h3>
+                <h3 className="text-sm font-semibold text-gray-600 mb-1">{t('brief.simplified.section.maturity', 'Maturity:')}</h3>
                 <div className="flex flex-wrap gap-1">
                   {briefData.brief.maturity.map((mat: string, idx: number) => (
                     <span key={idx} className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
@@ -91,7 +93,7 @@ const SimplifiedBriefPage: React.FC = () => {
             {/* Geographies */}
             {briefData?.brief?.geographies && briefData.brief.geographies.length > 0 && (
               <div className="mb-2">
-                <h3 className="text-sm font-semibold text-gray-600 mb-1">Zones géographiques:</h3>
+                <h3 className="text-sm font-semibold text-gray-600 mb-1">{t('brief.simplified.section.geographies', 'Geographies:')}</h3>
                 <div className="flex flex-wrap gap-1">
                   {briefData.brief.geographies.map((geo: string, idx: number) => (
                     <span key={idx} className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">

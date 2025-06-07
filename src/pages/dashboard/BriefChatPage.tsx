@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
+import { useI18n } from '../../contexts/I18nContext';
 
 interface Brief {
   id: string;
@@ -14,6 +15,7 @@ interface Brief {
 const BriefChatPage = () => {
   const { briefId } = useParams<{ briefId: string }>();
   const navigate = useNavigate();
+  const { t, locale } = useI18n();
   
   const [brief, setBrief] = useState<Brief | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -22,7 +24,7 @@ const BriefChatPage = () => {
   // Charger les détails du brief
   useEffect(() => {
     if (!briefId) {
-      setError('Identifiant de brief manquant');
+      setError(t('brief.chat.error.missing_id', 'Missing brief identifier'));
       setLoading(false);
       return;
     }
@@ -39,13 +41,13 @@ const BriefChatPage = () => {
         
         if (error) {
           console.error('DEBUG BriefChatPage - Error loading brief:', error);
-          setError(`Erreur lors du chargement du brief: ${error.message}`);
+          setError(t('brief.chat.error.load_failed_detail', 'Error loading brief: {message}', { message: error.message }));
           return;
         }
         
         if (!data) {
           console.error('DEBUG BriefChatPage - Brief not found');
-          setError('Brief introuvable');
+          setError(t('brief.chat.error.not_found', 'Brief not found'));
           return;
         }
         
@@ -53,7 +55,7 @@ const BriefChatPage = () => {
         setBrief(data);
       } catch (error) {
         console.error('DEBUG BriefChatPage - Exception loading brief:', error);
-        setError(`Une erreur est survenue: ${(error as Error).message}`);
+        setError(t('brief.chat.error.generic_detail', 'An error occurred: {message}', { message: (error as Error).message }));
       } finally {
         setLoading(false);
       }
@@ -109,11 +111,11 @@ const BriefChatPage = () => {
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
               </svg>
-              Retour au tableau de bord
+              {t('brief.chat.button.back_to_dashboard', 'Back to Dashboard')}
             </button>
             
             <h1 className="text-2xl font-bold">
-              {loading ? 'Chargement...' : brief ? brief.title : 'Brief non trouvé'}
+              {loading ? t('brief.chat.header.loading', 'Loading...') : brief ? brief.title : t('brief.chat.error.not_found', 'Brief not found')}
             </h1>
             
             {brief && (
@@ -123,10 +125,10 @@ const BriefChatPage = () => {
                     ? 'bg-yellow-100 text-yellow-800' 
                     : 'bg-green-100 text-green-800'
                 }`}>
-                  {brief.status === 'draft' ? 'Brouillon' : 'Actif'}
+                  {brief.status === 'draft' ? t('brief.status.draft', 'Draft') : t('brief.status.active', 'Active')}
                 </span>
                 <span className="text-sm text-gray-500 ml-2">
-                  Créé le {new Date(brief.created_at).toLocaleDateString()}
+                  {t('brief.chat.created_on_prefix', 'Created on ')} {new Date(brief.created_at).toLocaleDateString(locale)}
                 </span>
               </div>
             )}
@@ -137,13 +139,13 @@ const BriefChatPage = () => {
       {/* Affichage des erreurs */}
       {error && (
         <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">
-          <div className="font-semibold">Erreur</div>
+          <div className="font-semibold">{t('brief.chat.error.display_title', 'Error')}</div>
           <p>{error}</p>
           <button 
             onClick={() => navigate('/dashboard')}
             className="mt-2 text-red-700 underline"
           >
-            Retour au tableau de bord
+            {t('brief.chat.button.back_to_dashboard', 'Back to Dashboard')}
           </button>
         </div>
       )}

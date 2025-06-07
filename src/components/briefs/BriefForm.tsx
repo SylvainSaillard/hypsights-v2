@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { devLog } from '../../lib/devTools';
+import { useI18n } from '../../contexts/I18nContext';
 
 interface BriefFormProps {
   initialData?: any;
@@ -19,6 +20,7 @@ type BriefFormData = {
 }
 
 const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitting }) => {
+  const { t } = useI18n();
   // Load form options - Call i18n-handler Edge Function to get translations in current locale
   // Using get_translations action instead of get_form_options to work with current deployment
   const { data: translationsData, loading: translationsLoading, error: translationsError } = useEdgeFunction('i18n-handler', {
@@ -192,23 +194,23 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
   ];
 
   const defaultOrganizationOptions: FormOption[] = [
-    { value: 'consulting', label: 'Consulting' },
-    { value: 'cro', label: 'CRO' },
-    { value: 'encyclopedia', label: 'Encyclopedia' },
-    { value: 'large_company', label: 'Large Company' },
-    { value: 'marketplace', label: 'Marketplace' },
-    { value: 'not_specified', label: 'Not Specified' },
-    { value: 'research_institute', label: 'Research Institute or Laboratory' },
-    { value: 'small_business', label: 'Small Business' }
+    { value: 'consulting', label: t('brief.form.organization.consulting', 'Consulting') },
+    { value: 'cro', label: t('brief.form.organization.cro', 'CRO') },
+    { value: 'encyclopedia', label: t('brief.form.organization.encyclopedia', 'Encyclopedia') },
+    { value: 'large_company', label: t('brief.form.organization.large_company', 'Large Company') },
+    { value: 'marketplace', label: t('brief.form.organization.marketplace', 'Marketplace') },
+    { value: 'not_specified', label: t('brief.form.organization.not_specified', 'Not Specified') },
+    { value: 'research_institute', label: t('brief.form.organization.research_institute', 'Research Institute or Laboratory') },
+    { value: 'small_business', label: t('brief.form.organization.small_business', 'Small Business') }
   ];
 
   const defaultGeographyOptions: FormOption[] = [
-    { value: 'anywhere', label: 'Anywhere' },
-    { value: 'asia_pacific', label: 'Asia-Pacific' },
-    { value: 'europe', label: 'Europe' },
-    { value: 'latin_america', label: 'Latin America' },
-    { value: 'middle_east_africa', label: 'Middle East and Africa' },
-    { value: 'north_america', label: 'North America' }
+    { value: 'anywhere', label: t('brief.form.geography.anywhere', 'Anywhere') },
+    { value: 'asia_pacific', label: t('brief.form.geography.asia_pacific', 'Asia-Pacific') },
+    { value: 'europe', label: t('brief.form.geography.europe', 'Europe') },
+    { value: 'latin_america', label: t('brief.form.geography.latin_america', 'Latin America') },
+    { value: 'middle_east_africa', label: t('brief.form.geography.middle_east_africa', 'Middle East and Africa') },
+    { value: 'north_america', label: t('brief.form.geography.north_america', 'North America') }
   ];
 
   // Create translated options from API response
@@ -232,14 +234,14 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
   // Display loading state
   if (translationsLoading) {
-    return <p className="text-center py-4">Loading form options...</p>;
+    return <div className="text-center py-10">{t('brief.form.loading_options', 'Loading options...')}</div>;
   }
 
   // Display error state
   if (translationsError) {
     return (
       <div className="bg-red-50 p-4 rounded-md">
-        <p className="text-red-500">Error loading form options</p>
+        <p className="text-red-500">{t('brief.form.error.loading_options', 'Error loading form options')}</p>
         <p className="text-sm text-red-400">
           {typeof translationsError === 'string' 
             ? translationsError 
@@ -254,19 +256,19 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
     const newErrors: Record<string, string> = {};
     
     if (!formData.title.trim()) {
-      newErrors.title = 'Title is required';
+      newErrors.title = t('brief.form.error.title_required', 'Title is required');
     }
     
     if (!formData.description.trim()) {
-      newErrors.description = 'Description is required';
+      newErrors.description = t('brief.form.error.description_required', 'Description is required');
     }
     
     if (formData.maturity.length === 0) {
-      newErrors.maturity = 'Please select at least one maturity option';
+      newErrors.maturity = t('brief.form.error.maturity_required', 'Please select at least one maturity level');
     }
     
     if (formData.capabilities.length === 0) {
-      newErrors.capabilities = 'Please select at least one capability';
+      newErrors.capabilities = t('brief.form.error.capabilities_required', 'Please select at least one capability');
     }
     
     setErrors(newErrors);
@@ -284,16 +286,14 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
     <form onSubmit={handleFormSubmit} className="space-y-6 bg-white rounded-lg shadow-md p-6">
       {/* Brief Title */}
       <div className="mb-4">
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-          Brief Title
-        </label>
+        <label htmlFor="title" className="block text-sm font-medium text-gray-700">{t('brief.form.label.title', 'Title')}</label>
         <input
           type="text"
           id="title"
           name="title"
           value={formData.title}
           onChange={handleInputChange}
-          placeholder="Concise title describing what you're looking for"
+          placeholder={t('brief.form.placeholder.title', 'Enter a clear and concise title for your brief')}
           className={`w-full px-3 py-2 border ${errors.title && touched.title ? 'border-red-500' : 'border-gray-300'} rounded-md`}
           required
         />
@@ -304,9 +304,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
       {/* Brief Description */}
       <div className="mb-4">
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-          Brief Description <span className="text-red-500">*</span>
-        </label>
+        <label htmlFor="description" className="block text-sm font-medium text-gray-700">{t('brief.form.label.description', 'Description')}</label>
         <textarea
           id="description"
           name="description"
@@ -314,7 +312,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
           value={formData.description}
           onChange={handleInputChange}
           className={`w-full px-3 py-2 border ${errors.description && touched.description ? 'border-red-500' : 'border-gray-300'} rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary`}
-          placeholder="Describe what you're looking for in detail"
+          placeholder={t('brief.form.placeholder.description', 'Describe your business need in detail. The more context you provide, the better the AI can assist you.')}
           required
         ></textarea>
         {errors.description && touched.description && (
@@ -324,21 +322,21 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
       {/* Reference Companies */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Reference Companies
-        </label>
+        <label className="block text-sm font-medium text-gray-700">{t('brief.form.label.reference_companies', 'Reference Companies (Optional)')}</label>
+        <p className="text-xs text-gray-500">{t('brief.form.helper.reference_companies', 'Add companies whose work you admire or want to emulate')}</p>
         <div className="flex gap-2 mb-2">
           <input
             id="company-input"
             type="text"
             className="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary"
-            placeholder="Add a company name"
+            placeholder={t('brief.form.placeholder.new_reference_company', 'Enter company name')}
           />
           <button
             type="button"
             onClick={handleReferenceCompanyAdd}
             className="px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200"
           >
+            {t('brief.form.button.add_company', 'Add Company')}
             Add
           </button>
         </div>
@@ -366,7 +364,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
         {/* Maturity & Readiness of the Expected Solution (NEW FIELD) */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Maturity & Readiness of the Expected Solution
+            {t('brief.form.label.maturity', 'Required Maturity')}
           </label>
           <div className={`space-y-2 p-2 border ${errors.maturity && touched.maturity ? 'border-red-500' : 'border-gray-200'} rounded-md`}>
             {maturityOptions.map(option => (
@@ -392,7 +390,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
         {/* Capabilities */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Required Capabilities
+            {t('brief.form.label.capabilities', 'Required Capabilities')}
           </label>
           <div className={`flex flex-wrap gap-2 p-2 border ${errors.capabilities && touched.capabilities ? 'border-red-500' : 'border-gray-200'} rounded-md`}>
             {capabilitiesOptions.map(option => (
@@ -418,7 +416,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
         {/* Organization Types */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Preferred Type(s) of Organisation
+            {t('brief.form.label.organization_types', 'Preferred Type(s) of Organisation')}
           </label>
           <div className="space-y-2 max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-md">
             {organizationOptions.map(option => (
@@ -441,7 +439,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
         {/* Geographies */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Preferred Geographies
+            {t('brief.form.label.geographies', 'Preferred Geographies')}
           </label>
           <div className="space-y-2 max-h-48 overflow-y-auto p-2 border border-gray-200 rounded-md">
             {geographyOptions.map(option => (
@@ -469,7 +467,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
           onClick={() => window.history.back()}
           className="px-4 py-2 bg-white border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50"
         >
-          Cancel
+          {t('brief.form.button.cancel', 'Cancel')}
         </button>
         <button
           type="submit"
@@ -478,7 +476,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
             isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
           }`}
         >
-          {isSubmitting ? 'Saving...' : initialData ? 'Save Changes' : 'Create Brief'}
+          {isSubmitting ? t('brief.form.button.saving', 'Saving...') : initialData ? t('brief.form.button.save_changes', 'Save Changes') : t('brief.form.button.create_brief', 'Create Brief')}
         </button>
       </div>
     </form>
