@@ -27,8 +27,6 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await executeEdgeAction('i18n-handler', 'get_translations', { locale: currentLocale });
       if (data && data.data && data.data.translations) {
-        console.log('I18nContext: fetchTranslations - received data.data (full object):', JSON.stringify(data.data, null, 2));
-        console.log('I18nContext: fetchTranslations - extracting and setting data.data.translations:', JSON.stringify(data.data.translations, null, 2));
         setTranslations(data.data.translations);
       } else {
         setTranslations({}); // Fallback to empty if no translations found
@@ -67,9 +65,9 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   }, [user, authIsLoading, fetchTranslations]);
 
   // Log translations when they change
-  useEffect(() => {
-    console.log('I18nContext: translations state updated:', JSON.stringify(translations, null, 2));
-  }, [translations]);
+  // useEffect(() => {
+  //   console.log('I18nContext: translations state updated:', JSON.stringify(translations, null, 2));
+  // }, [translations]);
 
   const changeLocale = async (newLocale: string) => {
     setLocale(newLocale);
