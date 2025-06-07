@@ -19,6 +19,7 @@ import NotificationSystem from './components/layout/NotificationSystem';
 import LanguageSelector from './components/layout/LanguageSelector';
 
 const DashboardLayout = () => {
+  const { t } = useI18n(); // Added for translations
   const { user, logout } = useAuth();
   
   const handleLogout = async () => {
@@ -35,22 +36,22 @@ const DashboardLayout = () => {
       <nav className="bg-card shadow-md p-4">
         <div className="container mx-auto max-w-container flex justify-between items-center">
           <div className="flex items-center">
-            <span className="text-xl font-bold text-primary">Hypsights</span>
+            <span className="text-xl font-bold text-primary">{t('app.name', 'Hypsights')}</span>
             <span className="ml-1 text-xs bg-gray-100 px-1 rounded">v2</span>
           </div>
           <div className="flex items-center gap-4 space-x-4">
             <div className="flex space-x-2">
-              <Link to="/dashboard" className="px-3 py-2 text-sm rounded-md hover:bg-gray-100">Dashboard</Link>
-              <Link to="/dashboard/debug" className="px-3 py-2 text-sm rounded-md hover:bg-gray-100 text-primary">Debug</Link>
+              <Link to="/dashboard" className="px-3 py-2 text-sm rounded-md hover:bg-gray-100">{t('nav.dashboard', 'Dashboard')}</Link>
+              <Link to="/dashboard/debug" className="px-3 py-2 text-sm rounded-md hover:bg-gray-100 text-primary">{t('nav.debug', 'Debug')}</Link>
             </div>
             <LanguageSelector />
             <NotificationSystem />
-            {user && <span className="text-sm hidden md:inline">Logged in as: {user.email}</span>}
+            {user && <span className="text-sm hidden md:inline">{t('user.logged_in_as', 'Logged in as:')} {user.email}</span>}
             <button 
               onClick={handleLogout}
               className="px-3 py-2 text-sm font-medium bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700"
             >
-              Sign out
+              {t('action.sign_out', 'Sign out')}
             </button>
           </div>
         </div>
@@ -80,9 +81,9 @@ const DashboardOverviewPage = () => {
       <KpiCards />
       
       <div className="mb-8 bg-card rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
+        <h2 className="text-xl font-semibold mb-4">{t('dashboard.recent_activity.title', 'Recent Activity')}</h2>
         <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-500 text-center">
-          Your recent activities will appear here
+          {t('dashboard.recent_activity.placeholder', 'Your recent activities will appear here')}
         </div>
       </div>
       
