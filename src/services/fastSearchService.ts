@@ -1,65 +1,51 @@
-import { supabase } from '../lib/supabaseClient';
+import { executeEdgeAction } from '../lib/edgeActionHelper';
+import { devLog } from '../lib/devTools';
 
-// Lancer une recherche rapide
+// Nom de la fonction Edge
+const EDGE_FUNCTION = 'fast-search-handler';
+
+/**
+ * Lancer une recherche rapide (Fast Search)
+ * 
+ * @param briefId - ID du brief pour lequel lancer la recherche
+ * @param validatedSolutions - Solutions validées à utiliser pour la recherche
+ * @returns Résultat de la recherche avec l'ID de recherche et le statut
+ */
 export async function startFastSearch(briefId: string, validatedSolutions: string[]) {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token || '';
-    
-    const response = await fetch('/functions/v1/fast-search-handler', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        action: 'start_fast_search',
-        brief_id: briefId,
-        validated_solutions: validatedSolutions
-      })
+    // Utiliser le helper standard pour appeler la fonction Edge
+    const result = await executeEdgeAction(EDGE_FUNCTION, 'start_fast_search', {
+      brief_id: briefId,
+      validated_solutions: validatedSolutions
     });
     
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to start fast search');
-    }
-    
-    return data.data;
+    return result;
   } catch (error) {
     console.error('Error starting fast search:', error);
+    devLog('Fast Search Error', { briefId, validatedSolutions, error });
     throw error;
   }
 }
 
-// Récupérer les résultats de recherche
+/**
+ * Récupérer les résultats d'une recherche rapide
+ * 
+ * @param briefId - ID du brief pour lequel récupérer les résultats
+ * @param searchId - ID optionnel de la recherche spécifique
+ * @returns Résultats de la recherche avec fournisseurs et produits
+ */
 export async function getFastSearchResults(briefId: string, searchId?: string) {
   try {
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token || '';
-    
-    const response = await fetch('/functions/v1/fast-search-handler', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        action: 'get_fast_search_results',
-        brief_id: briefId,
-        search_id: searchId
-      })
+    // Utiliser le helper standard pour appeler la fonction Edge
+    const result = await executeEdgeAction(EDGE_FUNCTION, 'get_fast_search_results', {
+      brief_id: briefId,
+      search_id: searchId
     });
     
-    const data = await response.json();
-    
-    if (!data.success) {
-      throw new Error(data.error || 'Failed to get search results');
-    }
-    
-    return data.data;
+    return result;
   } catch (error) {
     console.error('Error getting search results:', error);
+    devLog('Fast Search Results Error', { briefId, searchId, error });
     throw error;
   }
 }
