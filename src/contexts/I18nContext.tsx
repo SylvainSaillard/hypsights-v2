@@ -27,6 +27,7 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     try {
       const data = await executeEdgeAction('i18n-handler', 'get_translations', { locale: currentLocale });
       if (data && data.data) { // Changed data.translations to data.data
+        console.log('I18nContext: fetchTranslations - received data.data:', JSON.stringify(data.data, null, 2));
         setTranslations(data.data); // Changed data.translations to data.data
       } else {
         setTranslations({}); // Fallback to empty if no translations found
@@ -64,6 +65,11 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     determineInitialLocaleAndFetch();
   }, [user, authIsLoading, fetchTranslations]);
 
+  // Log translations when they change
+  useEffect(() => {
+    console.log('I18nContext: translations state updated:', JSON.stringify(translations, null, 2));
+  }, [translations]);
+
   const changeLocale = async (newLocale: string) => {
     setLocale(newLocale);
     localStorage.setItem('locale', newLocale);
@@ -79,6 +85,7 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const t = useCallback((key: string, fallback?: string): string => {
+    console.log(`I18nContext: t() called with key='${key}'. Current translations map:`, JSON.stringify(translations, null, 2));
     return translations[key] || fallback || key;
   }, [translations]);
 
