@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useChatMessages } from '../../hooks/useChatMessages';
 import { useSolutions } from '../../hooks/useSolutions';
 import { useFastSearchResults } from '../../hooks/useFastSearchResults';
-import { startFastSearch } from '../../services/fastSearchService';
+import { startFastSearch, startFastSearchFromSolution } from '../../services/fastSearchService';
 import ChatPanel from './ChatPanel';
 import SolutionsPanel from './SolutionsPanel';
 import FastSearchBar from './FastSearchBar';
@@ -26,6 +26,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   const [fastSearchQuota, setFastSearchQuota] = useState({ used: 0, total: 3 });
   const [isReadyForSearch, setIsReadyForSearch] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
+  const [isStartingSearch, setIsStartingSearch] = useState(false);
   // searchId est utilisé pour suivre l'ID de recherche actif et pourrait être utilisé
   // pour des fonctionnalités futures comme l'annulation de recherche
   const [searchId, setSearchId] = useState<string | null>(null);
@@ -112,6 +113,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
         return;
       }
       
+      setIsStartingSearch(true);
+      
       // Appeler l'Edge Function pour lancer la recherche
       const result = await startFastSearch(briefId);
       
@@ -131,6 +134,45 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
       }
     } catch (error) {
       console.error('Failed to launch Fast Search:', error);
+    } finally {
+      setIsStartingSearch(false);
+    }
+  };
+  
+  // Gestionnaire de lancement de Fast Search depuis une solution spécifique
+  const handleStartFastSearchFromSolution = async (solutionId: string) => {
+    if (fastSearchQuota.used >= fastSearchQuota.total || isSearchActive) {
+      return;
+    }
+    
+    try {
+      setIsStartingSearch(true);
+      
+      // Appeler l'Edge Function pour lancer la recherche avec une solution spécifique
+      const result = await startFastSearchFromSolution(briefId, solutionId);
+      
+      // Mettre à jour l'état local
+      setSearchId(result.search_id);
+      setIsSearchActive(true);
+      
+      // Mettre à jour le quota
+      if (result.quota) {
+        setFastSearchQuota({
+          used: result.quota.used,
+          total: result.quota.total
+        });
+      } else {
+        // Fallback si le quota n'est pas retourné
+        setFastSearchQuota(prev => ({ ...prev, used: prev.used + 1 }));
+      }
+      
+      // Recharger les solutions pour mettre à jour les dates fast_search_launched_at
+      loadSolutions();
+      
+    } catch (error) {
+      console.error('Failed to launch Fast Search from solution:', error);
+    } finally {
+      setIsStartingSearch(false);
     }
   };
   
@@ -175,6 +217,9 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
           error={solutionsError}
           onValidate={validateSolution}
           onRefresh={loadSolutions}
+          onStartFastSearch={handleStartFastSearchFromSolution}
+          isStartingSearch={isStartingSearch}
+          briefHasActiveSearch={isSearchActive}
         />
       </div>
       

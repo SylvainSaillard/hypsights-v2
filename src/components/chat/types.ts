@@ -36,6 +36,7 @@ export interface Solution {
   updated_at: string;
   metadata?: any;
   type?: string;
+  fast_search_launched_at?: string | null;
 }
 
 // Props pour le composant EnhancedChatView

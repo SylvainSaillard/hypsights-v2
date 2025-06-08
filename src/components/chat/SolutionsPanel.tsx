@@ -8,6 +8,9 @@ interface SolutionsPanelProps {
   error: string | null;
   onValidate: (solutionId: string) => void;
   onRefresh: () => void;
+  onStartFastSearch?: (solutionId: string) => void;
+  isStartingSearch?: boolean;
+  briefHasActiveSearch?: boolean;
 }
 
 /**
@@ -19,7 +22,10 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
   isLoading,
   error,
   onValidate,
-  onRefresh
+  onRefresh,
+  onStartFastSearch,
+  isStartingSearch = false,
+  briefHasActiveSearch = false
 }) => {
   const { t } = useI18n();
   return (
@@ -92,14 +98,50 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
               </div>
             )}
             
-            <div className="mt-4 flex justify-end">
+            <div className="mt-4 flex justify-between">
               {solution.status === 'validated' ? (
-                <div className="flex items-center text-green-600 text-sm">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  {t('solutions_panel.status.validated', 'Solution Validated')}
-                </div>
+                <>
+                  <div className="flex items-center text-green-600 text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    {t('solutions_panel.status.validated', 'Solution Validated')}
+                  </div>
+                  {/* Bouton pour lancer Fast Search directement depuis une solution validée */}
+                  {onStartFastSearch && (
+                    <button
+                      onClick={() => onStartFastSearch(solution.id)}
+                      disabled={briefHasActiveSearch || isStartingSearch || solution.fast_search_launched_at !== null}
+                      className={`ml-2 px-3 py-1 text-sm rounded-md ${solution.fast_search_launched_at 
+                        ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 
+                        : briefHasActiveSearch || isStartingSearch 
+                          ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 
+                          : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+                      title={solution.fast_search_launched_at 
+                        ? t('solutions_panel.fast_search_already_used', 'Fast Search already used for this solution') 
+                        : briefHasActiveSearch 
+                          ? t('solutions_panel.search_in_progress', 'Search already in progress') 
+                          : t('solutions_panel.start_fast_search_tooltip', 'Start a Fast Search with this solution (uses 1 quota token)')}
+                    >
+                      {isStartingSearch 
+                        ? <span className="flex items-center">
+                            <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            {t('solutions_panel.button.starting_search', 'Starting...')}  
+                          </span> 
+                        : solution.fast_search_launched_at 
+                          ? <span className="flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                              {t('solutions_panel.button.used', 'Used')} 
+                            </span>
+                          : t('solutions_panel.button.fast_search', 'Fast Search')}
+                    </button>
+                  )}
+                </>
               ) : (
                 <button
                   onClick={() => onValidate(solution.id)}

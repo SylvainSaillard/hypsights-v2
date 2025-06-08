@@ -26,6 +26,30 @@ export async function startFastSearch(briefId: string) {
 }
 
 /**
+ * Lancer une recherche rapide (Fast Search) directement depuis une solution validée
+ * 
+ * @param briefId - ID du brief pour lequel lancer la recherche
+ * @param solutionId - ID de la solution validée à utiliser
+ * @returns Résultat de la recherche avec l'ID de recherche et le statut
+ */
+export async function startFastSearchFromSolution(briefId: string, solutionId: string) {
+  try {
+    // Utiliser le helper standard pour appeler la fonction Edge
+    // La logique côté serveur se chargera de vérifier que la solution est validée
+    const result = await executeEdgeAction(EDGE_FUNCTION, 'start_fast_search', {
+      brief_id: briefId,
+      solution_id: solutionId // L'Edge Function va filtrer pour cette solution spécifique
+    });
+    
+    return result;
+  } catch (error) {
+    console.error('Error starting fast search from solution:', error);
+    devLog('Fast Search From Solution Error', { briefId, solutionId, error });
+    throw error;
+  }
+}
+
+/**
  * Récupérer les résultats d'une recherche rapide
  * 
  * @param briefId - ID du brief pour lequel récupérer les résultats
