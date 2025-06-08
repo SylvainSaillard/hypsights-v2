@@ -8,21 +8,19 @@ const EDGE_FUNCTION = 'fast-search-handler';
  * Lancer une recherche rapide (Fast Search)
  * 
  * @param briefId - ID du brief pour lequel lancer la recherche
- * @param validatedSolutions - Solutions validées à utiliser pour la recherche
  * @returns Résultat de la recherche avec l'ID de recherche et le statut
  */
-export async function startFastSearch(briefId: string, validatedSolutions: string[]) {
+export async function startFastSearch(briefId: string) {
   try {
     // Utiliser le helper standard pour appeler la fonction Edge
     const result = await executeEdgeAction(EDGE_FUNCTION, 'start_fast_search', {
-      brief_id: briefId,
-      validated_solutions: validatedSolutions
+      brief_id: briefId
     });
     
     return result;
   } catch (error) {
     console.error('Error starting fast search:', error);
-    devLog('Fast Search Error', { briefId, validatedSolutions, error });
+    devLog('Fast Search Error', { briefId, error });
     throw error;
   }
 }

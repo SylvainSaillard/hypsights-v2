@@ -104,13 +104,16 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     }
     
     try {
-      // Récupérer les IDs des solutions validées
-      const validatedSolutionIds = solutions
-        .filter(solution => solution.status === 'validated')
-        .map(solution => solution.id);
+      // Vérifier qu'il y a au moins une solution validée
+      const hasValidatedSolutions = solutions.some(solution => solution.status === 'validated');
+      
+      if (!hasValidatedSolutions) {
+        console.error('No validated solutions found');
+        return;
+      }
       
       // Appeler l'Edge Function pour lancer la recherche
-      const result = await startFastSearch(briefId, validatedSolutionIds);
+      const result = await startFastSearch(briefId);
       
       // Mettre à jour l'état local
       setSearchId(result.search_id);

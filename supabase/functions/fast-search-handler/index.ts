@@ -79,31 +79,55 @@ serve(async (req: Request) => {
   let clientSupabase: SupabaseClient | null = null;
   
   try {
+    // Log pour débogage
+    console.log('Requête reçue:', req.method, req.url);
+    console.log('Headers:', JSON.stringify(Object.fromEntries(req.headers.entries())));
+    
     // Initialiser le client Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') || '';
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     
+    console.log('Supabase URL:', supabaseUrl);
+    
     const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey);
     
     // 1. Authentification
+    console.log('Tentative d\'authentification...');
     const { user, supabase: authenticatedSupabase } = await authenticateUser(req);
+    console.log('Authentification réussie pour l\'utilisateur:', user.id);
     clientSupabase = authenticatedSupabase;
     
     // 2. Validation des entrées
-    const { action, ...params } = await req.json();
+    console.log('Parsing du corps de la requête...');
+    const body = await req.text();
+    console.log('Corps de la requête:', body);
+    
+    let jsonData;
+    try {
+      jsonData = JSON.parse(body);
+    } catch (e) {
+      console.error('Erreur de parsing JSON:', e);
+      throw new HttpError('invalid_json_format', 400);
+    }
+    
+    const { action, ...params } = jsonData;
+    console.log('Action demandée:', action);
+    console.log('Paramètres reçus:', JSON.stringify(params));
+    
     const validatedParams = validateInput(action, params);
+    console.log('Paramètres validés:', JSON.stringify(validatedParams));
     
     // 3. Logique métier
     let result;
     
     switch (action) {
       case 'start_fast_search':
-        result = await startFastSearch(supabase, user.id, validatedParams.brief_id, validatedParams.validated_solutions);
+        result = await startFastSearch(params, user, supabase);
         break;
       case 'get_fast_search_results':
-        result = await getFastSearchResults(supabase, validatedParams.brief_id);
+        result = await getFastSearchResults(validatedParams, user, supabase);
         break;
       default:
         throw new HttpError(`Action non supportée: ${action}`, 400);
@@ -131,6 +155,10 @@ serve(async (req: Request) => {
     );
     
   } catch (error) {
+    // Log détaillé de l'erreur
+    console.error('Erreur dans la fonction Edge:', error);
+    console.error('Stack trace:', error.stack);
+    
     // Tracking des erreurs
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') || '',
@@ -139,7 +167,7 @@ serve(async (req: Request) => {
     
     await trackEvent(supabase, {
       event_name: 'fast_search_error',
-      properties: { error: error.message }
+      properties: { error: error.message, stack: error.stack }
     });
     
     // Réponse avec erreur
@@ -184,14 +212,17 @@ async function authenticateUser(req: Request): Promise<{ user: User; supabase: S
 
 // Validation des entrées
 function validateInput(action: string, params: any): any {
+  console.log(`Validation des paramètres pour l'action: ${action}`);
+  
   switch (action) {
     case 'start_fast_search':
+      console.log('Validation du brief_id:', params.brief_id);
       if (!params.brief_id) {
+        console.error('brief_id manquant ou invalide');
         throw new HttpError('invalid_brief');
       }
-      if (!params.validated_solutions || !Array.isArray(params.validated_solutions) || params.validated_solutions.length === 0) {
-        throw new HttpError('invalid_solution');
-      }
+      // Nous n'avons plus besoin de valider validated_solutions car nous allons chercher
+      // les solutions validées directement dans la base de données
       break;
     case 'get_fast_search_results':
       if (!params.brief_id) {
@@ -206,120 +237,135 @@ function validateInput(action: string, params: any): any {
 }
 
 // Action pour démarrer une recherche rapide
-async function startFastSearch(
-  supabase: SupabaseClient, 
-  userId: string, 
-  brief_id: string, 
-  validated_solutions: any[]
-): Promise<{
-  search_id: string;
-  status: string;
-  message: string;
-}> {
-  // 1. Vérifier le quota de l'utilisateur
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .select('fast_search_used, fast_search_quota')
-    .eq('id', userId)
-    .single();
-    
-  if (userError || !userData) {
-    throw new HttpError('Failed to check user quota');
-  }
+async function startFastSearch(params: any, user: User, supabase: SupabaseClient): Promise<any> {
+  const { brief_id } = params;
   
-  if (userData.fast_search_used >= userData.fast_search_quota) {
+  // Vérifier si l'utilisateur a dépassé son quota de recherches rapides
+  const { data: userQuota, error: quotaError } = await supabase
+    .from('users')
+    .select('fast_search_quota')
+    .eq('id', user.id)
+    .single();
+  
+  if (quotaError || !userQuota || userQuota.fast_search_quota <= 0) {
     throw new HttpError('quota_exceeded');
   }
   
-  // 2. Incrémenter le compteur de Fast Search utilisés
-  await supabase
-    .from('users')
-    .update({ fast_search_used: userData.fast_search_used + 1 })
-    .eq('id', userId);
+  // Récupérer les solutions validées pour ce brief
+  const { data: validatedSolutions, error: solutionsError } = await supabase
+    .from('solutions')
+    .select('id, title')
+    .eq('brief_id', brief_id)
+    .eq('status', 'public.solution_status.validated');
+    
+  if (solutionsError || !validatedSolutions || validatedSolutions.length === 0) {
+    console.error('Aucune solution validée trouvée:', solutionsError);
+    throw new HttpError('invalid_solution');
+  }
   
-  // 3. Créer un enregistrement de recherche
-  const { data: searchData, error: searchError } = await supabase
+  console.log('Solutions validées trouvées:', validatedSolutions.length);
+  
+  // Vérifier si une recherche est déjà en cours pour ce brief
+  const { data: existingSearch, error: searchError } = await supabase
+    .from('searches')
+    .select('id, status')
+    .eq('brief_id', brief_id)
+    .eq('type', 'fast')
+    .order('created_at', { ascending: false })
+    .limit(1);
+  
+  if (existingSearch && existingSearch.length > 0 && existingSearch[0].status === 'in_progress') {
+    throw new HttpError('search_in_progress');
+  }
+  
+  // Créer un nouvel enregistrement de recherche
+  const { data: search, error: createError } = await supabase
     .from('searches')
     .insert({
       brief_id,
-      user_id: userId,
-      status: 'pending',
+      user_id: user.id,
       type: 'fast',
-      validated_solutions
+      status: 'in_progress',
+      validated_solutions: validatedSolutions.map(s => ({ id: s.id, title: s.title }))
     })
     .select()
     .single();
     
-  if (searchError || !searchData) {
+  if (createError || !search) {
     throw new HttpError('Failed to create search record');
   }
   
-  // 4. Appeler le webhook n8n de façon asynchrone
-  fetch('https://n8n.proxiwave.com/webhook-test/searchsupplier', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      brief_id,
-      search_id: searchData.id,
-      validated_solutions
-    })
-  }).catch(err => console.error('Webhook call failed:', err));
+  // Appeler le webhook n8n de manière asynchrone
+  try {
+    fetch('https://n8n.hypsights.io/webhook/searchsupplier', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        search_id: search.id,
+        brief_id: brief_id,
+        user_id: user.id
+      })
+    }).catch(error => {
+      console.error('Erreur lors de l\'appel au webhook n8n:', error);
+    });
+  } catch (error) {
+    console.error('Erreur lors de l\'appel au webhook n8n:', error);
+    // Ne pas bloquer le processus si le webhook échoue
+  }
   
   return {
-    search_id: searchData.id,
-    status: 'pending',
-    message: 'Fast Search started successfully'
+    search_id: search.id,
+    status: 'in_progress',
+    message: 'Recherche rapide lancée avec succès'
   };
 }
 
-// Action pour récupérer les résultats de recherche rapide
-async function getFastSearchResults(
-  supabase: SupabaseClient, 
-  brief_id: string
-): Promise<{
-  search: any;
-  suppliers: any[];
-  count: number;
-}> {
-  // 1. Récupérer la recherche associée au brief
-  const { data: searchData } = await supabase
+// Action pour récupérer les résultats d'une recherche rapide
+async function getFastSearchResults(params: any, user: User, supabase: SupabaseClient): Promise<any> {
+  const { brief_id, search_id } = params;
+
+  // Récupérer les données de la recherche
+  const { data: search, error: searchError } = await supabase
     .from('searches')
-    .select('id, status, created_at')
+    .select('id, status, created_at, completed_at')
+    .eq('id', search_id)
     .eq('brief_id', brief_id)
-    .eq('type', 'fast')
-    .order('created_at', { ascending: false })
-    .limit(1)
+    .eq('user_id', user.id)
     .single();
-  
-  // 2. Récupérer les fournisseurs associés au brief
+
+  if (searchError || !search) {
+    throw new HttpError('Search not found');
+  }
+
+  // Récupérer les fournisseurs associés à cette recherche
   const { data: suppliers, error: suppliersError } = await supabase
     .from('suppliers')
-    .select('id, name, website, description, logo_url, country, city')
-    .eq('brief_id', brief_id);
-    
+    .select('id, name, description, website_url, logo_url, contact_email, contact_phone, location')
+    .eq('search_id', search_id);
+
   if (suppliersError) {
     throw new HttpError('Failed to fetch suppliers');
   }
-  
+
   // Pour chaque fournisseur, récupérer ses produits
   const suppliersWithProducts: Array<any> = [];
-  
+
   if (suppliers && Array.isArray(suppliers)) {
     for (const supplier of suppliers) {
       const { data: products } = await supabase
         .from('products')
         .select('id, name, description, image_url, price_range, supplier_id')
         .eq('supplier_id', supplier.id);
-      
+
       suppliersWithProducts.push({
         ...supplier,
         products: products || []
       });
     }
   }
-  
+
   return {
-    search: searchData || { status: 'not_found' },
+    search: search || { status: 'not_found' },
     suppliers: suppliersWithProducts,
     count: suppliersWithProducts.length
   };
