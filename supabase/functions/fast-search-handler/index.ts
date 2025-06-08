@@ -171,13 +171,18 @@ serve(async (req: Request) => {
     });
     
     // Réponse avec erreur
+    const friendlyErrorMessage = getUserFriendlyError(error);
+    const statusCode = error instanceof HttpError ? error.status : 500;
+    
+    console.log(`Retourne erreur: ${friendlyErrorMessage} avec code ${statusCode}`);
+    
     return new Response(
       JSON.stringify({
         success: false,
-        error: getUserFriendlyError(error.message)
+        error: friendlyErrorMessage
       }),
       {
-        status: error.status || 500,
+        status: statusCode,
         headers: {
           ...getCorsHeaders(req),
           'Content-Type': 'application/json'
@@ -238,173 +243,80 @@ function validateInput(action: string, params: any): any {
 
 // Action pour démarrer une recherche rapide
 async function startFastSearch(params: any, user: User, supabase: SupabaseClient): Promise<any> {
-  const { brief_id } = params;
+  const { brief_id, solution_id } = params;
+  console.log('Démarrage Fast Search simplifié pour une solution spécifique');
+  console.log('Paramètres:', { brief_id, solution_id, user_id: user.id });
   
-  // Vérification du quota
-  console.log('Vérification du quota utilisateur');
+  // Vérifier que le solution_id est fourni
+  if (!solution_id) {
+    console.error('Aucun ID de solution fourni');
+    throw new HttpError('missing_solution_id', 400);
+  }
   
-  const { data: userMetadata, error: quotaError } = await supabase
-    .from('users_metadata')
-    .select('fast_searches_used, fast_searches_quota')
-    .eq('user_id', user.id)
+  // Récupérer uniquement la solution spécifique qui a déclenché le Fast Search
+  const { data: solutionData, error: solutionError } = await supabase
+    .from('solutions')
+    .select('id, title')
+    .eq('id', solution_id)
+    .eq('status', 'public.solution_status.validated')
     .single();
   
-  if (quotaError) {
-    console.error('Erreur lors de la vérification du quota:', quotaError);
+  if (solutionError) {
+    console.error('Erreur lors de la récupération de la solution:', solutionError);
     throw new HttpError('database_error', 500);
   }
   
-  if (!userMetadata) {
-    console.error('Métadonnées utilisateur non trouvées');
-    // Créer les métadonnées utilisateur si elles n'existent pas
-    const { data: newMetadata, error: createError } = await supabase
-      .from('users_metadata')
-      .insert({
-        user_id: user.id,
-        fast_searches_used: 0,
-        fast_searches_quota: 3  // Quota par défaut
-      })
-      .select()
-      .single();
-    
-    if (createError) {
-      console.error('Erreur lors de la création des métadonnées utilisateur:', createError);
-      throw new HttpError('database_error', 500);
-    }
-    
-    if (!newMetadata) {
-      throw new HttpError('database_error', 500);
-    }
-    
-    // Continuer avec les nouvelles métadonnées
-    return startFastSearch(params, user, supabase); // Rappel récursif avec les nouvelles métadonnées
+  if (!solutionData) {
+    console.error('Solution non trouvée ou non validée');
+    throw new HttpError('invalid_solution', 400);
   }
   
-  console.log('Quota utilisateur:', userMetadata.fast_searches_used, '/', userMetadata.fast_searches_quota);
+  console.log(`Solution validée trouvée: ${solutionData.id} - ${solutionData.title}`);
+  const validatedSolutionId = solutionData.id;
   
-  if (userMetadata.fast_searches_used >= userMetadata.fast_searches_quota) {
-    console.error('Quota de recherches rapides dépassé');
-    throw new HttpError('quota_exceeded', 403);
-  }
+  // Créer un identifiant temporaire pour la recherche
+  const searchId = `temp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   
-  // Récupérer les solutions validées pour ce brief
-  let validatedSolutionsQuery = supabase
-    .from('solutions')
-    .select('id, title')
-    .eq('brief_id', brief_id)
-    .eq('status', 'public.solution_status.validated');
-    
-  // Si un solution_id spécifique est fourni, filtrer sur cette solution 
-  // (tout en vérifiant qu'elle est bien validée)
-  const solution_id = params.solution_id;
-  if (solution_id) {
-    validatedSolutionsQuery = validatedSolutionsQuery.eq('id', solution_id);
-  }
-  
-  const { data: validatedSolutions, error: solutionsError } = await validatedSolutionsQuery;
-    
-  if (solutionsError || !validatedSolutions?.length) {
-    console.error('Erreur lors de la récupération des solutions validées:', solutionsError || 'Aucune solution validée');
-    throw new HttpError('No validated solutions found');
-  }
-  
-  // Créer un tableau des IDs des solutions validées pour enregistrement
-  const validatedSolutionIds = validatedSolutions.map(s => s.id);
-  
-  // Vérifier si une recherche est déjà en cours pour ce brief
-  const { data: existingSearch, error: searchError } = await supabase
-    .from('searches')
-    .select('id, status')
-    .eq('brief_id', brief_id)
-    .eq('type', 'fast')
-    .order('created_at', { ascending: false })
-    .limit(1);
-  
-  if (existingSearch && existingSearch.length > 0 && existingSearch[0].status === 'in_progress') {
-    throw new HttpError('search_in_progress');
-  }
-  
-  // Créer un nouvel enregistrement de recherche
-  const { data: search, error: createError } = await supabase
-    .from('searches')
-    .insert({
+  // Appel direct du webhook n8n (sans créer d'enregistrement ni vérifier le quota)
+  try {
+    console.log('Appel du webhook searchsupplier avec les données:', {
+      search_id: searchId,
       brief_id,
       user_id: user.id,
-      type: 'fast',
-      status: 'in_progress',
-      validated_solutions: validatedSolutions.map(s => ({ id: s.id, title: s.title }))
-    })
-    .select()
-    .single();
+      solution_id: validatedSolutionId // Utiliser l'ID de solution unique
+    });
     
-  if (createError || !search) {
-    throw new HttpError('Failed to create search record');
-  }
-  
-  // Mettre à jour les solutions avec la date de lancement du Fast Search
-  try {
-    // Mettre à jour toutes les solutions validées utilisées dans cette recherche
-    const timestamp = new Date().toISOString();
-    const { error: updateError } = await supabase
-      .from('solutions')
-      .update({ fast_search_launched_at: timestamp })
-      .in('id', validatedSolutions.map(s => s.id));
-      
-    if (updateError) {
-      console.error('Erreur lors de la mise à jour des solutions:', updateError);
-      // Ne pas bloquer le processus si la mise à jour échoue
-    }
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour des solutions:', error);
-    // Ne pas bloquer le processus si la mise à jour échoue
-  }
-  
-  // Incrémenter le compteur d'utilisation du quota
-  try {
-    const { error: updateError } = await supabase
-      .from('users_metadata')
-      .update({
-        fast_searches_used: userMetadata.fast_searches_used + 1
-      })
-      .eq('user_id', user.id);
-      
-    if (updateError) {
-      console.error('Erreur lors de la mise à jour du quota:', updateError);
-      // Ne pas bloquer le processus si la mise à jour échoue
-    }
-  } catch (error) {
-    console.error('Erreur lors de la mise à jour du quota:', error);
-    // Ne pas bloquer le processus si la mise à jour échoue
-  }
-  
-  // Appeler le webhook n8n de manière asynchrone
-  try {
-    fetch('https://n8n.hypsights.io/webhook/searchsupplier', {
+    // Utiliser directement l'URL du webhook fournie
+    const webhookUrl = 'https://n8n.proxiwave.com/webhook-test/searchsupplier';
+    console.log('URL du webhook utilisée:', webhookUrl);
+    
+    const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        search_id: search.id,
-        brief_id: brief_id,
-        user_id: user.id
+        search_id: searchId,
+        brief_id,
+        user_id: user.id,
+        solution_id: validatedSolutionId // Utiliser l'ID de solution unique
       })
-    }).catch(error => {
-      console.error('Erreur lors de l\'appel au webhook n8n:', error);
     });
+    
+    if (!webhookResponse.ok) {
+      const responseText = await webhookResponse.text();
+      console.error(`Échec de l'appel webhook (${webhookResponse.status}):`, responseText);
+      throw new HttpError('webhook_error', 500);
+    }
+    
+    console.log('Webhook appelé avec succès');
   } catch (error) {
-    console.error('Erreur lors de l\'appel au webhook n8n:', error);
-    // Ne pas bloquer le processus si le webhook échoue
+    console.error('Erreur lors de l\'appel du webhook:', error);
+    if (error instanceof HttpError) {
+      throw error;
+    }
+    throw new HttpError('webhook_error', 500);
   }
   
-  // Retourner les informations sur la recherche et le quota restant
-  return {
-    search_id: search.id,
-    status: 'in_progress',
-    message: 'Recherche rapide lancée avec succès',
-    quota: {
-      used: userMetadata.fast_searches_used + 1,
-      total: userMetadata.fast_searches_quota
-    }
-  };
+  return { success: true, search_id: searchId };
 }
 
 // Action pour récupérer les résultats d'une recherche rapide
@@ -483,25 +395,31 @@ async function trackEvent(supabase: SupabaseClient | null, event: {
 }
 
 // Helper pour messages d'erreur utilisateur
-function getUserFriendlyError(errorMessage: string): string {
+function getUserFriendlyError(error: any): string {
   // Messages d'erreur conviviaux pour l'utilisateur
   const ERROR_MESSAGES: Record<string, string> = {
     'quota_exceeded': 'Vous avez atteint votre quota de recherches rapides disponibles',
-    'no_validated_solutions': 'Veuillez valider au moins une solution avant de lancer une recherche',
-    'search_already_in_progress': 'Une recherche est déjà en cours pour ce brief',
+    'search_in_progress': 'Une recherche est déjà en cours pour ce brief',
     'database_error': 'Erreur de base de données, veuillez réessayer',
     'missing_brief': 'Brief non trouvé',
     'webhook_error': 'Erreur lors du lancement de la recherche, veuillez réessayer',
+    'no_validated_solutions': 'Aucune solution validée trouvée pour ce brief',
     'default': 'Une erreur est survenue. Veuillez réessayer.'
   };
   
-  // Si l'erreur est un objet avec un message, utiliser ce message
-  if (typeof errorMessage === 'object' && errorMessage !== null && 'message' in errorMessage) {
-    errorMessage = String(errorMessage.message);
-  }
+  // Extraction du message d'erreur selon le type
+  let errorKey = 'default';
   
-  // S'assurer que errorMessage est une chaîne
-  const errorKey = String(errorMessage);
+  if (error instanceof HttpError) {
+    // Si c'est notre classe HttpError personnalisée
+    errorKey = error.message;
+  } else if (typeof error === 'string') {
+    // Si c'est déjà une chaîne
+    errorKey = error;
+  } else if (typeof error === 'object' && error !== null) {
+    // Si c'est un objet (comme Error standard)
+    errorKey = error.message || 'default';
+  }
   
   // Utiliser le message convivial s'il existe, sinon celui par défaut
   return ERROR_MESSAGES[errorKey] || ERROR_MESSAGES.default;

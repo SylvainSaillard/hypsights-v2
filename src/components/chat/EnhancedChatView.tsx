@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useChatMessages } from '../../hooks/useChatMessages';
 import { useSolutions } from '../../hooks/useSolutions';
 import { useFastSearchResults } from '../../hooks/useFastSearchResults';
-import { startFastSearch, startFastSearchFromSolution } from '../../services/fastSearchService';
+import { startFastSearchFromSolution } from '../../services/fastSearchService';
 import ChatPanel from './ChatPanel';
 import SolutionsPanel from './SolutionsPanel';
-import FastSearchBar from './FastSearchBar';
 import FastSearchResultsPanel from './FastSearchResultsPanel';
 import { useI18n } from '../../contexts/I18nContext';
 import type { EnhancedChatViewProps } from './types';
@@ -24,7 +23,6 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   const { t } = useI18n();
   const [inputValue, setInputValue] = useState('');
   const [fastSearchQuota, setFastSearchQuota] = useState({ used: 0, total: 3 });
-  const [isReadyForSearch, setIsReadyForSearch] = useState(false);
   const [isSearchActive, setIsSearchActive] = useState(false);
   const [isStartingSearch, setIsStartingSearch] = useState(false);
   // searchId est utilisé pour suivre l'ID de recherche actif et pourrait être utilisé
@@ -49,11 +47,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     validateSolution
   } = useSolutions(briefId, onSolutionValidated);
   
-  // Vérifier si des solutions ont été validées
-  useEffect(() => {
-    const hasValidatedSolutions = solutions.some(solution => solution.status === 'validated');
-    setIsReadyForSearch(hasValidatedSolutions);
-  }, [solutions]);
+  // Ce bloc a été supprimé car nous ne vérifions plus si des solutions sont validées
   
   // Charger le quota de Fast Search depuis le profil utilisateur
   useEffect(() => {
@@ -98,46 +92,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     }
   };
   
-  // Gestionnaire de lancement de Fast Search
-  const handleLaunchFastSearch = async () => {
-    if (!isReadyForSearch || fastSearchQuota.used >= fastSearchQuota.total) {
-      return;
-    }
-    
-    try {
-      // Vérifier qu'il y a au moins une solution validée
-      const hasValidatedSolutions = solutions.some(solution => solution.status === 'validated');
-      
-      if (!hasValidatedSolutions) {
-        console.error('No validated solutions found');
-        return;
-      }
-      
-      setIsStartingSearch(true);
-      
-      // Appeler l'Edge Function pour lancer la recherche
-      const result = await startFastSearch(briefId);
-      
-      // Mettre à jour l'état local
-      setSearchId(result.search_id);
-      setIsSearchActive(true);
-      
-      // Mettre à jour le quota
-      if (result.quota) {
-        setFastSearchQuota({
-          used: result.quota.used,
-          total: result.quota.total
-        });
-      } else {
-        // Fallback si le quota n'est pas retourné
-        setFastSearchQuota(prev => ({ ...prev, used: prev.used + 1 }));
-      }
-    } catch (error) {
-      console.error('Failed to launch Fast Search:', error);
-    } finally {
-      setIsStartingSearch(false);
-    }
-  };
+  // Cette fonction a été supprimée car nous n'utilisons plus le bouton global de Fast Search
   
   // Gestionnaire de lancement de Fast Search depuis une solution spécifique
   const handleStartFastSearchFromSolution = async (solutionId: string) => {
@@ -186,14 +141,6 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   
   return (
     <div className="flex flex-col h-full">
-      {/* Barre Fast Search (visible uniquement quand des solutions sont validées) */}
-      <FastSearchBar 
-        isReady={isReadyForSearch}
-        quotaUsed={fastSearchQuota.used}
-        quotaTotal={fastSearchQuota.total}
-        onLaunchSearch={handleLaunchFastSearch}
-      />
-      
       {/* Conteneur principal avec hauteur fixe */}
       <div className="flex gap-4 h-[600px]">
         {/* Panneau de chat avec hauteur fixe et défilement */}
@@ -220,6 +167,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
           onStartFastSearch={handleStartFastSearchFromSolution}
           isStartingSearch={isStartingSearch}
           briefHasActiveSearch={isSearchActive}
+          showFastSearchDirectly={true}
         />
       </div>
       
