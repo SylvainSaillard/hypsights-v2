@@ -433,7 +433,7 @@ async function getFastSearchResults(params: any, user: User, supabase: SupabaseC
     // Récupérer les fournisseurs associés au brief
     const { data: suppliers, error: suppliersError } = await supabase
       .from('suppliers')
-      .select('*, products(*)')
+      .select('*, products:products!products_supplier_id_fkey(*)')
       .eq('brief_id', brief_id);
     
     if (suppliersError) {
