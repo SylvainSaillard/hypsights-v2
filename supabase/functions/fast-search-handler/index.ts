@@ -265,7 +265,7 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     .from('solutions')
     .select('id, title')
     .eq('id', solution_id)
-    .eq('status', 'public.solution_status.validated')
+    .eq('status', 'validated') // Utiliser juste la valeur de l'énumération sans le préfixe du schéma
     .single();
   
   if (solutionError) {
