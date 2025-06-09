@@ -23,7 +23,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   const { t } = useI18n();
   const [inputValue, setInputValue] = useState('');
   const [fastSearchQuota, setFastSearchQuota] = useState({ used: 0, total: 3 });
-  const [isSearchActive, setIsSearchActive] = useState(false);
+  // Initialiser isSearchActive à true pour afficher automatiquement les résultats
+  const [isSearchActive, setIsSearchActive] = useState(true);
   // Modifier pour suivre l'état de chargement par solution
   const [startingSolutionId, setStartingSolutionId] = useState<string | null>(null);
   // searchId est utilisé pour suivre l'ID de recherche actif et pourrait être utilisé

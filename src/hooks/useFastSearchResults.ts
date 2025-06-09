@@ -16,7 +16,9 @@ export function useFastSearchResults(briefId: string, isActive: boolean) {
       try {
         setLoading(true);
         const data = await getFastSearchResults(briefId);
-        setSuppliers(data.suppliers || []);
+        // Filtrer les fournisseurs par brief_id côté client
+        const filteredSuppliers = (data.suppliers || []).filter((supplier: any) => supplier.brief_id === briefId);
+        setSuppliers(filteredSuppliers);
         if (data.status) {
           setStatus(data.status);
         }
@@ -49,10 +51,12 @@ export function useFastSearchResults(briefId: string, isActive: boolean) {
         // Suppression du filtre restrictif pour capter tous les nouveaux fournisseurs
         // Le filtrage sera fait côté client après récupération
       }, () => {
-        // Rafraîchir les résultats
+        // Récupérer les résultats
         getFastSearchResults(briefId)
           .then(data => {
-            setSuppliers(data.suppliers || []);
+            // Filtrer les fournisseurs par brief_id côté client pour s'assurer qu'on n'affiche que ceux liés au brief actuel
+            const filteredSuppliers = (data.suppliers || []).filter((supplier: any) => supplier.brief_id === briefId);
+            setSuppliers(filteredSuppliers);
             if (data.status) {
               setStatus(data.status);
             }
