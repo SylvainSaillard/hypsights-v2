@@ -22,7 +22,7 @@ export function useSuppliers(briefId: string) {
       console.log('useSuppliers - Chargement des fournisseurs pour brief_id:', briefId);
       
       // Appel direct à la fonction Edge
-      const result = await executeEdgeAction('fast-search-handler', 'get_results', {
+      const result = await executeEdgeAction('fast-search-handler', 'get_fast_search_results', {
         brief_id: briefId
       });
       
