@@ -23,7 +23,7 @@ export function useFastSearchResults(briefId: string, isActive: boolean) {
         console.log('useFastSearchResults - Appel getFastSearchResults pour brief:', briefId);
         const data = await getFastSearchResults(briefId);
         console.log('useFastSearchResults - Résultats reçus:', {
-          status: data.status,
+          status: data.search?.status,
           suppliersCount: data.suppliers?.length || 0,
           search: data.search,
           briefId: briefId
@@ -53,9 +53,9 @@ export function useFastSearchResults(briefId: string, isActive: boolean) {
         });
         
         setSuppliers(filteredSuppliers);
-        if (data.status) {
-          console.log('useFastSearchResults - Statut mis à jour:', data.status);
-          setStatus(data.status);
+        if (data.search?.status) {
+          console.log('useFastSearchResults - Statut mis à jour:', data.search.status);
+          setStatus(data.search.status);
         }
       } catch (err) {
         console.error('useFastSearchResults - Erreur:', err);
