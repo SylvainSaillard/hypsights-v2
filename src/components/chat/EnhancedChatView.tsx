@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useChatMessages } from '../../hooks/useChatMessages';
 import { useSolutions } from '../../hooks/useSolutions';
 import { useFastSearchResults } from '../../hooks/useFastSearchResults';
-import { startFastSearchFromSolution } from '../../services/fastSearchService';
+import { startFastSearchFromSolution, getFastSearchResults } from '../../services/fastSearchService';
 import ChatPanel from './ChatPanel';
 import SolutionsPanel from './SolutionsPanel';
 import FastSearchResultsPanel from './FastSearchResultsPanel';
@@ -50,6 +50,26 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   } = useSolutions(briefId, onSolutionValidated);
   
   // Ce bloc a été supprimé car nous ne vérifions plus si des solutions sont validées
+  
+  // Charger automatiquement les résultats de Fast Search au chargement du composant
+  useEffect(() => {
+    if (briefId) {
+      // Forcer l'activation de la recherche au chargement du composant
+      setIsSearchActive(true);
+      
+      // Simuler un démarrage de recherche pour s'assurer que les résultats sont chargés
+      const loadInitialResults = async () => {
+        try {
+          const result = await getFastSearchResults(briefId);
+          console.log('Résultats initiaux chargés:', result);
+        } catch (error) {
+          console.error('Erreur lors du chargement des résultats initiaux:', error);
+        }
+      };
+      
+      loadInitialResults();
+    }
+  }, [briefId]);
   
   // Charger le quota de Fast Search depuis le profil utilisateur
   useEffect(() => {
