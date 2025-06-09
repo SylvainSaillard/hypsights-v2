@@ -9,7 +9,7 @@ const edgeFunctions = [
   { name: 'notifications', action: 'list_notifications', params: {} },
   { name: 'dashboard-data', action: 'get_dashboard_data', params: {} },
   { name: 'chat-handler', action: 'get_history', params: { brief_id: 'any' } },
-  { name: 'search-handler', action: 'check_quota', params: {} },
+  { name: 'fast-search-handler', action: 'check_quota', params: {} },
   { name: 'ai-chat-handler', action: 'test_n8n_webhook', params: {}, highlight: true }
 ];
 
