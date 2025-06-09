@@ -63,6 +63,18 @@ export async function executeEdgeAction(
     }
     
     const data = await response.json();
+    console.log(`executeEdgeAction - Réponse de ${endpoint}/${action}:`, data);
+    
+    // Vérifier si la réponse est encapsulée dans un objet success/data
+    if (data && typeof data === 'object') {
+      if ('success' in data && data.success === true && 'data' in data) {
+        // Format standard de réponse de l'Edge Function
+        console.log(`executeEdgeAction - Extraction des données de la réponse standard`);
+        return data.data;
+      }
+    }
+    
+    // Sinon retourner la réponse telle quelle
     return data;
     
   } catch (error: any) {

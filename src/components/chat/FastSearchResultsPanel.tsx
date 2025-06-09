@@ -9,14 +9,33 @@ interface FastSearchResultsPanelProps {
 }
 
 const FastSearchResultsPanel: React.FC<FastSearchResultsPanelProps> = ({
-  suppliers,
+  suppliers = [],
   status,
   loading
 }) => {
   const { t } = useI18n();
   
-  // Ajouter des logs pour déboguer
-  console.log('FastSearchResultsPanel - Props reçues:', { suppliers, status, loading });
+  // Ajouter des logs détaillés pour débogage
+  console.log('FastSearchResultsPanel - Props reçues:', {
+    suppliersCount: suppliers?.length || 0,
+    status,
+    loading
+  });
+  
+  // Déboguer les fournisseurs en détail
+  if (suppliers && suppliers.length > 0) {
+    console.log('FastSearchResultsPanel - Détails des fournisseurs:');
+    suppliers.forEach((supplier, index) => {
+      console.log(`Fournisseur ${index + 1}:`, {
+        id: supplier.id,
+        name: supplier.name,
+        brief_id: supplier.brief_id,
+        products: supplier.products?.length || 0
+      });
+    });
+  } else {
+    console.log('FastSearchResultsPanel - Aucun fournisseur disponible');
+  }
   
   return (
     <div className="mt-6 border rounded-lg bg-white">
@@ -51,6 +70,17 @@ const FastSearchResultsPanel: React.FC<FastSearchResultsPanelProps> = ({
       </div>
       
       <div className="p-4">
+        {/* Informations de débogage */}
+        <div className="mb-4 p-3 bg-gray-100 rounded text-xs font-mono">
+          <p><strong>Status:</strong> {status || 'undefined'}</p>
+          <p><strong>Loading:</strong> {loading ? 'true' : 'false'}</p>
+          <p><strong>Suppliers count:</strong> {suppliers?.length || 0}</p>
+          <p><strong>Suppliers array:</strong> {Array.isArray(suppliers) ? 'Yes' : 'No'}</p>
+          {suppliers && suppliers.length > 0 && (
+            <p><strong>First supplier:</strong> {suppliers[0]?.name || 'No name'} (ID: {suppliers[0]?.id || 'No ID'})</p>
+          )}
+        </div>
+        
         {loading && suppliers.length === 0 && (
           <div className="text-center py-8">
             <div className="animate-spin inline-block w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mr-2"></div>

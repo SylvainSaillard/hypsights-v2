@@ -23,13 +23,10 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   const { t } = useI18n();
   const [inputValue, setInputValue] = useState('');
   const [fastSearchQuota, setFastSearchQuota] = useState({ used: 0, total: 3 });
-  // Initialiser isSearchActive à true pour afficher automatiquement les résultats
-  const [isSearchActive, setIsSearchActive] = useState(true);
+  // Les résultats de recherche sont toujours affichés
   // Modifier pour suivre l'état de chargement par solution
   const [startingSolutionId, setStartingSolutionId] = useState<string | null>(null);
-  // searchId est utilisé pour suivre l'ID de recherche actif et pourrait être utilisé
-  // pour des fonctionnalités futures comme l'annulation de recherche
-  const [searchId, setSearchId] = useState<string | null>(null);
+  // Nous n'avons plus besoin de suivre l'ID de recherche car les résultats sont toujours affichés
   
   // Utilisation des hooks personnalisés pour la logique métier
   const {
@@ -54,9 +51,6 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   // Charger automatiquement les résultats de Fast Search au chargement du composant
   useEffect(() => {
     if (briefId) {
-      // Forcer l'activation de la recherche au chargement du composant
-      setIsSearchActive(true);
-      
       // Simuler un démarrage de recherche pour s'assurer que les résultats sont chargés
       const loadInitialResults = async () => {
         try {
@@ -120,7 +114,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   
   // Gestionnaire de lancement de Fast Search depuis une solution spécifique
   const handleStartFastSearchFromSolution = async (solutionId: string) => {
-    if (fastSearchQuota.used >= fastSearchQuota.total || isSearchActive) {
+    if (fastSearchQuota.used >= fastSearchQuota.total) {
       return;
     }
     
@@ -131,9 +125,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
       // Appeler l'Edge Function pour lancer la recherche avec une solution spécifique
       const result = await startFastSearchFromSolution(briefId, solutionId);
       
-      // Mettre à jour l'état local
-      setSearchId(result.search_id);
-      setIsSearchActive(true);
+      // Nous n'avons plus besoin de suivre l'ID de recherche car les résultats sont toujours affichés
+      // L'ID de recherche est géré directement par le hook useFastSearchResults
       
       // Mettre à jour le quota
       if (result.quota) {
@@ -157,24 +150,37 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     }
   };
   
-  // Utiliser le hook pour les résultats de recherche
+  // Utiliser le hook pour les résultats de recherche - toujours actif
   const {
     suppliers,
     status: searchStatus,
     loading: searchLoading,
     error: searchError
-  } = useFastSearchResults(briefId, isSearchActive);
+  } = useFastSearchResults(briefId, true); // Toujours actif
   
   // Logger l'état des résultats de recherche pour débogage
   useEffect(() => {
     console.log('EnhancedChatView - État de recherche:', { 
-      isSearchActive, 
-      suppliersCount: suppliers?.length || 0, 
-      suppliers,
+      suppliersCount: suppliers?.length || 0,
       searchStatus, 
       searchLoading 
     });
-  }, [isSearchActive, suppliers, searchStatus, searchLoading]);
+    
+    // Déboguer les fournisseurs en détail
+    if (suppliers && suppliers.length > 0) {
+      console.log('EnhancedChatView - Détails des fournisseurs:');
+      suppliers.forEach((supplier, index) => {
+        console.log(`Fournisseur ${index + 1}:`, {
+          id: supplier.id,
+          name: supplier.name,
+          brief_id: supplier.brief_id,
+          products: supplier.products?.length || 0
+        });
+      });
+    } else {
+      console.log('EnhancedChatView - Aucun fournisseur disponible');
+    }
+  }, [suppliers, searchStatus, searchLoading]);
   
   return (
     <div className="flex flex-col h-full">
@@ -195,6 +201,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
         </div>
         
         {/* Panneau de solutions */}
+        {/* Affichage des solutions avec recherche toujours active */}
         <SolutionsPanel
           solutions={solutions}
           isLoading={isLoadingSolutions}
@@ -203,19 +210,17 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
           onRefresh={loadSolutions}
           onStartFastSearch={handleStartFastSearchFromSolution}
           startingSolutionId={startingSolutionId}
-          briefHasActiveSearch={isSearchActive}
+          briefHasActiveSearch={true}
           showFastSearchDirectly={true}
         />
       </div>
       
-      {/* Panneau de résultats de recherche (visible uniquement quand une recherche est active) */}
-      {isSearchActive && (
-        <FastSearchResultsPanel
-          suppliers={suppliers}
-          status={searchStatus}
-          loading={searchLoading}
-        />
-      )}
+      {/* Panneau de résultats de recherche (toujours visible) */}
+      <FastSearchResultsPanel
+        suppliers={suppliers}
+        status={searchStatus}
+        loading={searchLoading}
+      />
       
       {/* Message d'erreur de recherche */}
       {searchError && (

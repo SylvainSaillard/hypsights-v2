@@ -9,8 +9,10 @@ declare global {
   }
 }
 
-// Importations avec les chemins complets pour Deno
+// Importations pour Deno
+// @deno-types="https://deno.land/std@0.177.0/http/server.ts"
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
+// @deno-types="https://esm.sh/@supabase/supabase-js@2"
 import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2';
 
 // CORS Template v1.0 (2025-06-04) - Standardized implementation
@@ -454,7 +456,7 @@ async function getFastSearchResults(params: any, user: User, supabase: SupabaseC
     }
     
     // Récupérer le statut de la recherche si un ID de recherche est fourni
-    let search = null;
+    let search: Search | null = null;
     if (search_id) {
       console.log('Récupération du statut de recherche pour search_id:', search_id);
       const { data: searchData, error: searchError } = await supabase
@@ -466,7 +468,7 @@ async function getFastSearchResults(params: any, user: User, supabase: SupabaseC
       if (searchError) {
         console.error('Erreur lors de la récupération du statut de recherche:', searchError);
       } else {
-        search = searchData;
+        search = searchData as Search;
         console.log('Statut de recherche récupéré:', search);
       }
     } else {
@@ -480,19 +482,18 @@ async function getFastSearchResults(params: any, user: User, supabase: SupabaseC
         .limit(1);
       
       if (!searchError && existingSearches && existingSearches.length > 0) {
-        search = existingSearches[0];
+        search = existingSearches[0] as Search;
         console.log('Recherche existante trouvée:', search);
       }
     }
-    
-    // Si aucun statut de recherche n'est trouvé, créer un statut par défaut
     if (!search) {
       search = {
         id: search_id || `real_${Date.now()}`,
         status: suppliers && suppliers.length > 0 ? 'completed' : 'processing',
         created_at: new Date().toISOString(),
-        completed_at: suppliers && suppliers.length > 0 ? new Date().toISOString() : null
-      } as any; // Type assertion pour éviter l'erreur de typage
+        completed_at: suppliers && suppliers.length > 0 ? new Date().toISOString() : null,
+        brief_id
+      } as Search;
       console.log('Statut de recherche par défaut créé:', search);
     }
     
@@ -521,10 +522,11 @@ async function getFastSearchResults(params: any, user: User, supabase: SupabaseC
     return {
       search: { 
         id: search_id || `error_${Date.now()}`,
-        status: 'error',
+        status: 'error' as const,
         created_at: new Date().toISOString(),
-        completed_at: null
-      },
+        completed_at: null,
+        brief_id
+      } as Search,
       suppliers: [],
       count: 0,
       simulation: false,
@@ -532,6 +534,21 @@ async function getFastSearchResults(params: any, user: User, supabase: SupabaseC
       message: 'Erreur lors de la récupération des résultats'
     };
   }
+}
+
+// Types pour les paramètres et les réponses
+type FastSearchParams = {
+  brief_id: string;
+  search_id?: string;
+};
+
+// Interface pour l'objet search
+interface Search {
+  id: string;
+  status: 'pending' | 'processing' | 'completed' | 'error';
+  created_at: string;
+  completed_at: string | null;
+  brief_id?: string;
 }
 
 // Fonction pour le tracking analytique
