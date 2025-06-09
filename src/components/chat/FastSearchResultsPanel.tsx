@@ -15,6 +15,9 @@ const FastSearchResultsPanel: React.FC<FastSearchResultsPanelProps> = ({
 }) => {
   const { t } = useI18n();
   
+  // Ajouter des logs pour déboguer
+  console.log('FastSearchResultsPanel - Props reçues:', { suppliers, status, loading });
+  
   return (
     <div className="mt-6 border rounded-lg bg-white">
       <div className="p-4 bg-blue-50 border-b flex justify-between items-center">

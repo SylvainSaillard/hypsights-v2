@@ -423,13 +423,20 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
   };
 }
 
-// Action pour récupérer les résultats d'une recherche rapide - VERSION RÉELLE
 async function getFastSearchResults(params: any, user: User, supabase: SupabaseClient): Promise<any> {
   const { brief_id, search_id } = params;
   
   console.log('getFastSearchResults appelé avec:', { brief_id, search_id });
 
   try {
+    // Vérifier que le brief_id est valide
+    if (!brief_id) {
+      console.error('brief_id manquant dans la requête');
+      throw new Error('brief_id est requis');
+    }
+    
+    console.log('Début de la récupération des fournisseurs pour le brief:', brief_id);
+    
     // Récupérer les fournisseurs associés au brief
     const { data: suppliers, error: suppliersError } = await supabase
       .from('suppliers')
@@ -438,13 +445,18 @@ async function getFastSearchResults(params: any, user: User, supabase: SupabaseC
     
     if (suppliersError) {
       console.error('Erreur lors de la récupération des fournisseurs:', suppliersError);
+      throw suppliersError;
     }
     
     console.log(`Récupération de ${suppliers?.length || 0} fournisseurs pour le brief ${brief_id}`);
+    if (suppliers && suppliers.length > 0) {
+      console.log('Premier fournisseur:', JSON.stringify(suppliers[0]));
+    }
     
     // Récupérer le statut de la recherche si un ID de recherche est fourni
     let search = null;
     if (search_id) {
+      console.log('Récupération du statut de recherche pour search_id:', search_id);
       const { data: searchData, error: searchError } = await supabase
         .from('searches')
         .select('*')
@@ -452,9 +464,24 @@ async function getFastSearchResults(params: any, user: User, supabase: SupabaseC
         .single();
       
       if (searchError) {
-        console.error('Erreur lors de la récupération de la recherche:', searchError);
+        console.error('Erreur lors de la récupération du statut de recherche:', searchError);
       } else {
         search = searchData;
+        console.log('Statut de recherche récupéré:', search);
+      }
+    } else {
+      console.log('Aucun search_id fourni, vérification des recherches existantes pour le brief');
+      // Vérifier s'il existe déjà une recherche pour ce brief
+      const { data: existingSearches, error: searchError } = await supabase
+        .from('searches')
+        .select('*')
+        .eq('brief_id', brief_id)
+        .order('created_at', { ascending: false })
+        .limit(1);
+      
+      if (!searchError && existingSearches && existingSearches.length > 0) {
+        search = existingSearches[0];
+        console.log('Recherche existante trouvée:', search);
       }
     }
     
@@ -466,17 +493,27 @@ async function getFastSearchResults(params: any, user: User, supabase: SupabaseC
         created_at: new Date().toISOString(),
         completed_at: suppliers && suppliers.length > 0 ? new Date().toISOString() : null
       } as any; // Type assertion pour éviter l'erreur de typage
+      console.log('Statut de recherche par défaut créé:', search);
     }
     
-    return {
+    const result = {
       search,
       suppliers: suppliers || [],
       count: suppliers?.length || 0,
       simulation: false,
+      search_id: search ? search.id : null,
       message: suppliers && suppliers.length > 0 
-        ? `${suppliers.length} fournisseurs trouvés` 
-        : 'Recherche en cours...'
+        ? `${suppliers.length} fournisseurs trouvés pour le brief ${brief_id}` 
+        : `Aucun fournisseur trouvé pour le brief ${brief_id}`
     };
+    
+    console.log('Résultat final renvoyé:', {
+      suppliersCount: result.count,
+      status: search?.status || 'unknown',
+      search_id: result.search_id
+    });
+    
+    return result;
   } catch (error) {
     console.error('Erreur lors de la récupération des résultats:', error);
     

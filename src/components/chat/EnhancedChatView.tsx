@@ -71,6 +71,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     }
   }, [briefId]);
   
+
+  
   // Charger le quota de Fast Search depuis le profil utilisateur
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -162,6 +164,17 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     loading: searchLoading,
     error: searchError
   } = useFastSearchResults(briefId, isSearchActive);
+  
+  // Logger l'état des résultats de recherche pour débogage
+  useEffect(() => {
+    console.log('EnhancedChatView - État de recherche:', { 
+      isSearchActive, 
+      suppliersCount: suppliers?.length || 0, 
+      suppliers,
+      searchStatus, 
+      searchLoading 
+    });
+  }, [isSearchActive, suppliers, searchStatus, searchLoading]);
   
   return (
     <div className="flex flex-col h-full">
