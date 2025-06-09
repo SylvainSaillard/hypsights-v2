@@ -9,7 +9,7 @@ interface SolutionsPanelProps {
   onValidate: (solutionId: string) => void;
   onRefresh: () => void;
   onStartFastSearch?: (solutionId: string) => void;
-  isStartingSearch?: boolean;
+  startingSolutionId?: string | null;
   briefHasActiveSearch?: boolean;
   showFastSearchDirectly?: boolean;
 }
@@ -25,7 +25,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
   onValidate,
   onRefresh,
   onStartFastSearch,
-  isStartingSearch = false,
+  startingSolutionId = null,
   briefHasActiveSearch = false,
   showFastSearchDirectly = false
 }) => {
@@ -115,10 +115,10 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                   {onStartFastSearch && (
                     <button
                       onClick={() => onStartFastSearch(solution.id)}
-                      disabled={briefHasActiveSearch || isStartingSearch || solution.fast_search_launched_at !== null}
+                      disabled={briefHasActiveSearch || startingSolutionId === solution.id || solution.fast_search_launched_at !== null}
                       className={`${solution.status === 'validated' ? 'ml-2 ' : ''}px-3 py-1 text-sm rounded-md ${solution.fast_search_launched_at 
                         ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 
-                        : briefHasActiveSearch || isStartingSearch 
+                        : briefHasActiveSearch || startingSolutionId === solution.id 
                           ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 
                           : 'bg-blue-500 text-white hover:bg-blue-600'}`}
                       title={solution.fast_search_launched_at 
@@ -127,7 +127,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                           ? t('solutions_panel.search_in_progress', 'Search already in progress') 
                           : t('solutions_panel.start_fast_search_tooltip', 'Start a Fast Search with this solution (uses 1 quota token)')}
                     >
-                      {isStartingSearch 
+                      {startingSolutionId === solution.id 
                         ? <span className="flex items-center">
                             <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

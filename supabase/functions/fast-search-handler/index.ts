@@ -39,9 +39,16 @@ const CORS_HEADERS = {
 
 function getAllowedOrigin(req: Request): string {
   const origin = req.headers.get('origin') || '';
-  return (origin && ALLOWED_ORIGINS.includes(origin)) 
-    ? origin 
-    : 'https://hypsights-v2.netlify.app';
+  
+  // Si l'origine est dans la liste des origines autorisées, on la retourne
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    return origin;
+  }
+  
+  // Si on est en développement, on peut être plus souple
+  // sinon on retourne uniquement la première origine autorisée pour éviter '*'
+  // '*' ne fonctionne pas avec credentials: 'include'
+  return ALLOWED_ORIGINS[0]; // Préférable à '*' avec 'credentials: include'
 }
 
 function getCorsHeaders(req: Request): Record<string, string> {

@@ -24,7 +24,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [fastSearchQuota, setFastSearchQuota] = useState({ used: 0, total: 3 });
   const [isSearchActive, setIsSearchActive] = useState(false);
-  const [isStartingSearch, setIsStartingSearch] = useState(false);
+  // Modifier pour suivre l'état de chargement par solution
+  const [startingSolutionId, setStartingSolutionId] = useState<string | null>(null);
   // searchId est utilisé pour suivre l'ID de recherche actif et pourrait être utilisé
   // pour des fonctionnalités futures comme l'annulation de recherche
   const [searchId, setSearchId] = useState<string | null>(null);
@@ -101,7 +102,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     }
     
     try {
-      setIsStartingSearch(true);
+      // Suivre quelle solution spécifique est en cours de chargement
+      setStartingSolutionId(solutionId);
       
       // Appeler l'Edge Function pour lancer la recherche avec une solution spécifique
       const result = await startFastSearchFromSolution(briefId, solutionId);
@@ -127,7 +129,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     } catch (error) {
       console.error('Failed to launch Fast Search from solution:', error);
     } finally {
-      setIsStartingSearch(false);
+      // Réinitialiser l'état de chargement
+      setStartingSolutionId(null);
     }
   };
   
@@ -165,7 +168,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
           onValidate={validateSolution}
           onRefresh={loadSolutions}
           onStartFastSearch={handleStartFastSearchFromSolution}
-          isStartingSearch={isStartingSearch}
+          startingSolutionId={startingSolutionId}
           briefHasActiveSearch={isSearchActive}
           showFastSearchDirectly={true}
         />
