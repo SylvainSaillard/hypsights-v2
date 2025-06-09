@@ -251,20 +251,44 @@ function validateInput(action: string, params: any): any {
 // Action pour démarrer une recherche rapide avec appel webhook ACTIVÉ
 async function startFastSearch(params: any, user: User, supabase: SupabaseClient): Promise<any> {
   const { brief_id, solution_id } = params;
-  console.log('Démarrage Fast Search simplifié avec appel webhook');
+  console.log('Démarrage Fast Search avec appel webhook et données de la solution');
   console.log('Paramètres reçus:', { brief_id, solution_id, user_id: user.id });
-  
-  // MODE SEMI-SIMULATION: pas de vérification BD mais appel webhook réel
   
   // Générer un ID recherche aléatoire 
   const searchId = `real_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   
-  // Données pour le webhook
+  // Récupération des données de la solution depuis la base de données
+  let solutionData: any = null;
+  
+  try {
+    // Récupérer les détails de la solution sans filtrer sur le statut
+    const { data, error } = await supabase
+      .from('solutions')
+      .select('id, title, description, status')
+      .eq('id', solution_id)
+      .single();
+    
+    if (error) {
+      console.error('Erreur lors de la récupération de la solution:', error);
+    } else if (!data) {
+      console.error('Solution non trouvée');
+    } else {
+      solutionData = data;
+      console.log('Solution trouvée:', solutionData);
+    }
+  } catch (dbError) {
+    console.error('Exception lors de la requête BD:', dbError);
+  }
+  
+  // Données pour le webhook, enrichies avec les informations de la solution
   const webhookData = {
     search_id: searchId,
     brief_id,
     user_id: user.id,
-    solution_id
+    solution_id,
+    solution_title: solutionData?.title || 'Titre non disponible',
+    solution_description: solutionData?.description || 'Description non disponible',
+    solution_status: solutionData?.status || 'unknown'
   };
   
   console.log('Appel du webhook searchsupplier avec les données:', webhookData);
