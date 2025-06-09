@@ -260,25 +260,43 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
   // Récupération des données de la solution depuis la base de données
   let solutionData: any = null;
   
+  console.log('Début de récupération de la solution avec ID:', solution_id);
+  
   try {
-    // Récupérer les détails de la solution sans filtrer sur le statut
-    const { data, error } = await supabase
-      .from('solutions')
-      .select('id, title, description, status')
-      .eq('id', solution_id)
-      .single();
-    
-    if (error) {
-      console.error('Erreur lors de la récupération de la solution:', error);
-    } else if (!data) {
-      console.error('Solution non trouvée');
+    // Vérification que l'ID de la solution est valide
+    if (!solution_id) {
+      console.error('ID de solution invalide ou manquant:', solution_id);
     } else {
-      solutionData = data;
-      console.log('Solution trouvée:', solutionData);
+      console.log('Exécution de la requête pour récupérer la solution:', solution_id);
+      
+      // Récupérer les détails de la solution sans filtrer sur le statut
+      const { data, error } = await supabase
+        .from('solutions')
+        .select('*') // Sélectionner tous les champs pour déboguer
+        .eq('id', solution_id)
+        .single();
+      
+      console.log('Résultat brut de la requête:', { data, error });
+      
+      if (error) {
+        console.error('Erreur lors de la récupération de la solution:', error);
+      } else if (!data) {
+        console.error('Solution non trouvée pour ID:', solution_id);
+      } else {
+        solutionData = data;
+        console.log('Solution trouvée avec succès:', {
+          id: solutionData.id,
+          title: solutionData.title,
+          description: solutionData.description,
+          status: solutionData.status
+        });
+      }
     }
   } catch (dbError) {
     console.error('Exception lors de la requête BD:', dbError);
   }
+  
+  console.log('Fin de récupération, solutionData:', solutionData);
   
   // Données pour le webhook, enrichies avec les informations de la solution
   const webhookData = {
