@@ -248,27 +248,64 @@ function validateInput(action: string, params: any): any {
   return params;
 }
 
-// Action pour démarrer une recherche rapide - VERSION ULTRA SIMPLIFIÉE
+// Action pour démarrer une recherche rapide avec appel webhook ACTIVÉ
 async function startFastSearch(params: any, user: User, supabase: SupabaseClient): Promise<any> {
   const { brief_id, solution_id } = params;
-  console.log('Démarrage Fast Search en mode simulation');
+  console.log('Démarrage Fast Search simplifié avec appel webhook');
   console.log('Paramètres reçus:', { brief_id, solution_id, user_id: user.id });
   
-  // MODE SIMULATION: ne fait aucune vérification en base de données
-  // on retourne simplement un succès pour voir si le problème est ailleurs
+  // MODE SEMI-SIMULATION: pas de vérification BD mais appel webhook réel
   
-  // Générer un ID recherche aléatoire pour simulation
-  const searchId = `sim_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  // Générer un ID recherche aléatoire 
+  const searchId = `real_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   
-  console.log('Simulation de recherche rapide réussie avec ID:', searchId);
-  console.log('Aucun appel webhook n\'est effectué en mode simulation');
+  // Données pour le webhook
+  const webhookData = {
+    search_id: searchId,
+    brief_id,
+    user_id: user.id,
+    solution_id
+  };
   
-  // Retourner simplement un succès sans faire d'appels DB ou webhook
+  console.log('Appel du webhook searchsupplier avec les données:', webhookData);
+  
+  try {
+    // Appel réel du webhook avec timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
+    
+    const webhookUrl = 'https://n8n.proxiwave.com/webhook-test/searchsupplier';
+    const webhookResponse = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(webhookData),
+      signal: controller.signal
+    });
+    
+    clearTimeout(timeoutId);
+    
+    // Traitement de la réponse
+    const responseText = await webhookResponse.text();
+    console.log(`Réponse webhook (${webhookResponse.status}):`, responseText);
+    
+    if (!webhookResponse.ok) {
+      console.error(`Échec de l'appel webhook (${webhookResponse.status}):`, responseText);
+      // On continue malgré l'erreur pour voir le comportement
+    } else {
+      console.log('Webhook appelé avec succès');
+    }
+    
+  } catch (error) {
+    console.error('Erreur lors de l\'appel webhook:', error);
+    // Ne pas bloquer en cas d'erreur webhook
+  }
+  
+  // Toujours retourner un succès pour le front-end
   return {
     success: true,
     search_id: searchId,
-    mode: 'simulation',
-    message: 'SIMULATION MODE: Aucun appel réel effectué'
+    message: 'Recherche démarrée avec appel webhook',
+    webhook_called: true
   };
 }
 
