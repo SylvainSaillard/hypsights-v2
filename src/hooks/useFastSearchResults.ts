@@ -39,23 +39,29 @@ export function useFastSearchResults(briefId: string, isActive: boolean) {
           });
         }
         
-        // Filtrer les fournisseurs par brief_id côté client
-        const filteredSuppliers = (data.suppliers || []).filter((supplier: any) => {
-          const matches = supplier.brief_id === briefId;
-          console.log(`useFastSearchResults - Fournisseur ${supplier.id} (${supplier.name}) - brief_id=${supplier.brief_id}, match=${matches}`);
-          return matches;
-        });
+        // Les fournisseurs sont déjà filtrés par brief_id côté serveur
+        // mais vérifions quand même pour plus de sécurité
+        const suppliers = data.suppliers || [];
         
-        console.log('useFastSearchResults - Fournisseurs filtrés:', {
-          avant: data.suppliers?.length || 0,
-          après: filteredSuppliers.length,
+        console.log('useFastSearchResults - Fournisseurs reçus:', {
+          count: suppliers.length,
           briefId: briefId
         });
         
-        setSuppliers(filteredSuppliers);
-        if (data.search?.status) {
-          console.log('useFastSearchResults - Statut mis à jour:', data.search.status);
-          setStatus(data.search.status);
+        // Afficher des détails sur les fournisseurs pour débogage
+        if (suppliers.length > 0) {
+          suppliers.forEach((supplier: any) => {
+            console.log(`useFastSearchResults - Fournisseur ${supplier.id} (${supplier.name}) - brief_id=${supplier.brief_id}`);
+          });
+        }
+        
+        setSuppliers(suppliers);
+        
+        // Gérer le statut de recherche
+        if (data.search) {
+          const searchStatus = data.search.status || 'processing';
+          console.log('useFastSearchResults - Statut mis à jour:', searchStatus);
+          setStatus(searchStatus);
         }
       } catch (err) {
         console.error('useFastSearchResults - Erreur:', err);
@@ -87,14 +93,17 @@ export function useFastSearchResults(briefId: string, isActive: boolean) {
         // Suppression du filtre restrictif pour capter tous les nouveaux fournisseurs
         // Le filtrage sera fait côté client après récupération
       }, () => {
+        console.log('useFastSearchResults - Changement détecté dans la table suppliers');
         // Récupérer les résultats
         getFastSearchResults(briefId)
           .then(data => {
-            // Filtrer les fournisseurs par brief_id côté client pour s'assurer qu'on n'affiche que ceux liés au brief actuel
-            const filteredSuppliers = (data.suppliers || []).filter((supplier: any) => supplier.brief_id === briefId);
-            setSuppliers(filteredSuppliers);
-            if (data.status) {
-              setStatus(data.status);
+            console.log('useFastSearchResults - Données rafraîchies après changement suppliers:', {
+              suppliersCount: data.suppliers?.length || 0,
+              searchStatus: data.search?.status
+            });
+            setSuppliers(data.suppliers || []);
+            if (data.search?.status) {
+              setStatus(data.search.status);
             }
           })
           .catch(err => console.error('Error refreshing suppliers:', err));
@@ -109,12 +118,17 @@ export function useFastSearchResults(briefId: string, isActive: boolean) {
         schema: 'public',
         table: 'products'
       }, () => {
+        console.log('useFastSearchResults - Changement détecté dans la table products');
         // Rafraîchir les résultats
         getFastSearchResults(briefId)
           .then(data => {
+            console.log('useFastSearchResults - Données rafraîchies après changement products:', {
+              suppliersCount: data.suppliers?.length || 0,
+              searchStatus: data.search?.status
+            });
             setSuppliers(data.suppliers || []);
-            if (data.status) {
-              setStatus(data.status);
+            if (data.search?.status) {
+              setStatus(data.search.status);
             }
           })
           .catch(err => console.error('Error refreshing products:', err));
@@ -130,6 +144,7 @@ export function useFastSearchResults(briefId: string, isActive: boolean) {
         table: 'searches',
         filter: `brief_id=eq.${briefId}`
       }, (payload: { new: { status: string } }) => {
+        console.log('useFastSearchResults - Changement détecté dans la table searches:', payload.new);
         setStatus(payload.new.status);
       })
       .subscribe();
