@@ -248,132 +248,51 @@ function validateInput(action: string, params: any): any {
   return params;
 }
 
-// Action pour démarrer une recherche rapide
+// Action pour démarrer une recherche rapide - VERSION ULTRA SIMPLIFIÉE
 async function startFastSearch(params: any, user: User, supabase: SupabaseClient): Promise<any> {
   const { brief_id, solution_id } = params;
-  console.log('Démarrage Fast Search simplifié pour une solution spécifique');
-  console.log('Paramètres:', { brief_id, solution_id, user_id: user.id });
+  console.log('Démarrage Fast Search en mode simulation');
+  console.log('Paramètres reçus:', { brief_id, solution_id, user_id: user.id });
   
-  // Vérifier que le solution_id est fourni
-  if (!solution_id) {
-    console.error('Aucun ID de solution fourni');
-    throw new HttpError('missing_solution_id', 400);
-  }
+  // MODE SIMULATION: ne fait aucune vérification en base de données
+  // on retourne simplement un succès pour voir si le problème est ailleurs
   
-  // Récupérer uniquement la solution spécifique qui a déclenché le Fast Search
-  const { data: solutionData, error: solutionError } = await supabase
-    .from('solutions')
-    .select('id, title')
-    .eq('id', solution_id)
-    .eq('status', 'validated') // Utiliser juste la valeur de l'énumération sans le préfixe du schéma
-    .single();
+  // Générer un ID recherche aléatoire pour simulation
+  const searchId = `sim_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   
-  if (solutionError) {
-    console.error('Erreur lors de la récupération de la solution:', solutionError);
-    throw new HttpError('database_error', 500);
-  }
+  console.log('Simulation de recherche rapide réussie avec ID:', searchId);
+  console.log('Aucun appel webhook n\'est effectué en mode simulation');
   
-  if (!solutionData) {
-    console.error('Solution non trouvée ou non validée');
-    throw new HttpError('invalid_solution', 400);
-  }
-  
-  console.log(`Solution validée trouvée: ${solutionData.id} - ${solutionData.title}`);
-  const validatedSolutionId = solutionData.id;
-  
-  // Créer un identifiant temporaire pour la recherche
-  const searchId = `temp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-  
-  // Appel direct du webhook n8n (sans créer d'enregistrement ni vérifier le quota)
-  try {
-    console.log('Appel du webhook searchsupplier avec les données:', {
-      search_id: searchId,
-      brief_id,
-      user_id: user.id,
-      solution_id: validatedSolutionId // Utiliser l'ID de solution unique
-    });
-    
-    // Utiliser directement l'URL du webhook fournie
-    const webhookUrl = 'https://n8n.proxiwave.com/webhook-test/searchsupplier';
-    console.log('URL du webhook utilisée:', webhookUrl);
-    
-    const webhookResponse = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        search_id: searchId,
-        brief_id,
-        user_id: user.id,
-        solution_id: validatedSolutionId // Utiliser l'ID de solution unique
-      })
-    });
-    
-    if (!webhookResponse.ok) {
-      const responseText = await webhookResponse.text();
-      console.error(`Échec de l'appel webhook (${webhookResponse.status}):`, responseText);
-      throw new HttpError('webhook_error', 500);
-    }
-    
-    console.log('Webhook appelé avec succès');
-  } catch (error) {
-    console.error('Erreur lors de l\'appel du webhook:', error);
-    if (error instanceof HttpError) {
-      throw error;
-    }
-    throw new HttpError('webhook_error', 500);
-  }
-  
-  return { success: true, search_id: searchId };
+  // Retourner simplement un succès sans faire d'appels DB ou webhook
+  return {
+    success: true,
+    search_id: searchId,
+    mode: 'simulation',
+    message: 'SIMULATION MODE: Aucun appel réel effectué'
+  };
 }
 
-// Action pour récupérer les résultats d'une recherche rapide
+// Action pour récupérer les résultats d'une recherche rapide - VERSION SIMULATION
 async function getFastSearchResults(params: any, user: User, supabase: SupabaseClient): Promise<any> {
   const { brief_id, search_id } = params;
+  
+  console.log('MODE SIMULATION: getFastSearchResults appelé avec:', { brief_id, search_id });
 
-  // Récupérer les données de la recherche
-  const { data: search, error: searchError } = await supabase
-    .from('searches')
-    .select('id, status, created_at, completed_at')
-    .eq('id', search_id)
-    .eq('brief_id', brief_id)
-    .eq('user_id', user.id)
-    .single();
-
-  if (searchError || !search) {
-    throw new HttpError('Search not found');
-  }
-
-  // Récupérer les fournisseurs associés à cette recherche
-  const { data: suppliers, error: suppliersError } = await supabase
-    .from('suppliers')
-    .select('id, name, description, website_url, logo_url, contact_email, contact_phone, location')
-    .eq('search_id', search_id);
-
-  if (suppliersError) {
-    throw new HttpError('Failed to fetch suppliers');
-  }
-
-  // Pour chaque fournisseur, récupérer ses produits
-  const suppliersWithProducts: Array<any> = [];
-
-  if (suppliers && Array.isArray(suppliers)) {
-    for (const supplier of suppliers) {
-      const { data: products } = await supabase
-        .from('products')
-        .select('id, name, description, image_url, price_range, supplier_id')
-        .eq('supplier_id', supplier.id);
-
-      suppliersWithProducts.push({
-        ...supplier,
-        products: products || []
-      });
-    }
-  }
-
+  // En mode simulation, nous ne faisons aucun appel à la base de données
+  // et renvoyons simplement une réponse de simulation avec le statut "processing"
+  // pour que le frontend continue d'attendre des résultats
+  
   return {
-    search: search || { status: 'not_found' },
-    suppliers: suppliersWithProducts,
-    count: suppliersWithProducts.length
+    search: { 
+      id: search_id || `sim_${Date.now()}`,
+      status: 'processing',
+      created_at: new Date().toISOString(),
+      completed_at: null
+    },
+    suppliers: [], // Pas de fournisseurs pendant que la recherche est "en cours"
+    count: 0,
+    simulation: true,
+    message: 'SIMULATION MODE: Recherche en cours...'
   };
 }
 
