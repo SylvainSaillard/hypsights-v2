@@ -349,12 +349,11 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
       
       console.log('Résultat final de la récupération:', { solutionData });
       
-      if (error) {
-        console.error('Erreur lors de la récupération de la solution:', error);
-      } else if (!data) {
-        console.error('Solution non trouvée pour ID:', solution_id);
+      // Vérification finale des données
+      if (!solutionData) {
+        console.error('Solution non trouvée pour ID après toutes les tentatives:', solution_id);
       } else {
-        solutionData = data;
+        console.log('Solution récupérée avec succès:', solutionData);
         console.log('Solution trouvée avec succès:', {
           id: solutionData.id,
           title: solutionData.title,
@@ -387,7 +386,7 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
     
-    const webhookUrl = 'https://n8n.proxiwave.com/webhook-test/searchsupplier';
+    const webhookUrl = 'https://n8n.proxiwave.com/webhook/searchsupplier';
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
