@@ -371,12 +371,14 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
   // Données pour le webhook, enrichies avec les informations de la solution
   const webhookData = {
     search_id: searchId,
-    brief_id,
+    brief_id,  // Important: Ce brief_id doit être utilisé par le webhook pour associer les fournisseurs
     user_id: user.id,
     solution_id,
     solution_title: solutionData?.title || 'Titre non disponible',
     solution_description: solutionData?.description || 'Description non disponible',
-    solution_status: solutionData?.status || 'unknown'
+    solution_status: solutionData?.status || 'unknown',
+    // Ajout d'un champ explicite pour indiquer au webhook qu'il doit associer les fournisseurs à ce brief
+    associate_suppliers_to_brief: true
   };
   
   console.log('Appel du webhook searchsupplier avec les données:', webhookData);
@@ -421,28 +423,78 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
   };
 }
 
-// Action pour récupérer les résultats d'une recherche rapide - VERSION SIMULATION
+// Action pour récupérer les résultats d'une recherche rapide - VERSION RÉELLE
 async function getFastSearchResults(params: any, user: User, supabase: SupabaseClient): Promise<any> {
   const { brief_id, search_id } = params;
   
-  console.log('MODE SIMULATION: getFastSearchResults appelé avec:', { brief_id, search_id });
+  console.log('getFastSearchResults appelé avec:', { brief_id, search_id });
 
-  // En mode simulation, nous ne faisons aucun appel à la base de données
-  // et renvoyons simplement une réponse de simulation avec le statut "processing"
-  // pour que le frontend continue d'attendre des résultats
-  
-  return {
-    search: { 
-      id: search_id || `sim_${Date.now()}`,
-      status: 'processing',
-      created_at: new Date().toISOString(),
-      completed_at: null
-    },
-    suppliers: [], // Pas de fournisseurs pendant que la recherche est "en cours"
-    count: 0,
-    simulation: true,
-    message: 'SIMULATION MODE: Recherche en cours...'
-  };
+  try {
+    // Récupérer les fournisseurs associés au brief
+    const { data: suppliers, error: suppliersError } = await supabase
+      .from('suppliers')
+      .select('*, products(*)')
+      .eq('brief_id', brief_id);
+    
+    if (suppliersError) {
+      console.error('Erreur lors de la récupération des fournisseurs:', suppliersError);
+    }
+    
+    console.log(`Récupération de ${suppliers?.length || 0} fournisseurs pour le brief ${brief_id}`);
+    
+    // Récupérer le statut de la recherche si un ID de recherche est fourni
+    let search = null;
+    if (search_id) {
+      const { data: searchData, error: searchError } = await supabase
+        .from('searches')
+        .select('*')
+        .eq('id', search_id)
+        .single();
+      
+      if (searchError) {
+        console.error('Erreur lors de la récupération de la recherche:', searchError);
+      } else {
+        search = searchData;
+      }
+    }
+    
+    // Si aucun statut de recherche n'est trouvé, créer un statut par défaut
+    if (!search) {
+      search = {
+        id: search_id || `real_${Date.now()}`,
+        status: suppliers && suppliers.length > 0 ? 'completed' : 'processing',
+        created_at: new Date().toISOString(),
+        completed_at: suppliers && suppliers.length > 0 ? new Date().toISOString() : null
+      } as any; // Type assertion pour éviter l'erreur de typage
+    }
+    
+    return {
+      search,
+      suppliers: suppliers || [],
+      count: suppliers?.length || 0,
+      simulation: false,
+      message: suppliers && suppliers.length > 0 
+        ? `${suppliers.length} fournisseurs trouvés` 
+        : 'Recherche en cours...'
+    };
+  } catch (error) {
+    console.error('Erreur lors de la récupération des résultats:', error);
+    
+    // En cas d'erreur, retourner un résultat vide mais valide
+    return {
+      search: { 
+        id: search_id || `error_${Date.now()}`,
+        status: 'error',
+        created_at: new Date().toISOString(),
+        completed_at: null
+      },
+      suppliers: [],
+      count: 0,
+      simulation: false,
+      error: error.message,
+      message: 'Erreur lors de la récupération des résultats'
+    };
+  }
 }
 
 // Fonction pour le tracking analytique

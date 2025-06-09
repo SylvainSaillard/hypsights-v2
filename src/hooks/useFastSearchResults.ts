@@ -45,8 +45,9 @@ export function useFastSearchResults(briefId: string, isActive: boolean) {
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
-        table: 'suppliers',
-        filter: `brief_id=eq.${briefId}`
+        table: 'suppliers'
+        // Suppression du filtre restrictif pour capter tous les nouveaux fournisseurs
+        // Le filtrage sera fait côté client après récupération
       }, () => {
         // Rafraîchir les résultats
         getFastSearchResults(briefId)
