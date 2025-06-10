@@ -31,12 +31,13 @@ export interface Solution {
   description: string;
   ai_confidence: number;
   keywords: string[];
-  status: 'proposed' | 'validated' | 'rejected';
+  status: 'proposed' | 'validated' | 'rejected' | 'in_progress' | 'finished';
   created_at: string;
   updated_at: string;
   metadata?: any;
   type?: string;
   fast_search_launched_at?: string | null;
+  search_progress?: number; // Optionnel: pourcentage de progression (0-100)
 }
 
 // Props pour le composant EnhancedChatView
