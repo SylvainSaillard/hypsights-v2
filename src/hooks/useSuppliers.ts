@@ -51,29 +51,45 @@ export function useSuppliers(briefId: string) {
     // Charger les fournisseurs initialement
     loadSuppliers();
     
-    // S'abonner aux changements dans la table suppliers
-    const suppliersChannel = supabase
-      .channel(`suppliers:${briefId}`)
+    // Créer un canal unique pour tous les événements liés aux fournisseurs
+    const realtimeChannel = supabase
+      .channel(`suppliers_and_products:${briefId}`)
+      // Écouter les événements sur la table suppliers pour ce brief spécifique
       .on('postgres_changes', {
-        event: '*',
+        event: 'INSERT',
         schema: 'public',
         table: 'suppliers',
         filter: `brief_id=eq.${briefId}`
       }, (payload: any) => {
-        console.log('useSuppliers - Changement détecté dans la table suppliers:', payload);
+        console.log('useSuppliers - NOUVEAU FOURNISSEUR détecté:', payload);
         loadSuppliers();
       })
-      .subscribe();
-    
-    // S'abonner aux changements dans la table products
-    const productsChannel = supabase
-      .channel(`products:${briefId}`)
       .on('postgres_changes', {
-        event: '*',
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'suppliers',
+        filter: `brief_id=eq.${briefId}`
+      }, (payload: any) => {
+        console.log('useSuppliers - MISE À JOUR d\'un fournisseur détectée:', payload);
+        loadSuppliers();
+      })
+      // Écouter tous les événements sur la table products
+      // On ne peut pas filtrer par brief_id car cette table n'a pas cette colonne
+      .on('postgres_changes', {
+        event: 'INSERT',
         schema: 'public',
         table: 'products'
-      }, () => {
-        console.log('useSuppliers - Changement détecté dans la table products');
+      }, (payload: any) => {
+        console.log('useSuppliers - NOUVEAU PRODUIT détecté:', payload);
+        // Vérifier si le produit est lié à un fournisseur de ce brief avant de recharger
+        loadSuppliers();
+      })
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'products'
+      }, (payload: any) => {
+        console.log('useSuppliers - MISE À JOUR d\'un produit détectée:', payload);
         loadSuppliers();
       })
       .subscribe();
@@ -81,8 +97,7 @@ export function useSuppliers(briefId: string) {
     // Nettoyage des abonnements
     return () => {
       console.log('useSuppliers - Nettoyage des abonnements');
-      supabase.removeChannel(suppliersChannel);
-      supabase.removeChannel(productsChannel);
+      supabase.removeChannel(realtimeChannel);
     };
   }, [briefId]);
   
