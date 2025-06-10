@@ -301,11 +301,7 @@ async function sendMessage(supabaseAdmin: SupabaseClient, briefId: string, userI
       requestId: crypto ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15)
     };
     
-    // 4. Envoyer les données au webhook n8n en arrière-plan
-    console.log(`[${FUNCTION_NAME}] Sending brief data to n8n webhook`);
-    const webhookPromise = callN8nWebhook(webhookPayload);
-    
-    // 5. Stocker un message d'accusé de réception immédiat
+    // 4. Stocker un message d'accusé de réception immédiat
     const acknowledgementMessage = "Je vais réfléchir à votre demande... Un instant.";
     
     const { error: aiStoreError } = await supabaseAdmin
@@ -323,7 +319,19 @@ async function sendMessage(supabaseAdmin: SupabaseClient, briefId: string, userI
       throw new HttpError('Failed to store AI response', 500);
     }
     
-    // 6. Récupérer tous les messages mis à jour
+    // 5. Envoyer les données au webhook n8n et ATTENDRE la réponse
+    // MODIFICATION: Appel synchrone au webhook (bloquant) au lieu d'asynchrone
+    console.log(`[${FUNCTION_NAME}] Sending brief data to n8n webhook and waiting for response`);
+    const webhookResult = await callN8nWebhook(webhookPayload);
+    console.log(`[${FUNCTION_NAME}] Webhook processing completed with status:`, webhookResult.status);
+    
+    // Track webhook completion
+    await trackAnalytics(supabaseAdmin, 'webhook_completed', userId, { 
+      brief_id: briefId,
+      processing_time_ms: webhookResult.processingTimeMs || 0
+    });
+    
+    // 6. Récupérer tous les messages mis à jour (maintenant incluant potentiellement ceux créés par n8n)
     const { data: chatMessages, error: fetchError } = await supabaseAdmin
       .from('chat_messages')
       .select('*')
@@ -335,21 +343,11 @@ async function sendMessage(supabaseAdmin: SupabaseClient, briefId: string, userI
       throw new HttpError('Failed to fetch chat history', 500);
     }
     
-    // 7. Gérer la réponse du webhook en arrière-plan (sans bloquer)
-    webhookPromise.catch(error => {
-      console.error(`[${FUNCTION_NAME}] Error handling n8n webhook:`, error);
-      
-      // Track error
-      trackAnalytics(supabaseAdmin, 'webhook_error', userId, { 
-        brief_id: briefId,
-        error: String(error)
-      }).catch(e => console.error('Failed to track analytics:', e));
-    });
-    
     return {
       chatMessages,
-      processingStatus: 'acknowledged',
-      message: 'Message received and processing started'
+      processingStatus: 'completed',
+      message: 'Message processed completely',
+      webhook_processing_complete: true
     };
     
   } catch (error) {
