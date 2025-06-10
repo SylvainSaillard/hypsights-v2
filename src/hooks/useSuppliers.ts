@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { SUPPLIERS_CHANNEL_NAME, PRODUCTS_CHANNEL_NAME } from '../components/chat/types';
 
 /**
  * Hook simplifié pour récupérer les fournisseurs associés à un brief
@@ -12,7 +13,7 @@ export function useSuppliers(briefId: string) {
   const [error, setError] = useState<string | null>(null);
   
   // Fonction pour charger les fournisseurs directement depuis Supabase
-  const loadSuppliers = async () => {
+  const loadSuppliers = useCallback(async () => {
     if (!briefId) return;
     
     setIsLoading(true);
@@ -40,66 +41,59 @@ export function useSuppliers(briefId: string) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [briefId]);
   
-  // Effet pour charger les fournisseurs au montage et configurer les abonnements
+  // Effet pour configurer l'abonnement real-time aux fournisseurs
   useEffect(() => {
     if (!briefId) return;
     
-    console.log('useSuppliers - Initialisation pour brief_id:', briefId);
+    console.log('useSuppliers - Configuration de l\'abonnement Realtime pour briefId:', briefId);
     
-    // Charger les fournisseurs initialement
+    // Abonnement aux fournisseurs - exactement comme useSolutions
+    const suppliersChannel = supabase
+      .channel(`${SUPPLIERS_CHANNEL_NAME}_${briefId}`)
+      .on('postgres_changes', {
+        event: '*', // INSERT, UPDATE, DELETE
+        schema: 'public',
+        table: 'suppliers',
+        filter: `brief_id=eq.${briefId}`
+      }, (payload: any) => {
+        console.log('useSuppliers - Changement détecté dans la table suppliers:', payload);
+        
+        // Rafraîchir tous les fournisseurs pour avoir l'état le plus récent
+        loadSuppliers();
+      })
+      .subscribe((status: any) => {
+        console.log('useSuppliers - Suppliers subscription status:', status);
+      });
+    
+    // Abonnement aux produits - à part pour une meilleure visibilité
+    const productsChannel = supabase
+      .channel(`${PRODUCTS_CHANNEL_NAME}_${briefId}`)
+      .on('postgres_changes', {
+        event: '*', // INSERT, UPDATE, DELETE
+        schema: 'public',
+        table: 'products'
+      }, (payload: any) => {
+        console.log('useSuppliers - Changement détecté dans la table products:', payload);
+        
+        // Rafraîchir tous les fournisseurs pour avoir l'état le plus récent
+        loadSuppliers();
+      })
+      .subscribe((status: any) => {
+        console.log('useSuppliers - Products subscription status:', status);
+      });
+    
+    // Charger les fournisseurs au montage
     loadSuppliers();
-    
-    // Créer un canal unique pour tous les événements liés aux fournisseurs
-    const realtimeChannel = supabase
-      .channel(`suppliers_and_products:${briefId}`)
-      // Écouter les événements sur la table suppliers pour ce brief spécifique
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'suppliers',
-        filter: `brief_id=eq.${briefId}`
-      }, (payload: any) => {
-        console.log('useSuppliers - NOUVEAU FOURNISSEUR détecté:', payload);
-        loadSuppliers();
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'suppliers',
-        filter: `brief_id=eq.${briefId}`
-      }, (payload: any) => {
-        console.log('useSuppliers - MISE À JOUR d\'un fournisseur détectée:', payload);
-        loadSuppliers();
-      })
-      // Écouter tous les événements sur la table products
-      // On ne peut pas filtrer par brief_id car cette table n'a pas cette colonne
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'products'
-      }, (payload: any) => {
-        console.log('useSuppliers - NOUVEAU PRODUIT détecté:', payload);
-        // Vérifier si le produit est lié à un fournisseur de ce brief avant de recharger
-        loadSuppliers();
-      })
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'products'
-      }, (payload: any) => {
-        console.log('useSuppliers - MISE À JOUR d\'un produit détectée:', payload);
-        loadSuppliers();
-      })
-      .subscribe();
     
     // Nettoyage des abonnements
     return () => {
       console.log('useSuppliers - Nettoyage des abonnements');
-      supabase.removeChannel(realtimeChannel);
+      supabase.removeChannel(suppliersChannel);
+      supabase.removeChannel(productsChannel);
     };
-  }, [briefId]);
+  }, [briefId, loadSuppliers]);
   
   return {
     suppliers,
