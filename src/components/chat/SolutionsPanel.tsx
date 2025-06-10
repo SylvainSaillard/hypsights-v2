@@ -115,17 +115,13 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                   {onStartFastSearch && (
                     <button
                       onClick={() => onStartFastSearch(solution.id)}
-                      disabled={briefHasActiveSearch || startingSolutionId === solution.id || solution.fast_search_launched_at !== null}
-                      className={`${solution.status === 'validated' ? 'ml-2 ' : ''}px-3 py-1 text-sm rounded-md ${solution.fast_search_launched_at 
-                        ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 
-                        : briefHasActiveSearch || startingSolutionId === solution.id 
-                          ? 'bg-gray-100 text-gray-500 cursor-not-allowed' 
-                          : 'bg-blue-500 text-white hover:bg-blue-600'}`}
-                      title={solution.fast_search_launched_at 
-                        ? t('solutions_panel.fast_search_already_used', 'Fast Search already used for this solution') 
-                        : briefHasActiveSearch 
-                          ? t('solutions_panel.search_in_progress', 'Search already in progress') 
-                          : t('solutions_panel.start_fast_search_tooltip', 'Start a Fast Search with this solution (uses 1 quota token)')}
+                      disabled={startingSolutionId === solution.id} /* Mode test: désactivé uniquement pendant le chargement */
+                      className={`${solution.status === 'validated' ? 'ml-2 ' : ''}px-3 py-1 text-sm rounded-md ${startingSolutionId === solution.id 
+                        ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                        : 'bg-blue-500 text-white hover:bg-blue-600'}`} /* Toujours bleu et actif en mode test */
+                      title={startingSolutionId === solution.id
+                        ? t('solutions_panel.button.starting_search', 'Starting...')
+                        : t('solutions_panel.start_fast_search_tooltip', 'Start a Fast Search with this solution (Mode test)')}
                     >
                       {startingSolutionId === solution.id 
                         ? <span className="flex items-center">
@@ -135,14 +131,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                             </svg>
                             {t('solutions_panel.button.starting_search', 'Starting...')}  
                           </span> 
-                        : solution.fast_search_launched_at 
-                          ? <span className="flex items-center">
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                              {t('solutions_panel.button.used', 'Used')} 
-                            </span>
-                          : t('solutions_panel.button.fast_search', 'Fast Search')}
+                        : t('solutions_panel.button.fast_search', 'Fast Search')} {/* Toujours afficher Fast Search en mode test */}
                     </button>
                   )}
                 </>
