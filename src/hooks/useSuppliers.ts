@@ -28,8 +28,9 @@ export function useSuppliers(briefId: string) {
       
       console.log('useSuppliers - Résultat brut:', result);
       
-      // Extraire les fournisseurs de la réponse
-      const suppliersList = result?.suppliers || [];
+      // Extraire les fournisseurs de la réponse en tenant compte de la structure de l'API
+      // La réponse de executeEdgeAction contient la donnée dans result.data
+      const suppliersList = result?.data?.suppliers || [];
       console.log(`useSuppliers - ${suppliersList.length} fournisseurs récupérés`);
       
       setSuppliers(suppliersList);
