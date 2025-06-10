@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { executeEdgeAction } from '../lib/edgeActionHelper';
 
 /**
  * Hook simplifié pour récupérer les fournisseurs associés à un brief
  * Conforme au principe KISS et Thin Client / Fat Edge
+ * Utilise directement Supabase pour les requêtes et le realtime
  */
 export function useSuppliers(briefId: string) {
   const [suppliers, setSuppliers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
-  // Fonction pour charger les fournisseurs
+  // Fonction pour charger les fournisseurs directement depuis Supabase
   const loadSuppliers = async () => {
     if (!briefId) return;
     
@@ -21,19 +21,19 @@ export function useSuppliers(briefId: string) {
     try {
       console.log('useSuppliers - Chargement des fournisseurs pour brief_id:', briefId);
       
-      // Appel direct à la fonction Edge
-      const result = await executeEdgeAction('fast-search-handler', 'get_fast_search_results', {
-        brief_id: briefId
-      });
+      // Appel direct à Supabase pour récupérer les fournisseurs avec leurs produits
+      const { data: suppliersList, error: suppliersError } = await supabase
+        .from('suppliers')
+        .select('*, products:products!products_supplier_id_fkey(*)')
+        .eq('brief_id', briefId);
       
-      console.log('useSuppliers - Résultat brut:', result);
+      if (suppliersError) {
+        throw suppliersError;
+      }
       
-      // Extraire les fournisseurs de la réponse en tenant compte de la structure de l'API
-      // La réponse de executeEdgeAction contient la donnée dans result.data
-      const suppliersList = result?.data?.suppliers || [];
-      console.log(`useSuppliers - ${suppliersList.length} fournisseurs récupérés`);
+      console.log(`useSuppliers - ${suppliersList?.length || 0} fournisseurs récupérés`);
       
-      setSuppliers(suppliersList);
+      setSuppliers(suppliersList || []);
     } catch (err) {
       console.error('useSuppliers - Erreur:', err);
       setError(`Une erreur est survenue: ${(err as Error).message}`);
