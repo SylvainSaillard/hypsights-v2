@@ -440,38 +440,96 @@ async function deleteBrief(supabaseAdmin: SupabaseClient, briefId: string, userI
 }
 
 async function duplicateBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: string) {
-  // First, get the brief to duplicate
-  const { data: originalBrief, error: getError } = await supabaseAdmin
+  // Vérifier que le brief existe et appartient à l'utilisateur
+  const { data: existingBrief, error: briefError } = await supabaseAdmin
     .from('briefs')
     .select('*')
     .eq('id', briefId)
     .eq('user_id', userId)
     .single();
     
-  if (getError || !originalBrief) throw new HttpError('Brief not found', 404);
+  if (briefError || !existingBrief) {
+    throw new HttpError(`Brief not found or access denied: ${briefError?.message || 'Unknown error'}`, 404);
+  }
   
-  // Generate a new UUID for the duplicate brief
+  // Générer un nouvel ID pour le brief dupliqué
   const newBriefId = crypto.randomUUID();
   
-  // Create the duplicate brief
-  const { data, error } = await supabaseAdmin
+  // Créer une copie du brief avec un nouveau titre
+  const duplicatedBrief = {
+    ...existingBrief,
+    id: newBriefId,
+    title: `${existingBrief.title} (Copy)`,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  };
+  
+  // Insérer le brief dupliqué
+  const { error: insertError } = await supabaseAdmin
     .from('briefs')
-    .insert({
-      id: newBriefId,
-      user_id: userId,
-      title: `${originalBrief.title} (Copy)`,
-      status: 'draft',
-      description: originalBrief.description,
-      requirements: originalBrief.requirements,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    })
-    .select()
+    .insert(duplicatedBrief);
+    
+  if (insertError) {
+    throw new HttpError(`Failed to duplicate brief: ${insertError.message}`, 500);
+  }
+  
+  return { brief: { ...duplicatedBrief } };
+}
+
+async function validateBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: string) {
+  // Vérifier que le brief existe et appartient à l'utilisateur
+  const { data: existingBrief, error: briefError } = await supabaseAdmin
+    .from('briefs')
+    .select('*')
+    .eq('id', briefId)
+    .eq('user_id', userId)
     .single();
     
-  if (error) throw new HttpError('Failed to duplicate brief', 500);
+  if (briefError || !existingBrief) {
+    throw new HttpError(`Brief not found or access denied: ${briefError?.message || 'Unknown error'}`, 404);
+  }
   
-  return { brief: data };
+  // Mettre à jour le statut du brief à 'active'
+  const { error: updateError } = await supabaseAdmin
+    .from('briefs')
+    .update({ status: 'active', updated_at: new Date().toISOString() })
+    .eq('id', briefId);
+    
+  if (updateError) {
+    throw new HttpError(`Failed to update brief status: ${updateError.message}`, 500);
+  }
+  
+  // Préparer les données pour le webhook N8N
+  const webhookPayload = {
+    brief_id: briefId,
+    user_id: userId,
+    brief: existingBrief,
+    timestamp: new Date().toISOString(),
+    request_id: crypto.randomUUID()
+  };
+  
+  // Appeler le webhook N8N de manière synchrone
+  try {
+    console.log('Calling brief interpretation webhook');
+    const webhookResponse = await fetch('https://n8n.proxiwave.com/webhook/brief-interpretation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(webhookPayload)
+    });
+    
+    if (!webhookResponse.ok) {
+      throw new Error(`Webhook returned status ${webhookResponse.status}`);
+    }
+    
+    const webhookResult = await webhookResponse.json();
+    console.log('Webhook response:', webhookResult);
+    
+  } catch (webhookError) {
+    console.error('Error calling brief interpretation webhook:', webhookError);
+    throw new HttpError(`Failed to process brief: ${(webhookError as Error).message}`, 500);
+  }
+  
+  return { brief: existingBrief, status: 'validated' };
 }
 
 serve(async (req) => {
@@ -541,6 +599,11 @@ serve(async (req) => {
       case 'duplicate_brief':
         if (!brief_id) throw new HttpError('Missing required parameter: brief_id', 400);
         result = await duplicateBrief(supabaseAdmin, brief_id, user.id);
+        break;
+        
+      case 'validate_brief':
+        if (!brief_id) throw new HttpError('Missing required parameter: brief_id', 400);
+        result = await validateBrief(supabaseAdmin, brief_id, user.id);
         break;
         
       default:

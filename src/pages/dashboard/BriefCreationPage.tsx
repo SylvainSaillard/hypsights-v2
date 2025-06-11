@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import BriefForm from '../../components/briefs/BriefForm';
+import BriefValidationOverlay from '../../components/briefs/BriefValidationOverlay';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
+import { validateBrief } from '../../services/briefValidationService';
 
 const BriefCreationPage: React.FC = () => {
   const { briefId } = useParams<{ briefId?: string }>();
   const isEditing = Boolean(briefId);
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useI18n();
   
@@ -50,8 +53,23 @@ const BriefCreationPage: React.FC = () => {
       
       if (briefId) {
         console.log('Brief créé/mis à jour avec succès, ID:', briefId);
-        // Redirection vers la page de chat du brief
-        navigate(`/dashboard/briefs/${briefId}/chat`);
+        
+        // Lancer la validation du brief et l'interprétation via webhook
+        setIsValidating(true);
+        validateBrief(briefId)
+          .then(() => {
+            // Redirection vers la page de chat du brief après validation réussie
+            navigate(`/dashboard/briefs/${briefId}/chat`);
+          })
+          .catch((err) => {
+            setError(`Erreur lors de la validation du brief: ${err.message}`);
+            // Rediriger quand même vers la page de chat en cas d'erreur
+            navigate(`/dashboard/briefs/${briefId}/chat`);
+          })
+          .finally(() => {
+            setIsValidating(false);
+            setIsSubmitting(false);
+          });
       }
     }
   }, [submitResponse, submitting, navigate]);
@@ -71,16 +89,21 @@ const BriefCreationPage: React.FC = () => {
     setIsSubmitting(true);
     setError(null);
     
-    // Définir les paramètres pour l'appel à la fonction Edge
-    setSubmitParams({
-      action: isEditing ? 'update_brief' : 'create_brief',
-      brief_id: isEditing ? briefId : undefined,
-      brief_data: briefData
-    });
-    
-    // L'appel sera déclenché automatiquement quand submitParams change grâce au useEffect du hook
-    
-    // La redirection est gérée par l'useEffect sur submitResponse
+    try {
+      // Définir les paramètres pour l'appel à la fonction Edge
+      setSubmitParams({
+        action: isEditing ? 'update_brief' : 'create_brief',
+        brief_id: isEditing ? briefId : undefined,
+        brief_data: briefData
+      });
+      
+      // L'appel sera déclenché automatiquement quand submitParams change grâce au useEffect du hook
+      
+      // La redirection est gérée par l'useEffect sur submitResponse
+    } catch (err) {
+      setError((err as Error).message);
+      setIsSubmitting(false);
+    }
   };
 
   if (isEditing && briefLoading) {
@@ -108,6 +131,9 @@ const BriefCreationPage: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto">
+      {/* Overlay de validation avec animation de chargement */}
+      <BriefValidationOverlay isLoading={isValidating} />
+      
       <h1 className="text-2xl font-bold mb-6">
         {isEditing ? t('brief.creation.title.edit', 'Edit Brief') : t('brief.creation.title.create', 'Create New Brief')}
       </h1>
@@ -121,7 +147,7 @@ const BriefCreationPage: React.FC = () => {
       <BriefForm 
         initialData={isEditing ? existingBrief : undefined}
         onSubmit={handleFormSubmit}
-        isSubmitting={isSubmitting || submitting}
+        isSubmitting={isSubmitting || submitting || isValidating}
       />
     </div>
   );
