@@ -510,8 +510,8 @@ async function validateBrief(supabaseAdmin: SupabaseClient, briefId: string, use
   
   // Appeler le webhook N8N de manière synchrone
   try {
-    console.log('Calling brief interpretation webhook');
-    const webhookResponse = await fetch('https://n8n.proxiwave.com/webhook/brief-interpretation', {
+    console.log('Calling brief initialization webhook');
+    const webhookResponse = await fetch('https://n8n.proxiwave.com/webhook/brief_initialisation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(webhookPayload)
