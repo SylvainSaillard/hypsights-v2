@@ -18,9 +18,16 @@ export async function executeEdgeAction(
     // Use JWT token for authenticated routes, fallback to ANON_KEY for public endpoints
     const token = session?.access_token;
     
-    if (!token) {
+    // List of public endpoints that can work with ANON_KEY
+    const publicEndpoints = ['i18n-handler'];
+    
+    // Only throw authentication error if this is not a public endpoint
+    if (!token && !publicEndpoints.includes(endpoint)) {
       throw new Error('No authentication token available. Please login again.');
     }
+    
+    // Use SUPABASE_ANON_KEY from env for public endpoints when no token is available
+    const authToken = token || import.meta.env.VITE_SUPABASE_ANON_KEY;
     
     // Generate a unique request ID
     const requestId = crypto.randomUUID();
@@ -34,7 +41,7 @@ export async function executeEdgeAction(
     const response = await fetch(url, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json',
         'x-client-info': 'Hypsights V2 React Client',
         'x-request-id': requestId
