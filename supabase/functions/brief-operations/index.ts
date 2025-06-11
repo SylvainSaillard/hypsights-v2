@@ -259,6 +259,68 @@ async function createBrief(supabaseAdmin: SupabaseClient, briefData: any, userId
     }
   }
   
+  // Créer automatiquement le premier message de chat
+  try {
+    console.log('Creating initial chat message for brief:', briefId);
+    
+    // Créer un message initial basé sur la description du brief
+    const initialMessage = description 
+      ? `Bonjour ! J'ai analysé votre brief "${title}". Voici ce que j'ai compris : ${description.substring(0, 150)}${description.length > 150 ? '...' : ''} Comment puis-je vous aider à trouver les meilleurs fournisseurs pour votre projet ?`
+      : `Bonjour ! Votre brief "${title}" a été créé. Comment puis-je vous aider à trouver les meilleurs fournisseurs pour votre projet ?`;
+    
+    // Insérer le message utilisateur dans la table chat_messages
+    await supabaseAdmin.from('chat_messages').insert({
+      id: crypto.randomUUID(),
+      brief_id: briefId,
+      user_id: userId,
+      role: 'user',
+      content: initialMessage,
+      created_at: new Date().toISOString()
+    });
+    
+    // Insérer un message d'accusé de réception de l'IA
+    await supabaseAdmin.from('chat_messages').insert({
+      id: crypto.randomUUID(),
+      brief_id: briefId,
+      role: 'assistant',
+      content: "Je réfléchis à votre demande...",
+      created_at: new Date().toISOString()
+    });
+    
+    // Préparer les données pour le webhook N8N
+    const webhookPayload = {
+      brief_id: briefId,
+      user_id: userId,
+      message: initialMessage,
+      brief: {
+        title,
+        description,
+        reference_companies,
+        maturity,
+        geographies,
+        organization_types,
+        capabilities
+      },
+      timestamp: new Date().toISOString(),
+      request_id: crypto.randomUUID()
+    };
+    
+    // Appeler le webhook N8N de manière asynchrone
+    fetch('https://n8n.proxiwave.com/webhook/brief-interpretation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(webhookPayload)
+    }).catch(err => {
+      console.error('Error calling N8N webhook:', err);
+      // Ne pas bloquer la création du brief si l'appel webhook échoue
+    });
+    
+    console.log('Initial chat message created successfully');
+  } catch (chatError) {
+    console.error('Error creating initial chat message:', chatError);
+    // Ne pas bloquer la création du brief si la création du message échoue
+  }
+  
   return { brief: data };
 }
 
