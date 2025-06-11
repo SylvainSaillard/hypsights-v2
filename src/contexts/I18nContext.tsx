@@ -26,11 +26,11 @@ export const I18nProvider = ({ children }: { children: ReactNode }) => {
     setIsLoading(true);
     try {
       const data = await executeEdgeAction('i18n-handler', 'get_translations', { locale: currentLocale });
-      if (data && data.data && data.data.translations) {
-        setTranslations(data.data.translations);
+      if (data && data.translations) {
+        setTranslations(data.translations);
       } else {
         setTranslations({}); // Fallback to empty if no translations found
-        console.warn(`No translations found for locale: ${currentLocale}, or data.data.translations is missing.`);
+        console.warn(`No translations found for locale: ${currentLocale}, or data.translations is missing.`);
       }
     } catch (error) {
       console.error('Failed to fetch translations:', error);
