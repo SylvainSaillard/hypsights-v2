@@ -86,6 +86,34 @@ const BriefChatPage = () => {
         // Mettre à jour l'état local
         setBrief(prev => prev ? { ...prev, status: 'active' } : null);
         console.log('DEBUG BriefChatPage - Brief status updated to active');
+        
+        // Appeler directement le webhook N8N pour l'initialisation du brief
+        try {
+          console.log('DEBUG BriefChatPage - Calling brief initialization webhook');
+          const webhookPayload = {
+            brief_id: brief.id,
+            user_id: brief.user_id,
+            brief: brief,
+            timestamp: new Date().toISOString(),
+            request_id: crypto.randomUUID()
+          };
+          
+          const webhookResponse = await fetch('https://n8n.proxiwave.com/webhook/brief_initialisation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(webhookPayload)
+          });
+          
+          if (!webhookResponse.ok) {
+            throw new Error(`Webhook returned status ${webhookResponse.status}`);
+          }
+          
+          const webhookResult = await webhookResponse.json();
+          console.log('DEBUG BriefChatPage - Webhook response:', webhookResult);
+        } catch (webhookError) {
+          console.error('DEBUG BriefChatPage - Error calling brief initialization webhook:', webhookError);
+          // Ne pas bloquer le flux si l'appel webhook échoue
+        }
       } catch (error) {
         console.error('DEBUG BriefChatPage - Exception updating brief status:', error);
       }
