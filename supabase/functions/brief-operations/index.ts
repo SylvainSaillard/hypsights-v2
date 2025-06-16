@@ -475,33 +475,6 @@ async function duplicateBrief(supabaseAdmin: SupabaseClient, briefId: string, us
   return { brief: { ...duplicatedBrief } };
 }
 
-async function validateBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: string) {
-  // Vérifier que le brief existe et appartient à l'utilisateur
-  const { data: existingBrief, error: briefError } = await supabaseAdmin
-    .from('briefs')
-    .select('*')
-    .eq('id', briefId)
-    .eq('user_id', userId)
-    .single();
-    
-  if (briefError || !existingBrief) {
-    throw new HttpError(`Brief not found or access denied: ${briefError?.message || 'Unknown error'}`, 404);
-  }
-  
-  // Mettre à jour le statut du brief à 'active'
-  const { error: updateError } = await supabaseAdmin
-    .from('briefs')
-    .update({ status: 'active', updated_at: new Date().toISOString() })
-    .eq('id', briefId);
-    
-  if (updateError) {
-    throw new HttpError(`Failed to update brief status: ${updateError.message}`, 500);
-  }
-  
-  console.log(`Brief ${briefId} status updated to active by user ${userId}. Webhook for initial AI message will be called by frontend.`);
-  
-  return { brief: existingBrief, status: 'validated' };
-}
 
 serve(async (req) => {
   // Handle OPTIONS
@@ -572,11 +545,7 @@ serve(async (req) => {
         result = await duplicateBrief(supabaseAdmin, brief_id, user.id);
         break;
         
-      case 'validate_brief':
-        if (!brief_id) throw new HttpError('Missing required parameter: brief_id', 400);
-        result = await validateBrief(supabaseAdmin, brief_id, user.id);
-        break;
-        
+
       default:
         throw new HttpError(`Unsupported action: ${action}`, 400);
     }

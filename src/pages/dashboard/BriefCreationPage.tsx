@@ -4,14 +4,14 @@ import BriefForm from '../../components/briefs/BriefForm';
 import BriefValidationOverlay from '../../components/briefs/BriefValidationOverlay';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
-import { validateBrief } from '../../services/briefValidationService';
+
 
 const BriefCreationPage: React.FC = () => {
   const { briefId } = useParams<{ briefId?: string }>();
   const isEditing = Boolean(briefId);
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isValidating, setIsValidating] = useState(false);
+  const [isCallingWebhook, setIsCallingWebhook] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useI18n();
   
@@ -55,61 +55,61 @@ const BriefCreationPage: React.FC = () => {
         console.log('Brief créé/mis à jour avec succès, ID:', briefId);
         
         // Lancer la validation du brief et l'interprétation via webhook après un court délai
-        // Ce délai permet d'éviter les problèmes de concurrence entre création et validation
-        setIsValidating(true);
-        
-        // Attendre 500ms avant de lancer la validation du statut et l'appel webhook
-        setTimeout(async () => {
-          try {
-            console.log('Starting brief status update for ID:', briefId);
-            const validationResult = await validateBrief(briefId); // Met à jour le statut via Edge Function
-            console.log('Brief status update successful:', validationResult);
+        // Le brief a été créé ou mis à jour avec succès.
+        // submitResponse.data contient la réponse de l'Edge Function (par exemple, { brief: { ... } })
+        const createdOrUpdatedBrief = submitResponse.data?.brief;
 
-            // Préparer les données pour le webhook N8N brief_initialisation
-            const briefForWebhook = validationResult?.brief || (validationResult?.data?.brief);
-            if (!briefForWebhook || !briefForWebhook.user_id) {
-              throw new Error("Validated brief data is missing or incomplete for N8N webhook.");
+        if (createdOrUpdatedBrief && createdOrUpdatedBrief.id && createdOrUpdatedBrief.user_id) {
+          const briefIdForWebhook = createdOrUpdatedBrief.id;
+          console.log('Brief creation/update successful. Brief ID:', briefIdForWebhook);
+          setIsCallingWebhook(true);
+
+          // Attendre 500ms avant d'appeler le webhook N8N
+          setTimeout(async () => {
+            try {
+              const n8nPayload = {
+                brief_id: briefIdForWebhook,
+                user_id: createdOrUpdatedBrief.user_id,
+                brief: createdOrUpdatedBrief,
+                timestamp: new Date().toISOString(),
+                request_id: self.crypto.randomUUID(),
+              };
+
+              console.log('Calling N8N brief_initialisation webhook with payload:', n8nPayload);
+              const n8nResponse = await fetch('https://n8n.proxiwave.com/webhook/brief_initialisation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(n8nPayload),
+              });
+
+              if (!n8nResponse.ok) {
+                const errorText = await n8nResponse.text();
+                throw new Error(`N8N webhook brief_initialisation failed: ${n8nResponse.status} ${errorText}`);
+              }
+              
+              const n8nResult = await n8nResponse.json();
+              console.log('N8N webhook brief_initialisation successful:', n8nResult);
+
+            } catch (err: unknown) {
+              console.error('Error calling N8N webhook:', err);
+              const errorMessage = err instanceof Error ? err.message : String(err);
+              setError(`Erreur lors de l'appel au webhook N8N: ${errorMessage}`);
+            } finally {
+              setIsCallingWebhook(false);
+              setIsSubmitting(false); // Assurez-vous que isSubmitting est géré correctement
+              navigate(`/dashboard/briefs/${briefIdForWebhook}/chat`);
             }
-
-            const n8nPayload = {
-              brief_id: briefId,
-              user_id: briefForWebhook.user_id,
-              brief: briefForWebhook,
-              timestamp: new Date().toISOString(),
-              request_id: self.crypto.randomUUID(), // Génère un UUID côté client
-            };
-
-            console.log('Calling N8N brief_initialisation webhook with payload:', n8nPayload);
-            const n8nResponse = await fetch('https://n8n.proxiwave.com/webhook/brief_initialisation', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(n8nPayload),
-            });
-
-            if (!n8nResponse.ok) {
-              const errorText = await n8nResponse.text();
-              throw new Error(`N8N webhook brief_initialisation failed: ${n8nResponse.status} ${errorText}`);
-            }
-            
-            const n8nResult = await n8nResponse.json(); // Supposant que N8N retourne du JSON
-            console.log('N8N webhook brief_initialisation successful:', n8nResult);
-
-          } catch (err: unknown) { // Specify type for err
-            console.error('Error during status update or N8N webhook call:', err);
-            // Afficher l'erreur à l'utilisateur. La navigation se fait dans finally.
-            const errorMessage = err instanceof Error ? err.message : String(err);
-            setError(`Erreur post-création du brief: ${errorMessage}`);
-          } finally {
-            // Quoi qu'il arrive (succès ou échec du webhook N8N), on termine la validation et on navigue
-            setIsValidating(false);
-            setIsSubmitting(false);
-            navigate(`/dashboard/briefs/${briefId}/chat`);
-          }
-        }, 500);
-
+          }, 500);
+        } else {
+          console.error('Brief data not found in submitResponse or missing id/user_id:', submitResponse.data);
+          setError('Erreur: Les données du brief sont incomplètes après la création/mise à jour.');
+          setIsSubmitting(false);
+          // Optionnel: rediriger vers une page d'erreur ou le dashboard si briefId n'est pas disponible
+        }
       }
     }
   }, [submitResponse, submitting, navigate]);
+
 
   // Gestion des erreurs de soumission
   useEffect(() => {
@@ -169,22 +169,20 @@ const BriefCreationPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto">
       {/* Overlay de validation avec animation de chargement */}
-      <BriefValidationOverlay isLoading={isValidating} />
-      
-      <h1 className="text-2xl font-bold mb-6">
-        {isEditing ? t('brief.creation.title.edit', 'Edit Brief') : t('brief.creation.title.create', 'Create New Brief')}
-      </h1>
-      
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-          <p className="text-red-700">{error}</p>
+      {isCallingWebhook && <BriefValidationOverlay isLoading={isCallingWebhook} />} 
+      {error && <p className="text-red-500 mt-4">{error}</p>}
+      {(isSubmitting || isCallingWebhook) && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-xl">
+            <p className="text-lg font-semibold">{isSubmitting ? t('briefCreation.savingBrief') : t('briefCreation.callingWebhook')}</p> 
+            {/* Vous pouvez ajouter un spinner ou une animation ici */} 
+          </div>
         </div>
       )}
-      
       <BriefForm 
         initialData={isEditing ? existingBrief : undefined}
         onSubmit={handleFormSubmit}
-        isSubmitting={isSubmitting || submitting || isValidating}
+        isSubmitting={isSubmitting || submitting || isCallingWebhook}
       />
     </div>
   );
