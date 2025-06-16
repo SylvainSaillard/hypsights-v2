@@ -115,7 +115,7 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
 async function listBriefs(supabaseAdmin: SupabaseClient, userId: string) {
   const { data, error } = await supabaseAdmin
     .from('briefs')
-    .select('id, title, status, created_at, updated_at')
+    .select('id, title, created_at, updated_at')
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
     
