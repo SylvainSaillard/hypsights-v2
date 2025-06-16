@@ -53,7 +53,7 @@ function corsResponse(req: Request, data: any, status = 200): Response {
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
 const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') || '';
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
-const N8N_WEBHOOK_URL = 'https://n8n.proxiwave.com/webhook/brief-interpretation';
+const N8N_WEBHOOK_URL = 'https://n8n.proxiwave.com/webhook-test/brief-interpretation';
 const FUNCTION_NAME = 'ai-chat-handler';
 
 // Debug mode - set to true for local development
@@ -328,7 +328,7 @@ async function sendMessage(supabaseAdmin: SupabaseClient, briefId: string, userI
     // Track webhook completion
     await trackAnalytics(supabaseAdmin, 'webhook_completed', userId, { 
       brief_id: briefId,
-      processing_time_ms: webhookResult.processingTimeMs || 0
+      processing_time_ms: webhookResult.processingTimeMs ?? webhookResult.responseTime ?? 0
     });
     
     // 6. Récupérer tous les messages mis à jour (maintenant incluant potentiellement ceux créés par n8n)
