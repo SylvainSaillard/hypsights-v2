@@ -204,7 +204,6 @@ async function createBrief(supabaseAdmin: SupabaseClient, briefData: any, userId
     geographies,
     organization_types,
     capabilities,
-    status: 'draft',
     default_locale: locale,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString()

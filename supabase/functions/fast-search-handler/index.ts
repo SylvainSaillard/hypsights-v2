@@ -584,7 +584,6 @@ function getUserFriendlyError(error: any): string {
     'database_error': 'Erreur de base de données, veuillez réessayer',
     'missing_brief': 'Brief non trouvé',
     'webhook_error': 'Erreur lors du lancement de la recherche, veuillez réessayer',
-    'no_validated_solutions': 'Aucune solution validée trouvée pour ce brief',
     'default': 'Une erreur est survenue. Veuillez réessayer.'
   };
   
