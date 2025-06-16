@@ -54,22 +54,59 @@ const BriefCreationPage: React.FC = () => {
       if (briefId) {
         console.log('Brief créé/mis à jour avec succès, ID:', briefId);
         
-        // Lancer la validation du brief et l'interprétation via webhook
+        // Lancer la validation du brief et l'interprétation via webhook après un court délai
+        // Ce délai permet d'éviter les problèmes de concurrence entre création et validation
         setIsValidating(true);
-        validateBrief(briefId)
-          .then(() => {
-            // Redirection vers la page de chat du brief après validation réussie
-            navigate(`/dashboard/briefs/${briefId}/chat`);
-          })
-          .catch((err) => {
-            setError(`Erreur lors de la validation du brief: ${err.message}`);
-            // Rediriger quand même vers la page de chat en cas d'erreur
-            navigate(`/dashboard/briefs/${briefId}/chat`);
-          })
-          .finally(() => {
+        
+        // Attendre 500ms avant de lancer la validation du statut et l'appel webhook
+        setTimeout(async () => {
+          try {
+            console.log('Starting brief status update for ID:', briefId);
+            const validationResult = await validateBrief(briefId); // Met à jour le statut via Edge Function
+            console.log('Brief status update successful:', validationResult);
+
+            // Préparer les données pour le webhook N8N brief_initialisation
+            const briefForWebhook = validationResult?.brief || (validationResult?.data?.brief);
+            if (!briefForWebhook || !briefForWebhook.user_id) {
+              throw new Error("Validated brief data is missing or incomplete for N8N webhook.");
+            }
+
+            const n8nPayload = {
+              brief_id: briefId,
+              user_id: briefForWebhook.user_id,
+              brief: briefForWebhook,
+              timestamp: new Date().toISOString(),
+              request_id: self.crypto.randomUUID(), // Génère un UUID côté client
+            };
+
+            console.log('Calling N8N brief_initialisation webhook with payload:', n8nPayload);
+            const n8nResponse = await fetch('https://n8n.proxiwave.com/webhook/brief_initialisation', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(n8nPayload),
+            });
+
+            if (!n8nResponse.ok) {
+              const errorText = await n8nResponse.text();
+              throw new Error(`N8N webhook brief_initialisation failed: ${n8nResponse.status} ${errorText}`);
+            }
+            
+            const n8nResult = await n8nResponse.json(); // Supposant que N8N retourne du JSON
+            console.log('N8N webhook brief_initialisation successful:', n8nResult);
+
+          } catch (err: unknown) { // Specify type for err
+            console.error('Error during status update or N8N webhook call:', err);
+            // Afficher l'erreur à l'utilisateur. La navigation se fait dans finally.
+            const errorMessage = err instanceof Error ? err.message : String(err);
+            setError(`Erreur post-création du brief: ${errorMessage}`);
+          } finally {
+            // Quoi qu'il arrive (succès ou échec du webhook N8N), on termine la validation et on navigue
             setIsValidating(false);
             setIsSubmitting(false);
-          });
+            navigate(`/dashboard/briefs/${briefId}/chat`);
+          }
+        }, 500);
+
       }
     }
   }, [submitResponse, submitting, navigate]);

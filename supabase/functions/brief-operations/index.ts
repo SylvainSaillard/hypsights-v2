@@ -499,45 +499,7 @@ async function validateBrief(supabaseAdmin: SupabaseClient, briefId: string, use
     throw new HttpError(`Failed to update brief status: ${updateError.message}`, 500);
   }
   
-  // Préparer les données pour le webhook N8N
-  const webhookPayload = {
-    brief_id: briefId,
-    user_id: userId,
-    brief: existingBrief,
-    timestamp: new Date().toISOString(),
-    request_id: crypto.randomUUID()
-  };
-  
-  // Appeler le webhook N8N de manière synchrone
-  try {
-    console.log('Calling brief interpretation webhook');
-    // Revenir à l'URL originale qui fonctionnait
-    const webhookResponse = await fetch('https://n8n.proxiwave.com/webhook/brief-interpretation', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(webhookPayload)
-    });
-    
-    if (!webhookResponse.ok) {
-      console.error(`Webhook returned non-OK status: ${webhookResponse.status}`);
-      // Ne pas échouer complètement, continuer le processus
-      console.log('Continuing despite webhook error');
-    } else {
-      try {
-        const webhookResult = await webhookResponse.json();
-        console.log('Webhook response:', webhookResult);
-      } catch (parseError) {
-        console.error('Error parsing webhook response:', parseError);
-        // Ne pas échouer si la réponse n'est pas du JSON valide
-      }
-    }
-    
-    // Ne pas échouer même si le webhook échoue
-  } catch (webhookError) {
-    console.error('Error calling brief interpretation webhook:', webhookError);
-    // Ne pas échouer complètement, continuer le processus
-    console.log('Continuing despite webhook error');
-  }
+  console.log(`Brief ${briefId} status updated to active by user ${userId}. Webhook for initial AI message will be called by frontend.`);
   
   return { brief: existingBrief, status: 'validated' };
 }
