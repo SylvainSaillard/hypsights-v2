@@ -127,23 +127,11 @@ async function listBriefs(supabaseAdmin: SupabaseClient, userId: string) {
 async function getBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: string) {
   console.log(`Fetching brief ${briefId} for user ${userId}`);
   
-  // Select all columns explicitly to ensure we get the new columns
   const { data, error } = await supabaseAdmin
     .from('briefs')
     .select(`
-      id, 
-      user_id,
-      title, 
-      description,
-      reference_companies,
-      maturity,
-      geographies,
-      organization_types,
-      capabilities,
-      default_locale,
-      status,
-      created_at,
-      updated_at
+      *,
+      solutions:solutions (*, suppliers:suppliers(*))
     `)
     .eq('id', briefId)
     .eq('user_id', userId)
@@ -154,14 +142,15 @@ async function getBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: 
     throw new HttpError('Brief not found', 404);
   }
   
-  // Format array fields for frontend display
+  // Format array fields for frontend display, now including solutions
   const formattedBrief = {
     ...data,
     reference_companies: data.reference_companies || [],
     maturity: data.maturity || [],
     geographies: data.geographies || [],
     organization_types: data.organization_types || [],
-    capabilities: data.capabilities || []
+    capabilities: data.capabilities || [],
+    solutions: data.solutions || [] // Ensure solutions is always an array
   };
   
   console.log('Formatted brief data:', JSON.stringify(formattedBrief, null, 2));
@@ -556,7 +545,7 @@ serve(async (req) => {
     // 5. Response
     // Create a properly structured response for the frontend
     // Standardize response structure for all actions
-    let responseBody = {
+    let responseBody: any = {
       success: true,
       data: result
     };
