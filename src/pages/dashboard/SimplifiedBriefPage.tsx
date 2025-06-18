@@ -34,6 +34,8 @@ const SimplifiedBriefPage: React.FC = () => {
     );
   }
 
+
+
   // Main component with simplified view
   return (
     <div className="bg-hypsights-background min-h-screen">
@@ -105,32 +107,7 @@ const SimplifiedBriefPage: React.FC = () => {
             )}
           </div>
 
-          {/* Solutions Section */}
-          {briefData?.brief?.solutions && briefData.brief.solutions.length > 0 && (
-            <div className="mb-6">
-              <h2 className="text-xl font-bold mb-4">{t('brief.simplified.section.solutions', 'Proposed Solutions')}</h2>
-              <div className="space-y-4">
-                {briefData.brief.solutions.map((solution: any) => (
-                  <div key={solution.id} className="p-4 border rounded-lg bg-gray-50">
-                    <h3 className="font-semibold text-lg">{solution.name}</h3>
-                    {solution.description && <p className="text-gray-600 mb-2">{solution.description}</p>}
-                    {solution.suppliers && (
-                      <div className="mt-3 p-3 bg-blue-50 rounded-md border border-blue-100">
-                        <h4 className="font-semibold text-gray-800">{t('brief.simplified.section.supplier', 'Supplier')}</h4>
-                        <p className="text-gray-700">{solution.suppliers.name}</p>
-                        {solution.suppliers.website && (
-                          <a href={solution.suppliers.website} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-sm">
-                            {t('brief.simplified.supplier.website', 'Visit website')}
-                          </a>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
+
           {/* Enhanced Chat View avec solutions */}
           <EnhancedChatView 
             briefId={briefId || 'unknown'}

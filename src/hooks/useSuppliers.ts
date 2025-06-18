@@ -25,7 +25,7 @@ export function useSuppliers(briefId: string) {
       // Appel direct à Supabase pour récupérer les fournisseurs avec leurs produits
       const { data: suppliersList, error: suppliersError } = await supabase
         .from('suppliers')
-        .select('*, products:products!products_supplier_id_fkey(*)')
+        .select('*, products(*)')
         .eq('brief_id', briefId);
       
       if (suppliersError) {
@@ -33,7 +33,8 @@ export function useSuppliers(briefId: string) {
       }
       
       console.log(`useSuppliers - ${suppliersList?.length || 0} fournisseurs récupérés`);
-      
+      console.log('useSuppliers - Données brutes des fournisseurs:', JSON.stringify(suppliersList, null, 2));
+
       setSuppliers(suppliersList || []);
     } catch (err) {
       console.error('useSuppliers - Erreur:', err);
