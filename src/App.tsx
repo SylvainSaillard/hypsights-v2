@@ -63,8 +63,34 @@ const DashboardLayout = () => {
   );
 };
 
-import { DashboardPage } from './pages/Dashboard.tsx';
+import KpiCards from './components/dashboard/KpiCards';
+import BriefManagementGrid from './components/dashboard/BriefManagementGrid';
+import CreateBriefButton from './components/dashboard/CreateBriefButton';
 import { useI18n } from './contexts/I18nContext'; // Import useI18n
+
+const DashboardOverviewPage = () => {
+  const { t, locale } = useI18n(); // Get the t function and locale
+  console.log(`DashboardOverviewPage: Current locale: ${locale}, will call t('dashboard.title') directly in JSX.`);
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">{t('dashboard.title', 'Dashboard')}</h1>
+        <CreateBriefButton />
+      </div>
+      
+      <KpiCards />
+      
+      <div className="mb-8 bg-card rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4">{t('dashboard.recent_activity.title', 'Recent Activity')}</h2>
+        <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-500 text-center">
+          {t('dashboard.recent_activity.placeholder', 'Your recent activities will appear here')}
+        </div>
+      </div>
+      
+      <BriefManagementGrid />
+    </div>
+  );
+};
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user, isLoading } = useAuth(); // Use actual useAuth
@@ -104,7 +130,7 @@ function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<DashboardPage />} />
+        <Route index element={<DashboardOverviewPage />} />
         <Route path="debug" element={<CorsTest />} />
         
         {/* Brief management routes */}
