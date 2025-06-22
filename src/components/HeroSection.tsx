@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { Button } from './ui/button';
+import { useToast } from '../hooks/use-toast';
 import { Plus } from 'lucide-react';
 
 interface HeroSectionProps {
