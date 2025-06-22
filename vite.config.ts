@@ -19,7 +19,6 @@ export default defineConfig({
     sourcemap: false,
     minify: 'terser',
     rollupOptions: {
-      external: ['recharts', '@radix-ui/react-progress', '@radix-ui/react-toast'],
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
