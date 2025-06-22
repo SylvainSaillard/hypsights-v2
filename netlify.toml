@@ -4,7 +4,6 @@
 
 [build.environment]
   NODE_VERSION = "18"
-  NPM_VERSION = "9"
 
 # Environment variables for production
 [context.production.environment]
