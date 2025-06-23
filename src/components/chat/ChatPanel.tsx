@@ -28,12 +28,41 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   onRefresh
 }) => {
   const { t } = useI18n();
-  // Référence pour faire défiler vers le bas automatiquement
+  // Références pour faire défiler vers le bas automatiquement
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const previousMessagesLengthRef = useRef<number>(0);
   
-  // Effet pour faire défiler vers le bas quand de nouveaux messages arrivent
+  // Effet pour faire défiler vers le bas uniquement dans certaines conditions
   useEffect(() => {
-    if (messagesEndRef.current) {
+    // Ne rien faire si pas de nouveaux messages
+    if (!messages.length) return;
+    
+    const container = messagesContainerRef.current;
+    const shouldAutoScroll = () => {
+      // Toujours défiler si c'est le premier chargement
+      if (previousMessagesLengthRef.current === 0) return true;
+      
+      // Défiler si de nouveaux messages sont ajoutés
+      if (messages.length > previousMessagesLengthRef.current) {
+        // Vérifier si l'utilisateur était déjà proche du bas avant l'ajout de nouveaux messages
+        if (container) {
+          // Si l'utilisateur est à moins de 100px du bas, considérer qu'il est au bas
+          const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+          return isNearBottom;
+        }
+        return true;
+      }
+      
+      // Ne pas défiler si c'est juste un rafraîchissement sans nouveaux messages
+      return false;
+    };
+    
+    // Mettre à jour la référence du nombre de messages
+    previousMessagesLengthRef.current = messages.length;
+    
+    // Défiler uniquement si nécessaire
+    if (shouldAutoScroll() && messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages]);
@@ -65,7 +94,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
       </div>
       
       {/* Messages - hauteur fixe avec défilement */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[450px]">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[450px]">
         {messages.length === 0 && !isLoading && (
           <div className="text-center text-gray-500 py-8">
             {t('chat_panel.no_messages', 'No messages. Start the conversation!')}
