@@ -175,6 +175,42 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
   };
 }
 
+async function getAllBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string) {
+  const { data, error } = await supabaseAdmin
+    .from('briefs')
+    .select(`
+      id,
+      title,
+      description,
+      category,
+      budget,
+      created_at,
+      solutions ( count ),
+      suppliers ( count ),
+      products ( count )
+    `)
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching briefs with stats:', error);
+    throw new HttpError('Failed to retrieve briefs.', 500);
+  }
+
+  const formattedBriefs = data.map(b => {
+    const stats = {
+      solutions: b.solutions[0]?.count || 0,
+      suppliers: b.suppliers[0]?.count || 0,
+      products: b.products[0]?.count || 0,
+    };
+    // Create a new object without the original relations
+    const { solutions, suppliers, products, ...rest } = b;
+    return { ...rest, stats };
+  });
+
+  return formattedBriefs;
+}
+
 async function getBriefStats(supabaseAdmin: SupabaseClient, briefId: string, userId: string) {
   // First, verify that the brief belongs to the user to enforce RLS-like security
   const { data: brief, error: briefError } = await supabaseAdmin
@@ -224,6 +260,9 @@ async function handleAction(action: string, params: any, user: User, supabaseAdm
         throw new HttpError('Missing required parameter: brief_id', 400);
       }
       return { stats: await getBriefStats(supabaseAdmin, params.brief_id, user.id) };
+
+    case 'get_all_briefs_with_stats':
+      return { briefs: await getAllBriefsWithStats(supabaseAdmin, user.id) };
 
     default:
       throw new HttpError(`Unknown action: ${action}`, 400);

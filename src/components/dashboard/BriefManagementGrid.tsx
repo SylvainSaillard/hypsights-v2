@@ -13,6 +13,11 @@ type Brief = {
   category: string;
   budget: string;
   created_at: string;
+  stats: {
+    solutions: number;
+    suppliers: number;
+    products: number;
+  };
 };
 
 /**
@@ -25,8 +30,8 @@ const BriefManagementGrid: React.FC = () => {
   
   // Fetch all briefs for the current user.
   // The 'list_briefs' action is called to retrieve the necessary data.
-  const { data, loading, error } = useEdgeFunction('brief-operations', { 
-    action: 'list_briefs' 
+  const { data, loading, error } = useEdgeFunction('dashboard-data', { 
+    action: 'get_all_briefs_with_stats' 
   }, 'POST');
 
   // Display a loading skeleton to improve user experience while data is being fetched.
@@ -58,7 +63,7 @@ const BriefManagementGrid: React.FC = () => {
     return (
       <div className="bg-card rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-xl font-semibold text-red-600">{t('brief.grid.title.error', 'Error Loading Briefs')}</h2>
-        <p className="text-red-500">{error.message || t('error.generic', 'An unexpected error occurred.')}</p>
+        <p className="text-red-500">{error || t('error.generic', 'An unexpected error occurred.')}</p>
       </div>
     );
   }
@@ -78,7 +83,7 @@ const BriefManagementGrid: React.FC = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {briefs.map((brief: Brief) => (
-            <BriefCard key={brief.id} brief={brief} />
+            <BriefCard key={brief.id} brief={brief} stats={brief.stats} />
           ))}
         </div>
       )}

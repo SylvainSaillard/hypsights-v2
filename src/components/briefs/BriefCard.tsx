@@ -1,5 +1,4 @@
 import React from 'react';
-import { useEdgeFunction } from '../../hooks/useEdgeFunction';
 
 // Define the types for the brief and stats
 interface Brief {
@@ -13,6 +12,11 @@ interface Brief {
 
 interface BriefCardProps {
   brief: Brief;
+  stats: {
+    solutions: number;
+    suppliers: number;
+    products: number;
+  };
 }
 
 const IconTag = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2V5a2 2 0 012-2zM15 5h5a2 2 0 012 2v5a2 2 0 01-2 2h-5a2 2 0 01-2-2V7a2 2 0 012-2zM7 15h5a2 2 0 012 2v5a2 2 0 01-2 2H7a2 2 0 01-2-2v-5a2 2 0 012-2zM15 15h5a2 2 0 012 2v5a2 2 0 01-2 2h-5a2 2 0 01-2-2v-5a2 2 0 012-2z" /></svg>;
@@ -23,13 +27,8 @@ const IconProduct = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8
 const IconSolution = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 mb-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>;
 const IconStar = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>;
 
-const BriefCard: React.FC<BriefCardProps> = ({ brief }) => {
-  const { data: statsData, loading, error } = useEdgeFunction('dashboard-data', {
-    action: 'get_brief_stats',
-    brief_id: brief.id
-  }, 'POST');
-
-  const stats = statsData?.stats;
+const BriefCard: React.FC<BriefCardProps> = ({ brief, stats }) => {
+  
   const hasResults = stats && (stats.solutions > 0 || stats.suppliers > 0 || stats.products > 0);
   
   const cardClasses = hasResults
@@ -70,22 +69,22 @@ const BriefCard: React.FC<BriefCardProps> = ({ brief }) => {
       <div className="grid grid-cols-3 gap-3 text-center mb-5">
         <div className={`rounded-lg p-3 ${hasResults ? 'bg-green-100/60' : 'bg-gray-100'}`}>
           <IconCompany />
-          <p className="font-bold text-2xl text-gray-700">{loading ? '...' : hasResults ? stats.suppliers : '-'}</p>
+          <p className="font-bold text-2xl text-gray-700">{hasResults ? stats.suppliers : '-'}</p>
           <p className="text-xs text-gray-500">Companies</p>
         </div>
         <div className={`rounded-lg p-3 ${hasResults ? 'bg-green-100/60' : 'bg-gray-100'}`}>
           <IconProduct />
-          <p className="font-bold text-2xl text-gray-700">{loading ? '...' : hasResults ? stats.products : '-'}</p>
+          <p className="font-bold text-2xl text-gray-700">{hasResults ? stats.products : '-'}</p>
           <p className="text-xs text-gray-500">Products</p>
         </div>
         <div className={`rounded-lg p-3 ${hasResults ? 'bg-green-100/60' : 'bg-gray-100'}`}>
           <IconSolution />
-          <p className="font-bold text-2xl text-gray-700">{loading ? '...' : hasResults ? stats.solutions : '-'}</p>
+          <p className="font-bold text-2xl text-gray-700">{hasResults ? stats.solutions : '-'}</p>
           <p className="text-xs text-gray-500">Solutions</p>
         </div>
       </div>
 
-      {error && <p className="text-red-500 text-xs text-center mb-4">Error loading stats.</p>}
+      
 
       <button className={`w-full mt-auto py-2.5 rounded-lg font-semibold flex items-center justify-center transition-all ${hasResults ? 'bg-green-500 hover:bg-green-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-600'}`}>
         {hasResults ? <><IconStar /> View New Results</> : 'Complete & Submit Brief'}
