@@ -14,15 +14,19 @@ import { devLog } from '../lib/devTools';
 export function useEdgeFunction(
   endpoint: string, 
   params: Record<string, any> = {},
-  method: 'GET' | 'POST' = 'POST'
+  options: { method?: 'GET' | 'POST'; enabled?: boolean } = {}
 ) {
+  const { method = 'POST', enabled = true } = options;
+
+  devLog(`useEdgeFunction render for ${endpoint}`, { params, options });
+
   const [state, setState] = useState<{
     data: any;
     loading: boolean;
     error: string | null;
-  }>({ 
+  }>({
     data: null, 
-    loading: true, 
+    loading: enabled, 
     error: null 
   });
   
@@ -59,9 +63,6 @@ export function useEdgeFunction(
       const isNonStandardLocalPort = environment === 'development' && 
                                   window.location.port !== '' && 
                                   window.location.port !== '3000';
-      
-      // Use a proxy approach for local development with non-standard ports
-      const useLocalProxy = isNonStandardLocalPort;
       
       let options: RequestInit = {
         method: method,
@@ -182,11 +183,17 @@ export function useEdgeFunction(
         error: error.message || 'An unknown error occurred' 
       });
     }
-  }, [endpoint, JSON.stringify(params), method, SUPABASE_URL, SUPABASE_ANON_KEY]);
-  
-  useEffect(() => { 
-    fetchData(); 
-  }, [fetchData]);
+  }, [endpoint, JSON.stringify(params), method, SUPABASE_URL, SUPABASE_ANON_KEY, enabled]);
+
+  useEffect(() => {
+    devLog(`useEdgeFunction effect for ${endpoint}`, { enabled });
+    if (enabled) {
+      fetchData();
+    } else {
+      // When disabled, we shouldn't be in a loading state.
+      setState(prev => ({ ...prev, loading: false }));
+    }
+  }, [fetchData, enabled]);
   
   return { 
     ...state, 

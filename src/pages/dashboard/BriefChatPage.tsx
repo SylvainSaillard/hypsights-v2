@@ -20,7 +20,7 @@ const BriefChatPage = () => {
   const { data, loading, error, refresh } = useEdgeFunction('brief-operations', {
     action: 'get_brief',
     brief_id: briefId,
-  });
+  }, { enabled: !!briefId });
 
   const brief = data?.brief as Brief | null;
 
