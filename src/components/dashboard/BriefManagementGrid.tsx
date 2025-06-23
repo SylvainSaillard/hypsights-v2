@@ -106,16 +106,18 @@ const BriefManagementGrid: React.FC = () => {
   };
 
   const StatBox: React.FC<StatBoxProps> = ({ icon, label, value, colorClass, hasResults }) => (
-    <div className={`flex-1 p-3 rounded-lg text-center transition-all duration-200 ${hasResults ? colorClass : 'bg-gray-50 border border-gray-200'}`}>
-      <div className="flex justify-center items-center mb-1">
+    <div className="flex flex-col items-center">
+      <div className={`w-12 h-12 rounded-full flex items-center justify-center ${hasResults ? colorClass : 'bg-gray-100'} mb-2`}>
         {icon}
       </div>
-      <p className={`text-lg font-bold ${hasResults ? 'text-current' : 'text-gray-400'}`}>
-        {hasResults ? value : '—'}
-      </p>
-      <p className={`text-xs ${hasResults ? 'text-current opacity-80' : 'text-gray-500'}`}>
-        {label}
-      </p>
+      <div className="text-center">
+        <p className={`text-lg font-bold ${hasResults ? 'text-gray-900' : 'text-gray-400'}`}>
+          {hasResults ? value : '—'}
+        </p>
+        <p className="text-xs text-gray-500 leading-tight">
+          {label}
+        </p>
+      </div>
     </div>
   );
   
@@ -225,59 +227,65 @@ const BriefManagementGrid: React.FC = () => {
             {filteredBriefs.map((brief: Brief) => {
               const hasResults = brief.solutions_count > 0 || brief.products_count > 0 || brief.suppliers_count > 0;
               const cardClasses = hasResults 
-                ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 shadow-lg hover:shadow-xl'
+                ? 'bg-white border-green-300 shadow-lg hover:shadow-xl'
                 : 'bg-white border-gray-200 shadow-md hover:shadow-lg';
 
               return (
                 <div 
                   key={brief.id}
-                  className={`group p-6 rounded-xl border transition-all duration-300 cursor-pointer transform hover:-translate-y-1 ${cardClasses}`}
+                  className={`group p-6 rounded-xl border-2 transition-all duration-300 cursor-pointer transform hover:-translate-y-1 ${cardClasses}`}
                   onClick={() => window.location.href = `/dashboard/briefs/${brief.id}/chat`}
                 >
                   <div className="flex flex-col h-full">
-                    {/* Header */}
+                    {/* Header with Status Badge and Star */}
                     <div className="flex justify-between items-start mb-4">
                       <StatusBadge status={brief.status} />
-                      <div className="text-right">
-                        <span className="text-sm text-gray-500 block">{formatDate(brief.created_at)}</span>
-                        {hasResults && (
-                          <span className="inline-flex items-center text-xs text-green-600 font-medium mt-1">
-                            <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                            </svg>
-                            {t('brief.card.has_results', 'Has Results')}
-                          </span>
-                        )}
+                      {hasResults && (
+                        <div className="text-yellow-400">
+                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Title and Description */}
+                    <div className="mb-6 flex-1">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
+                        {brief.title || t('brief.card.untitled', 'Untitled Brief')}
+                      </h3>
+                      <div className="flex items-center text-sm text-gray-500 mb-4">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        <span className="capitalize">{brief.status.replace('_', ' ')}</span>
+                        <span className="mx-2">•</span>
+                        <span>{formatDate(brief.created_at)}</span>
                       </div>
                     </div>
 
-                    {/* Title */}
-                    <h3 className="text-lg font-bold text-gray-900 mb-4 line-clamp-2 group-hover:text-gray-700 transition-colors">
-                      {brief.title || t('brief.card.untitled', 'Untitled Brief')}
-                    </h3>
-
-                    {/* Stats */}
-                    <div className="flex gap-2 mb-6 flex-1">
+                    {/* Circular Stats */}
+                    <div className="flex justify-around items-center mb-6 py-4 bg-gray-50 rounded-lg">
                       <StatBox 
-                        label={t('kpi.card.suppliers_found.title', 'Suppliers')} 
+                        label={t('kpi.card.suppliers_found.title', 'Companies')} 
                         value={brief.suppliers_count} 
                         hasResults={brief.suppliers_count > 0}
-                        colorClass="bg-blue-100 text-blue-700 border border-blue-200"
-                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
+                        colorClass="bg-green-100 text-green-600"
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
                       />
                       <StatBox 
                         label={t('brief.card.products_count', 'Products')} 
                         value={brief.products_count} 
                         hasResults={brief.products_count > 0}
-                        colorClass="bg-purple-100 text-purple-700 border border-purple-200"
-                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
+                        colorClass="bg-blue-100 text-blue-600"
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
                       />
                       <StatBox 
                         label={t('brief.card.solutions_count', 'Solutions')} 
                         value={brief.solutions_count} 
                         hasResults={brief.solutions_count > 0}
-                        colorClass="bg-indigo-100 text-indigo-700 border border-indigo-200"
-                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-current" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707M6.343 17.657l.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>}
+                        colorClass="bg-purple-100 text-purple-600"
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707M6.343 17.657l.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>}
                       />
                     </div>
 
@@ -293,7 +301,10 @@ const BriefManagementGrid: React.FC = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
-                          {t('brief.action.view_results', 'View Results')}
+                          {hasResults && brief.suppliers_count > 0 ? 
+                            t('brief.action.view_results_count', `View ${brief.suppliers_count + brief.products_count} New Results`) :
+                            t('brief.action.view_results', 'View Results')
+                          }
                         </span>
                       ) : (
                         <span className="flex items-center justify-center">
