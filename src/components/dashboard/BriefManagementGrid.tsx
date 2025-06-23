@@ -1,13 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import useEdgeFunction from '../../hooks/useEdgeFunction';
-
 import { useI18n } from '../../contexts/I18nContext';
+import useEdgeFunction from '../../hooks/useEdgeFunction';
 
 type Brief = {
   id: string;
   title: string;
-  status: 'draft' | 'active' | 'deep_waiting';
   created_at: string;
   updated_at: string;
   solutions_count: number;
@@ -15,19 +13,16 @@ type Brief = {
   suppliers_count: number;
 };
 
-type StatusFilter = 'all' | 'draft' | 'active' | 'deep_waiting';
-
 /**
  * Brief Management Grid component
- * Displays briefs with status badges and actions
+ * Displays briefs with actions
  * Follows Hypsights design system for consistent UI
  */
 const BriefManagementGrid: React.FC = () => {
-    const { t, locale } = useI18n();
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  
+  const { t, locale } = useI18n();
+
   // Fetch briefs with stats from edge function
-    const { data, loading, error } = useEdgeFunction('dashboard-data', { 
+  const { data, loading, error } = useEdgeFunction('dashboard-data', { 
     action: 'get_briefs_with_stats' 
   }, 'POST');
 
@@ -51,51 +46,6 @@ const BriefManagementGrid: React.FC = () => {
       year: 'numeric' 
     }).format(date);
   };
-  
-  // Enhanced status badge component with design tokens
-  const StatusBadge: React.FC<{ status: Brief['status'] }> = ({ status }) => {
-    const badgeClasses = {
-      draft: 'bg-badge-draft-bg text-badge-draft-text border border-gray-300',
-      active: 'bg-badge-active-bg text-badge-active-text border border-green-400 shadow-sm',
-      deep_waiting: 'bg-badge-deep-waiting-bg text-badge-deep-waiting-text border border-purple-400 shadow-sm'
-    };
-    
-    const statusLabels = {
-      draft: t('brief.status.draft', 'Draft'),
-      active: t('brief.status.active', 'Active'),
-      deep_waiting: t('brief.status.deep_waiting', 'Deep Search')
-    };
-    
-    const statusIcons = {
-      draft: (
-        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4z" clipRule="evenodd" />
-        </svg>
-      ),
-      active: (
-        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-        </svg>
-      ),
-      deep_waiting: (
-        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-          <path fillRule="evenodd" d="M9.504 1.132a1 1 0 01.992 0l1.75 1a1 1 0 11-.992 1.736L10 3.152l-1.254.716a1 1 0 11-.992-1.736l1.75-1zM5.618 4.504a1 1 0 01-.372 1.364L5.016 6l.23.132a1 1 0 11-.992 1.736L3 7.723V8a1 1 0 01-2 0V6a.996.996 0 01.52-.878l1.734-.99a1 1 0 011.364.372zm8.764 0a1 1 0 011.364-.372l1.734.99A.996.996 0 0118 6v2a1 1 0 11-2 0v-.277l-1.254.145a1 1 0 11-.992-1.736L14.984 6l-.23-.132a1 1 0 01-.372-1.364zm-7 4a1 1 0 011.364-.372L10 8.848l1.254-.716a1 1 0 11.992 1.736L11 10.723V12a1 1 0 11-2 0v-1.277l-1.246-.855a1 1 0 01-.372-1.364zM3 11a1 1 0 011 1v1.277l1.246.855a1 1 0 11-.992 1.736L3 15.277V16a1 1 0 11-2 0v-2a.996.996 0 01.52-.878L3 11zm14 0a1 1 0 01.48.124l1.734.99A.996.996 0 0120 13v2a1 1 0 11-2 0v-.723l-1.254-.145a1 1 0 11-.992-1.736L16.984 13l-.23-.132A1 1 0 0117 11z" clipRule="evenodd" />
-        </svg>
-      )
-    };
-    
-    return (
-      <span className={`inline-flex items-center px-3 py-1 text-xs font-semibold rounded-full ${badgeClasses[status]} transition-all duration-200`}>
-        {statusIcons[status]}
-        {statusLabels[status]}
-      </span>
-    );
-  };
-  
-  // Filter briefs based on selected status
-      const filteredBriefs = data?.data?.filter((brief: Brief) => 
-    statusFilter === 'all' || brief.status === statusFilter
-  ) || [];
 
   type StatBoxProps = {
     icon: React.ReactNode;
@@ -144,7 +94,7 @@ const BriefManagementGrid: React.FC = () => {
     );
   }
   
-    if (error) {
+  if (error) {
     return (
       <div className="bg-red-50 border border-red-200 text-red-800 p-6 rounded-xl mb-8">
         <div className="flex items-center">
@@ -159,35 +109,13 @@ const BriefManagementGrid: React.FC = () => {
       </div>
     );
   }
-  
-  const statusOptions = [
-    { value: 'all' as StatusFilter, label: t('brief.filter.all', 'All Briefs') },
-    { value: 'draft' as StatusFilter, label: t('brief.filter.draft', 'Draft') },
-    { value: 'active' as StatusFilter, label: t('brief.filter.active', 'Active') },
-    { value: 'deep_waiting' as StatusFilter, label: t('brief.filter.deep_waiting', 'Deep Search') }
-  ];
+
+  const filteredBriefs = data?.data || [];
 
   return (
     <div className="bg-card rounded-xl shadow-lg p-8 mb-8 border border-gray-100">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+      <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-gray-900">{t('brief.grid.title.main', 'Your Briefs')}</h2>
-        
-        {/* Enhanced Status Filter */}
-        <div className="flex flex-wrap gap-2 p-1 bg-gray-100 rounded-lg">
-          {statusOptions.map(({ value: statusValue, label: statusLabel }) => (
-            <button
-              key={statusValue}
-              onClick={() => setStatusFilter(statusValue)}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 whitespace-nowrap ${
-                statusFilter === statusValue
-                  ? 'bg-white text-gray-900 shadow-sm border border-gray-200 font-semibold'
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-              }`}
-            >
-              {statusLabel}
-            </button>
-          ))}
-        </div>
       </div>
       
       {filteredBriefs.length === 0 ? (
@@ -198,28 +126,20 @@ const BriefManagementGrid: React.FC = () => {
             </svg>
           </div>
           <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {statusFilter === 'all' 
-              ? t('brief.empty.no_briefs', 'No briefs yet') 
-              : t('brief.empty.no_briefs_filtered', 'No briefs with this status')
-            }
+            {t('brief.empty.no_briefs', 'No briefs yet')}
           </h3>
           <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            {statusFilter === 'all' 
-              ? t('brief.empty.description', 'Create your first brief to start finding suppliers and products for your business needs.')
-              : t('brief.empty.description_filtered', 'Try changing the filter or create a new brief.')
-            }
+            {t('brief.empty.description', 'Create your first brief to start finding suppliers and products for your business needs.')}
           </p>
-          {statusFilter === 'all' && (
-            <Link
-              to="/dashboard/briefs/new"
-              className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              {t('brief.empty.create_button', 'Create Brief')}
-            </Link>
-          )}
+          <Link
+            to="/dashboard/briefs/new"
+            className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            {t('brief.empty.create_button', 'Create Brief')}
+          </Link>
         </div>
       ) : (
         <div className="space-y-6">
@@ -237,18 +157,6 @@ const BriefManagementGrid: React.FC = () => {
                   onClick={() => window.location.href = `/dashboard/briefs/${brief.id}/chat`}
                 >
                   <div className="flex flex-col h-full">
-                    {/* Header with Status Badge and Star */}
-                    <div className="flex justify-between items-start mb-4">
-                      <StatusBadge status={brief.status} />
-                      {hasResults && (
-                        <div className="text-yellow-400">
-                          <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                          </svg>
-                        </div>
-                      )}
-                    </div>
-
                     {/* Title and Description */}
                     <div className="mb-6 flex-1">
                       <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2">
@@ -258,8 +166,6 @@ const BriefManagementGrid: React.FC = () => {
                         <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                         </svg>
-                        <span className="capitalize">{brief.status.replace('_', ' ')}</span>
-                        <span className="mx-2">•</span>
                         <span>{formatDate(brief.created_at)}</span>
                       </div>
                     </div>
@@ -285,7 +191,7 @@ const BriefManagementGrid: React.FC = () => {
                         value={brief.solutions_count} 
                         hasResults={brief.solutions_count > 0}
                         colorClass="bg-purple-100 text-purple-600"
-                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707M6.343 17.657l.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>}
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>}
                       />
                     </div>
 
@@ -298,8 +204,7 @@ const BriefManagementGrid: React.FC = () => {
                       {hasResults ? (
                         <span className="flex items-center justify-center">
                           <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
                           {hasResults && brief.suppliers_count > 0 ? 
                             t('brief.action.view_results_count', `View ${brief.suppliers_count + brief.products_count} New Results`) :
