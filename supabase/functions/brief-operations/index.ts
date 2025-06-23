@@ -113,36 +113,29 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
 }
 
 async function listBriefs(supabaseAdmin: SupabaseClient, userId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('briefs')
-    .select(`
-      id,
-      title,
-      description,
-      created_at,
-      updated_at,
-      solutions:solutions!brief_id(count),
-      companies:fast_search_results!brief_id(count),
-      products:fast_search_results!brief_id(count)
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  console.log('Listing briefs with stats for user:', userId);
+
+  const { data, error } = await supabaseAdmin.rpc('get_user_briefs_with_stats', {
+    p_user_id: userId
+  });
 
   if (error) {
-    console.error('Error fetching briefs with counts:', error);
-    throw new HttpError('Failed to fetch briefs with counts', 500);
+    console.error('Error fetching briefs with stats:', error);
+    throw new HttpError('Failed to fetch briefs', 500);
   }
 
-  const briefs = data?.map(b => ({
-    id: b.id,
-    title: b.title,
-    description: b.description,
-    created_at: b.created_at,
-    updated_at: b.updated_at,
-    solutions_count: b.solutions[0]?.count || 0,
-    companies_count: b.companies[0]?.count || 0, 
-    products_count: b.products[0]?.count || 0, 
-  })) || [];
+  console.log('Briefs with stats data fetched:', data);
+
+  // Les données sont déjà dans le bon format, il suffit de les renommer pour correspondre à l'attendu du front-end
+  const briefs = data.map(brief => ({
+    id: brief.id,
+    title: brief.title,
+    created_at: brief.created_at,
+    updated_at: brief.updated_at,
+    solutions_count: brief.solution_count,
+    companies_count: brief.company_count,
+    products_count: brief.product_count,
+  }));
 
   return { briefs };
 }
