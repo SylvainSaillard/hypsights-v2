@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabaseClient';
+import { useEdgeFunction } from '../../hooks/useEdgeFunction';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import { useI18n } from '../../contexts/I18nContext';
+import { supabase } from '../../lib/supabaseClient'; // Import supabase
 
 interface Brief {
   id: string;
@@ -16,106 +16,52 @@ const BriefChatPage = () => {
   const { briefId } = useParams<{ briefId: string }>();
   const navigate = useNavigate();
   const { t, locale } = useI18n();
-  
-  const [brief, setBrief] = useState<Brief | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  
-  // Charger les détails du brief
-  useEffect(() => {
-    if (!briefId) {
-      setError(t('brief.chat.error.missing_id', 'Missing brief identifier'));
-      setLoading(false);
-      return;
-    }
-    
-    const loadBrief = async () => {
-      try {
-        console.log('DEBUG BriefChatPage - Loading brief details for ID:', briefId);
-        
-        const { data, error } = await supabase
-          .from('briefs')
-          .select('*')
-          .eq('id', briefId)
-          .single();
-        
-        if (error) {
-          console.error('DEBUG BriefChatPage - Error loading brief:', error);
-          setError(t('brief.chat.error.load_failed_detail', 'Error loading brief: {message}', { message: error.message }));
-          return;
-        }
-        
-        if (!data) {
-          console.error('DEBUG BriefChatPage - Brief not found');
-          setError(t('brief.chat.error.not_found', 'Brief not found'));
-          return;
-        }
-        
-        console.log('DEBUG BriefChatPage - Brief loaded:', data);
-        setBrief(data);
-      } catch (error) {
-        console.error('DEBUG BriefChatPage - Exception loading brief:', error);
-        setError(t('brief.chat.error.generic_detail', 'An error occurred: {message}', { message: (error as Error).message }));
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    loadBrief();
-  }, [briefId]);
+
+  const { data, loading, error, refresh } = useEdgeFunction('brief-operations', {
+    action: 'get_brief',
+    brief_id: briefId,
+  });
+
+  const brief = data?.brief as Brief | null;
+
   
   // Gérer la validation d'une solution
   const handleSolutionValidated = async (solutionId: string) => {
     console.log('DEBUG BriefChatPage - Solution validated:', solutionId);
-    
-    // Si le brief était en statut "draft", le passer en "active"
+
     if (brief && brief.status === 'draft') {
       try {
         console.log('DEBUG BriefChatPage - Updating brief status from draft to active');
-        
-        const { error } = await supabase
-          .from('briefs')
-          .update({ status: 'active' })
-          .eq('id', brief.id);
-        
-        if (error) {
-          console.error('DEBUG BriefChatPage - Error updating brief status:', error);
-          return;
-        }
-        
-        // Mettre à jour l'état local
-        setBrief(prev => prev ? { ...prev, status: 'active' } : null);
-        console.log('DEBUG BriefChatPage - Brief status updated to active');
-        
-        // Appeler directement le webhook N8N pour l'initialisation du brief
-        try {
-          console.log('DEBUG BriefChatPage - Calling brief initialization webhook');
-          const webhookPayload = {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+
+        if (!token) throw new Error('User not authenticated');
+
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/brief-operations`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            action: 'update_brief',
             brief_id: brief.id,
-            user_id: brief.user_id,
-            brief: brief,
-            timestamp: new Date().toISOString(),
-            request_id: crypto.randomUUID()
-          };
-          
-          const webhookResponse = await fetch('https://n8n.proxiwave.com/webhook/brief_initialisation', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(webhookPayload)
-          });
-          
-          if (!webhookResponse.ok) {
-            throw new Error(`Webhook returned status ${webhookResponse.status}`);
-          }
-          
-          const webhookResult = await webhookResponse.json();
-          console.log('DEBUG BriefChatPage - Webhook response:', webhookResult);
-        } catch (webhookError) {
-          console.error('DEBUG BriefChatPage - Error calling brief initialization webhook:', webhookError);
-          // Ne pas bloquer le flux si l'appel webhook échoue
+            brief_data: { status: 'active' },
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Failed to update brief status');
         }
+
+        console.log('DEBUG BriefChatPage - Brief status updated to active');
+        refresh(); // Re-fetch brief data to update the UI
+
       } catch (error) {
         console.error('DEBUG BriefChatPage - Exception updating brief status:', error);
+        // Optionally, show an error to the user
       }
     }
   };
