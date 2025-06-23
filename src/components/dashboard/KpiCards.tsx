@@ -80,7 +80,7 @@ const KpiCards: React.FC = () => {
       title: t('kpi.card.active_briefs.title', 'Active Briefs'),
       value: metrics.activeBriefs,
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-blue-600 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
@@ -93,7 +93,7 @@ const KpiCards: React.FC = () => {
       title: t('kpi.card.completed_searches.title', 'Completed Searches'),
       value: metrics.completedSearches,
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-purple-600 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       ),
@@ -106,7 +106,7 @@ const KpiCards: React.FC = () => {
       title: t('kpi.card.suppliers_found.title', 'Suppliers Found'),
       value: metrics.suppliersFound,
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-green-600 drop-shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
       ),
@@ -119,7 +119,7 @@ const KpiCards: React.FC = () => {
       title: t('kpi.card.fast_search_quota.title', 'Fast Search Quota'),
       value: `${metrics.quotaUsed}/${metrics.quotaLimit}`,
       icon: (
-        <svg xmlns="http://www.w3.org/2000/svg" className={`h-8 w-8 ${getQuotaStatusColor()}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className={`h-7 w-7 ${getQuotaStatusColor()} drop-shadow-sm`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
         </svg>
       ),
@@ -151,16 +151,16 @@ const KpiCards: React.FC = () => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 perspective-1000">
       {kpiCards.map((card, index) => (
         <div 
           key={index} 
-          className={`bg-gradient-to-br ${card.bgGradient || 'from-white to-gray-50'} rounded-xl shadow-lg border ${card.borderColor || 'border-gray-200'} p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+          className={`group bg-gradient-to-br ${card.bgGradient || 'from-white to-gray-50'} rounded-xl shadow-lg border ${card.borderColor || 'border-gray-200'} p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
         >
-          <div className="flex justify-between items-start">
+          <div className="flex justify-between items-start relative">
             <div className="flex-1">
-              <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">{card.title}</h3>
-              <p className="text-3xl font-bold mt-2 text-gray-900">{card.value}</p>
+              <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide group-hover:text-gray-800 transition-colors duration-300">{card.title}</h3>
+              <p className="text-3xl font-bold mt-2 text-gray-900 group-hover:scale-105 transform transition-transform duration-300">{card.value}</p>
               {!card.customContent && (
                 <p className={`text-sm mt-2 font-medium ${
                   card.changeType === 'positive' ? 'text-green-600' : 
@@ -171,7 +171,7 @@ const KpiCards: React.FC = () => {
                 </p>
               )}
             </div>
-            <div className="ml-4 p-3 bg-white rounded-lg shadow-sm">
+            <div className={`ml-4 p-3 rounded-xl shadow-md bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm border ${card.borderColor} transform transition-all duration-300 group-hover:rotate-3 group-hover:scale-110 group-hover:shadow-lg`}>
               {card.icon}
             </div>
           </div>
