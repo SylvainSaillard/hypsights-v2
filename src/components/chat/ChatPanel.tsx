@@ -119,7 +119,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
       </div>
       
       {/* Messages avec design amélioré */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-6 space-y-4 max-h-[450px] bg-gradient-to-b from-gray-50 to-white">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-6 space-y-4 bg-gradient-to-b from-gray-50 to-white">
         {messages.length === 0 && !isLoading && (
           <div className="text-center py-16">
             <div className="w-20 h-20 mx-auto mb-6 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center">

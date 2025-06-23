@@ -120,8 +120,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   
   return (
     <div className="flex flex-col h-full p-6">
-      {/* Conteneur principal avec hauteur fixe */}
-      <div className="flex gap-6 h-[600px]">
+      {/* Conteneur principal flexible */}
+      <div className="flex gap-6 flex-1 min-h-0">
         {/* Panneau de chat avec hauteur fixe et défilement */}
         <div className="w-3/5 flex flex-col">
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 h-full overflow-hidden">
@@ -149,8 +149,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
               onRefresh={loadSolutions}
               onStartFastSearch={handleStartFastSearchFromSolution}
               startingSolutionId={startingSolutionId}
-              briefHasActiveSearch={true}
-              showFastSearchDirectly={true}
+
             />
           </div>
         </div>
