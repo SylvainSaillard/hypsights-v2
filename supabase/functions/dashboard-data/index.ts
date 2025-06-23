@@ -97,6 +97,7 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
 }
 
 async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string) {
+  console.log(`[getBriefsWithStats] Starting for user: ${userId}`);
   // 1. Get all briefs for the user
   const { data: briefs, error: briefsError } = await supabaseAdmin
     .from('briefs')
@@ -105,14 +106,19 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
     .order('created_at', { ascending: false });
 
   if (briefsError) {
-    console.error('Error fetching briefs for stats:', briefsError);
+    console.error('[getBriefsWithStats] Error fetching briefs:', briefsError);
     throw new HttpError('Failed to fetch briefs', 500);
   }
-  if (!briefs) return [];
+  if (!briefs) {
+    console.log('[getBriefsWithStats] No briefs found for user.');
+    return [];
+  }
+  console.log(`[getBriefsWithStats] Found ${briefs.length} briefs.`);
 
   // 2. For each brief, get stats
   const briefsWithStats = await Promise.all(
     briefs.map(async (brief) => {
+      console.log(`[getBriefsWithStats] Getting stats for brief: ${brief.id}`);
       try {
         const [
           { count: solutionsCount, error: solError },
@@ -124,18 +130,23 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
           supabaseAdmin.from('suppliers').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id)
         ]);
 
-        if (solError) console.error(`Error counting solutions for brief ${brief.id}:`, solError);
-        if (prodError) console.error(`Error counting products for brief ${brief.id}:`, prodError);
-        if (supError) console.error(`Error counting suppliers for brief ${brief.id}:`, supError);
+        if (solError) console.error(`[getBriefsWithStats] Error counting solutions for brief ${brief.id}:`, solError);
+        if (prodError) console.error(`[getBriefsWithStats] Error counting products for brief ${brief.id}:`, prodError);
+        if (supError) console.error(`[getBriefsWithStats] Error counting suppliers for brief ${brief.id}:`, supError);
 
-        return {
-          ...brief,
+        const stats = {
           solutions_count: solutionsCount || 0,
           products_count: productsCount || 0,
           suppliers_count: suppliersCount || 0,
         };
+        console.log(`[getBriefsWithStats] Stats for brief ${brief.id}:`, JSON.stringify(stats));
+
+        return {
+          ...brief,
+          ...stats,
+        };
       } catch (error) {
-        console.error(`Failed to get stats for brief ${brief.id}:`, error);
+        console.error(`[getBriefsWithStats] Failed to get stats for brief ${brief.id}:`, error);
         return {
           ...brief,
           solutions_count: 0,
@@ -146,10 +157,12 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
     })
   );
 
+  console.log('[getBriefsWithStats] Finished. Returning briefs with stats.');
   return briefsWithStats;
 }
 
 async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
+  console.log(`[getUserMetrics] Starting for user: ${userId}`);
   let userMetadata = {
     fast_searches_quota: 3,
     fast_searches_used: 0,
@@ -169,7 +182,7 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
     if (!userError && userData) {
       userMetadata = userData;
     } else {
-      console.log(`No user metadata found for ${userId}, using defaults`);
+      console.log(`[getUserMetrics] No user metadata found for ${userId}, using defaults.`);
       try {
         await supabaseAdmin.from('users_metadata').insert({
           user_id: userId,
@@ -178,26 +191,29 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
           deep_searches_count: 0
         });
       } catch (insertError) {
-        console.error('Failed to create default user metadata:', insertError);
+        console.error('[getUserMetrics] Failed to create default user metadata:', insertError);
       }
     }
   } catch (error) {
-    console.error('Error fetching user metadata:', error);
+    console.error('[getUserMetrics] Error fetching user metadata:', error);
   }
   
   try {
+    console.log(`[getUserMetrics] Fetching briefs for user: ${userId}`);
     const { data: userBriefs, error: briefsError } = await supabaseAdmin
       .from('briefs')
       .select('id')
       .eq('user_id', userId);
       
     if (briefsError) {
-      console.error('Error fetching briefs for metrics:', briefsError);
+      console.error('[getUserMetrics] Error fetching briefs for metrics:', briefsError);
     } else if (userBriefs) {
       activeBriefs = userBriefs.length;
+      console.log(`[getUserMetrics] Found ${activeBriefs} active briefs.`);
       const briefIds = userBriefs.map(b => b.id);
       
       if (briefIds.length > 0) {
+        console.log(`[getUserMetrics] Fetching suppliers for ${briefIds.length} briefs.`);
         const { count, error: suppliersError } = await supabaseAdmin
           .from('suppliers')
           .select('id', { count: 'exact', head: true })
@@ -205,22 +221,26 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
           
         if (!suppliersError && count !== null) {
           suppliersFound = count;
+          console.log(`[getUserMetrics] Found ${suppliersFound} suppliers.`);
         } else if (suppliersError) {
-          console.error('Error fetching suppliers count for metrics:', suppliersError);
+          console.error('[getUserMetrics] Error fetching suppliers count for metrics:', suppliersError);
         }
       }
     }
   } catch (error) {
-    console.error('Error fetching briefs/suppliers metrics:', error);
+    console.error('[getUserMetrics] Error fetching briefs/suppliers metrics:', error);
   }
   
-  return {
+  const metrics = {
     activeBriefs: activeBriefs || 0,
     completedSearches: (userMetadata.fast_searches_used || 0) + (userMetadata.deep_searches_count || 0),
     suppliersFound: suppliersFound || 0,
     quotaUsed: userMetadata.fast_searches_used || 0,
     quotaLimit: userMetadata.fast_searches_quota || 3
   };
+
+  console.log('[getUserMetrics] Returning metrics:', JSON.stringify(metrics));
+  return metrics;
 }
 
 // Handle different dashboard actions
@@ -260,47 +280,37 @@ async function parseParams(req: Request) {
 }
 
 serve(async (req: Request) => {
-  // Log details of the request for debugging
-  console.log(`${FUNCTION_NAME} received ${req.method} request from ${req.headers.get('origin') || 'unknown'}`);
-  console.log('Headers:', Object.fromEntries(req.headers.entries()));
+  console.log(`[${FUNCTION_NAME}] Received ${req.method} from ${req.headers.get('origin')}`);
   
-  // Handle OPTIONS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) });
   }
   
   try {
-    // 1. Authentication
     const user = await authenticateUser(req);
-    console.log(`User authenticated: ${user.id}`);
+    console.log(`[${FUNCTION_NAME}] User authenticated: ${user.id} (${user.email})`);
     
-    // Create supabase admin client for database operations
     const supabaseAdmin = createSupabaseClient(true);
-    
-    // 2. Parse parameters and determine action
     const { action, params } = await parseParams(req);
-    console.log(`Executing action: ${action}`);
+    console.log(`[${FUNCTION_NAME}] Executing action: '${action}' with params:`, params);
     
-    // 3. Business logic - Execute the appropriate action
     const result = await handleAction(action, params, user, supabaseAdmin);
+    console.log(`[${FUNCTION_NAME}] Action '${action}' successful. Returning result.`);
     
-    // 4. Analytics tracking
     await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_${action}_success`, user.id, params);
     
-    // 5. Response
     return corsResponse({ success: true, data: result }, req);
   } catch (error) {
-    console.error(`Error in ${FUNCTION_NAME}:`, error);
+    console.error(`[${FUNCTION_NAME}] Top-level error:`, error);
     
     const statusCode = error instanceof HttpError ? error.status : 500;
     const errorMessage = error.message || 'An unexpected error occurred';
     
-    // Create supabase admin client for error logging
     try {
       const supabaseAdmin = createSupabaseClient(true);
       await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_error`, 'system', { error: errorMessage });
     } catch (loggingError) {
-      console.error('Failed to log error event:', loggingError);
+      console.error(`[${FUNCTION_NAME}] Failed to log error event:`, loggingError);
     }
     
     return corsResponse({ success: false, error: errorMessage }, req, { status: statusCode });
