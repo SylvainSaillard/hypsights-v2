@@ -175,71 +175,6 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
   };
 }
 
-async function getAllBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string) {
-  const { data, error } = await supabaseAdmin
-    .from('briefs')
-    .select(`
-      id,
-      title,
-      description,
-      created_at
-    `)
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    console.error('Error fetching briefs with stats:', error);
-    throw new HttpError('Failed to retrieve briefs.', 500);
-  }
-
-  const formattedBriefs = data.map(b => {
-    const stats = {
-      solutions: 0,
-      suppliers: 0,
-      products: 0,
-    };
-    const { ...rest } = b;
-    return { ...rest, stats };
-  });
-
-  return formattedBriefs;
-}
-
-async function getBriefStats(supabaseAdmin: SupabaseClient, briefId: string, userId: string) {
-  // First, verify that the brief belongs to the user to enforce RLS-like security
-  const { data: brief, error: briefError } = await supabaseAdmin
-    .from('briefs')
-    .select('id')
-    .eq('id', briefId)
-    .eq('user_id', userId)
-    .single();
-
-  if (briefError || !brief) {
-    throw new HttpError('Brief not found or access denied', 404);
-  }
-
-  // Run count queries in parallel for performance
-  const [
-    { count: solutionsCount, error: solutionsError },
-    { count: suppliersCount, error: suppliersError },
-    { count: productsCount, error: productsError }
-  ] = await Promise.all([
-    supabaseAdmin.from('solutions').select('id', { count: 'exact', head: true }).eq('brief_id', briefId),
-    supabaseAdmin.from('suppliers').select('id', { count: 'exact', head: true }).eq('brief_id', briefId),
-    supabaseAdmin.from('products').select('id', { count: 'exact', head: true }).eq('brief_id', briefId)
-  ]);
-
-  if (solutionsError) console.error(`Error fetching solutions count for brief ${briefId}:`, solutionsError);
-  if (suppliersError) console.error(`Error fetching suppliers count for brief ${briefId}:`, suppliersError);
-  if (productsError) console.error(`Error fetching products count for brief ${briefId}:`, productsError);
-
-  return {
-    solutions: solutionsCount || 0,
-    suppliers: suppliersCount || 0,
-    products: productsCount || 0,
-  };
-}
-
 // Handle different dashboard actions
 async function handleAction(action: string, params: any, user: User, supabaseAdmin: SupabaseClient) {
   console.log(`Handling action: ${action} with params:`, params);
@@ -248,16 +183,7 @@ async function handleAction(action: string, params: any, user: User, supabaseAdm
     case 'get_metrics':
       // Default action to get user metrics
       return { metrics: await getUserMetrics(supabaseAdmin, user.id) };
-    
-    case 'get_brief_stats':
-      if (!params.brief_id) {
-        throw new HttpError('Missing required parameter: brief_id', 400);
-      }
-      return { stats: await getBriefStats(supabaseAdmin, params.brief_id, user.id) };
-
-    case 'get_all_briefs_with_stats':
-      return { briefs: await getAllBriefsWithStats(supabaseAdmin, user.id) };
-
+      
     default:
       throw new HttpError(`Unknown action: ${action}`, 400);
   }
@@ -286,7 +212,11 @@ async function parseParams(req: Request) {
 }
 
 serve(async (req: Request) => {
-  // Handle preflight OPTIONS requests for CORS
+  // Log details of the request for debugging
+  console.log(`${FUNCTION_NAME} received ${req.method} request from ${req.headers.get('origin') || 'unknown'}`);
+  console.log('Headers:', Object.fromEntries(req.headers.entries()));
+  
+  // Handle OPTIONS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) });
   }
