@@ -39,8 +39,9 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   }, [messages]);
   
   return (
-    <div className="flex flex-col h-full border rounded-lg overflow-hidden bg-white w-full">
-      <div className="p-4 bg-blue-50 border-b">
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="p-4 bg-blue-50 border-b flex-shrink-0">
         <h2 className="font-semibold text-lg">{t('chat_panel.title', 'AI Assistant Chat')}</h2>
         <div className="flex gap-2 mt-2">
           <button 
@@ -64,8 +65,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         )}
       </div>
       
-      {/* Messages - hauteur fixe avec défilement */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 max-h-[450px]">
+      {/* Messages - flex-1 to take remaining space */}
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && !isLoading && (
           <div className="text-center text-gray-500 py-8">
             {t('chat_panel.no_messages', 'No messages. Start the conversation!')}
@@ -102,8 +103,8 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         <div ref={messagesEndRef} />
       </div>
       
-      {/* Formulaire d'envoi */}
-      <div className="p-4 border-t">
+      {/* Formulaire d'envoi - fixed at bottom */}
+      <div className="p-4 border-t flex-shrink-0">
         <form onSubmit={onSendMessage} className="flex gap-2">
           <input
             type="text"
