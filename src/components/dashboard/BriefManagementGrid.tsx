@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
-import { executeEdgeAction } from '../../lib/edgeActionHelper';
+
 import { useI18n } from '../../contexts/I18nContext';
 
 type Brief = {
@@ -27,7 +27,7 @@ const BriefManagementGrid: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   
   // Fetch briefs with stats from edge function
-  const { data, loading, error, refresh } = useEdgeFunction('dashboard-data', { 
+    const { data, loading, error } = useEdgeFunction('dashboard-data', { 
     action: 'get_briefs_with_stats' 
   }, 'POST');
 
@@ -40,40 +40,6 @@ const BriefManagementGrid: React.FC = () => {
       console.error('Error fetching briefs with stats:', error);
     }
   }, [data, error]);
-  
-  const handleDelete = async (briefId: string) => {
-    if (!window.confirm(t('brief.delete.confirm', 'Are you sure you want to delete this brief?'))) {
-      return;
-    }
-    
-    try {
-      // Utiliser l'helper executeEdgeAction qui gère correctement l'authentification
-      await executeEdgeAction('brief-operations', 'delete_brief', {
-        brief_id: briefId
-      });
-      
-      // Refresh the briefs list
-      refresh();
-      
-    } catch (error: any) {
-      console.error('Failed to delete brief:', error.message || error);
-    }
-  };
-  
-  const handleDuplicate = async (briefId: string) => {
-    try {
-      // Utiliser l'helper executeEdgeAction qui gère correctement l'authentification
-      await executeEdgeAction('brief-operations', 'duplicate_brief', {
-        brief_id: briefId
-      });
-      
-      // Refresh the briefs list
-      refresh();
-      
-    } catch (error: any) {
-      console.error('Failed to duplicate brief:', error.message || error);
-    }
-  };
   
   // Function to format date as "DD MMM YYYY"
   const formatDate = (dateString: string) => {
@@ -108,9 +74,27 @@ const BriefManagementGrid: React.FC = () => {
   };
   
   // Filter briefs based on selected status
-    const filteredBriefs = data?.data?.filter((brief: Brief) => 
+      const filteredBriefs = data?.data?.filter((brief: Brief) => 
     statusFilter === 'all' || brief.status === statusFilter
   ) || [];
+
+  type StatBoxProps = {
+    icon: React.ReactNode;
+    label: string;
+    value: number;
+    colorClass: string;
+    hasResults: boolean;
+  };
+
+  const StatBox: React.FC<StatBoxProps> = ({ icon, label, value, colorClass, hasResults }) => (
+    <div className={`flex-1 p-4 rounded-lg text-center ${hasResults ? colorClass : 'bg-gray-100'}`}>
+      <div className="flex justify-center items-center mb-2">
+        {icon}
+      </div>
+      <p className="text-2xl font-bold">{hasResults ? value : '-'}</p>
+      <p className="text-sm text-gray-600">{label}</p>
+    </div>
+  );
   
   if (loading) {
     return (
@@ -212,88 +196,60 @@ const BriefManagementGrid: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredBriefs.map((brief: Brief) => (
-            <div 
-              key={brief.id}
-              className="p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition cursor-pointer relative"
-              onClick={(e) => {
-                // Prevent navigation if clicking on action buttons
-                if ((e.target as Element).closest('button') || (e.target as Element).closest('a')) {
-                  return;
-                }
-                window.location.href = `/dashboard/briefs/${brief.id}/chat`;
-              }}
-            >
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-1">
-                    {brief.title || t('brief.card.untitled', 'Untitled Brief')}
-                  </h3>
-                  <div className="flex items-center space-x-3 text-sm text-gray-500">
-                    <StatusBadge status={brief.status} />
-                    <span>{t('brief.card.created_label', 'Created:')} {formatDate(brief.created_at)}</span>
-                    {brief.updated_at !== brief.created_at && (
-                      <span>{t('brief.card.updated_label', 'Updated:')} {formatDate(brief.updated_at)}</span>
-                    )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredBriefs.map((brief: Brief) => {
+              const hasResults = brief.solutions_count > 0 || brief.products_count > 0 || brief.suppliers_count > 0;
+              const cardClasses = hasResults 
+                ? 'bg-green-50 border-green-300'
+                : 'bg-white border-gray-200';
+
+              return (
+                <div 
+                  key={brief.id}
+                  className={`p-6 rounded-lg border hover:shadow-xl transition-shadow cursor-pointer flex flex-col justify-between ${cardClasses}`}
+                  onClick={() => window.location.href = `/dashboard/briefs/${brief.id}/chat`}
+                >
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <StatusBadge status={brief.status} />
+                      <span className="text-sm text-gray-500">{formatDate(brief.created_at)}</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 truncate">
+                      {brief.title || t('brief.card.untitled', 'Untitled Brief')}
+                    </h3>
+
+                    <div className="flex gap-4 my-6">
+                      <StatBox 
+                        label={t('kpi.card.suppliers_found.title', 'Suppliers')} 
+                        value={brief.suppliers_count} 
+                        hasResults={hasResults}
+                        colorClass="bg-blue-100 text-blue-800"
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
+                      />
+                      <StatBox 
+                        label={t('brief.card.products_count', 'Products')} 
+                        value={brief.products_count} 
+                        hasResults={hasResults}
+                        colorClass="bg-purple-100 text-purple-800"
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
+                      />
+                      <StatBox 
+                        label={t('brief.card.solutions_count', 'Solutions')} 
+                        value={brief.solutions_count} 
+                        hasResults={hasResults}
+                        colorClass="bg-indigo-100 text-indigo-800"
+                        icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707M6.343 17.657l.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>}
+                      />
+                    </div>
                   </div>
-                </div>
-                
-                <div className="flex space-x-2 z-10">
-                  <Link
-                    to={`/dashboard/briefs/${brief.id}`}
-                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-md transition"
-                    title={t('brief.action.view.tooltip', 'View Brief')}
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </Link>
-                  
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDuplicate(brief.id);
-                    }}
-                    className="p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-md transition"
-                    title={t('brief.action.duplicate.tooltip', 'Duplicate Brief')}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                  </button>
-                  
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(brief.id);
-                    }}
-                    className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-md transition"
-                    title={t('brief.action.delete.tooltip', 'Delete Brief')}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
+
+                  <button className={`w-full py-2 px-4 rounded-lg font-semibold text-center transition-colors ${hasResults ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}>
+                    {hasResults ? t('brief.action.view_results', 'View Results') : t('brief.action.complete_submit', 'Complete & Submit Brief')}
                   </button>
                 </div>
-              </div>
-              <div className="mt-4 flex items-center space-x-4 text-sm text-gray-600 border-t border-gray-200 pt-3">
-                <div className="flex items-center space-x-1" title={`${brief.solutions_count} Solutions`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707M6.343 17.657l.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>
-                  <span>{brief.solutions_count}</span>
-                </div>
-                <div className="flex items-center space-x-1" title={`${brief.products_count} Products`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                  <span>{brief.products_count}</span>
-                </div>
-                <div className="flex items-center space-x-1" title={`${brief.suppliers_count} Suppliers`}>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-                  <span>{brief.suppliers_count}</span>
-                </div>
-              </div>
-            </div>
-          ))}
+              )
+            })}
+          </div>
         </div>
       )}
     </div>
