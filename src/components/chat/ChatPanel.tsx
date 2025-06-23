@@ -37,12 +37,14 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   useEffect(() => {
     // Ne rien faire si pas de nouveaux messages
     if (!messages.length) return;
-    
+
     const container = messagesContainerRef.current;
+    const isInitialLoad = previousMessagesLengthRef.current === 0;
+
     const shouldAutoScroll = () => {
       // Toujours défiler si c'est le premier chargement
-      if (previousMessagesLengthRef.current === 0) return true;
-      
+      if (isInitialLoad) return true;
+
       // Défiler si de nouveaux messages sont ajoutés
       if (messages.length > previousMessagesLengthRef.current) {
         // Vérifier si l'utilisateur était déjà proche du bas avant l'ajout de nouveaux messages
@@ -53,18 +55,22 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
         }
         return true;
       }
-      
+
       // Ne pas défiler si c'est juste un rafraîchissement sans nouveaux messages
       return false;
     };
-    
-    // Mettre à jour la référence du nombre de messages
-    previousMessagesLengthRef.current = messages.length;
-    
-    // Défiler uniquement si nécessaire
+
+    // Défiler uniquement si nécessaire, en différant l'action pour attendre le rendu du navigateur
     if (shouldAutoScroll() && messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      setTimeout(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: isInitialLoad ? 'auto' : 'smooth' });
+        }
+      }, 0);
     }
+
+    // Mettre à jour la référence du nombre de messages après la logique de défilement
+    previousMessagesLengthRef.current = messages.length;
   }, [messages]);
   
   return (
