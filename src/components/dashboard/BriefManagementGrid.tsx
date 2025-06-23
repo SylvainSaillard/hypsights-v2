@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { executeEdgeAction } from '../../lib/edgeActionHelper';
@@ -10,6 +10,9 @@ type Brief = {
   status: 'draft' | 'active' | 'deep_waiting';
   created_at: string;
   updated_at: string;
+  solutions_count: number;
+  products_count: number;
+  suppliers_count: number;
 };
 
 type StatusFilter = 'all' | 'draft' | 'active' | 'deep_waiting';
@@ -20,13 +23,23 @@ type StatusFilter = 'all' | 'draft' | 'active' | 'deep_waiting';
  * Follows Hypsights design system for consistent UI
  */
 const BriefManagementGrid: React.FC = () => {
-  const { t, locale } = useI18n();
+    const { t, locale } = useI18n();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   
-  // Fetch briefs from edge function
-  const { data, loading, error, refresh } = useEdgeFunction('brief-operations', { 
-    action: 'list_briefs' 
+  // Fetch briefs with stats from edge function
+  const { data, loading, error, refresh } = useEdgeFunction('dashboard-data', { 
+    action: 'get_briefs_with_stats' 
   }, 'POST');
+
+  // Log data for debugging
+  useEffect(() => {
+    if (data) {
+      console.log('Briefs with stats received:', data);
+    }
+    if (error) {
+      console.error('Error fetching briefs with stats:', error);
+    }
+  }, [data, error]);
   
   const handleDelete = async (briefId: string) => {
     if (!window.confirm(t('brief.delete.confirm', 'Are you sure you want to delete this brief?'))) {
@@ -95,7 +108,7 @@ const BriefManagementGrid: React.FC = () => {
   };
   
   // Filter briefs based on selected status
-  const filteredBriefs = data?.briefs?.filter((brief: Brief) => 
+    const filteredBriefs = data?.data?.filter((brief: Brief) => 
     statusFilter === 'all' || brief.status === statusFilter
   ) || [];
   
@@ -122,11 +135,11 @@ const BriefManagementGrid: React.FC = () => {
     );
   }
   
-  if (error) {
+    if (error) {
     return (
       <div className="bg-red-100 text-red-800 p-4 rounded-lg mb-8">
         <p className="font-medium">{t('brief.grid.error.load_failed', 'Failed to load briefs')}</p>
-        <p className="text-sm">{error}</p>
+        <p className="text-sm">{error.toString()}</p>
       </div>
     );
   }
@@ -263,6 +276,20 @@ const BriefManagementGrid: React.FC = () => {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
                   </button>
+                </div>
+              </div>
+              <div className="mt-4 flex items-center space-x-4 text-sm text-gray-600 border-t border-gray-200 pt-3">
+                <div className="flex items-center space-x-1" title={`${brief.solutions_count} Solutions`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707M6.343 17.657l.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>
+                  <span>{brief.solutions_count}</span>
+                </div>
+                <div className="flex items-center space-x-1" title={`${brief.products_count} Products`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+                  <span>{brief.products_count}</span>
+                </div>
+                <div className="flex items-center space-x-1" title={`${brief.suppliers_count} Suppliers`}>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                  <span>{brief.suppliers_count}</span>
                 </div>
               </div>
             </div>
