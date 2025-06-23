@@ -253,11 +253,7 @@ async function parseParams(req: Request) {
 }
 
 serve(async (req: Request) => {
-  // Log details of the request for debugging
-  console.log(`${FUNCTION_NAME} received ${req.method} request from ${req.headers.get('origin') || 'unknown'}`);
-  console.log('Headers:', Object.fromEntries(req.headers.entries()));
-  
-  // Handle OPTIONS
+  // Handle preflight OPTIONS requests for CORS
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: getCorsHeaders(req) });
   }

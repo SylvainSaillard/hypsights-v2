@@ -11,23 +11,19 @@ interface Brief {
   created_at: string;
 }
 
-interface BriefStats {
-  solutions: number;
-  suppliers: number;
-  products: number;
-}
-
 interface BriefCardProps {
   brief: Brief;
 }
 
 const BriefCard: React.FC<BriefCardProps> = ({ brief }) => {
-  const { data: stats, loading, error } = useEdgeFunction<BriefStats>('dashboard-data', {
+  const { data: statsData, loading, error } = useEdgeFunction('dashboard-data', {
     action: 'get_brief_stats',
     brief_id: brief.id
-  }, [brief.id]);
+  }, 'POST');
 
+  const stats = statsData?.stats;
   const hasResults = stats && (stats.solutions > 0 || stats.suppliers > 0 || stats.products > 0);
+  
   const cardClasses = hasResults
     ? 'bg-white border-green-500'
     : 'bg-gray-100 border-gray-300';
