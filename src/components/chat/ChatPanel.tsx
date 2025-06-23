@@ -28,14 +28,28 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   onRefresh
 }) => {
   const { t } = useI18n();
-  // Référence pour faire défiler vers le bas automatiquement
+  // Références pour faire défiler vers le bas automatiquement
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const previousMessagesLengthRef = useRef<number>(0);
   
   // Effet pour faire défiler vers le bas quand de nouveaux messages arrivent
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    // Ne rien faire si pas de messages
+    if (!messages.length) return;
+    
+    // Vérifier si de nouveaux messages sont ajoutés
+    const hasNewMessages = messages.length > previousMessagesLengthRef.current;
+    previousMessagesLengthRef.current = messages.length;
+    
+    // Utiliser un délai pour s'assurer que le rendu est terminé avant de défiler
+    const scrollTimeout = setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollIntoView({ behavior: hasNewMessages ? 'smooth' : 'auto' });
+      }
+    }, 100);
+    
+    return () => clearTimeout(scrollTimeout);
   }, [messages]);
   
   return (
@@ -66,7 +80,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
       </div>
       
       {/* Messages - flex-1 to take remaining space */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && !isLoading && (
           <div className="text-center text-gray-500 py-8">
             {t('chat_panel.no_messages', 'No messages. Start the conversation!')}
