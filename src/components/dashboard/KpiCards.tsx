@@ -50,7 +50,7 @@ const KpiCards: React.FC = () => {
   }
 
   // L'Edge Function renvoie les données dans data.dashboard.metrics
-  const metrics = data || {
+  const metrics = data?.data || {
     activeBriefs: 0,
     completedSearches: 0,
     suppliersFound: 0,
