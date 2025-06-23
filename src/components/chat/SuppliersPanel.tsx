@@ -73,8 +73,8 @@ export function SuppliersPanel({ briefId }: SuppliersPanelProps) {
         </button>
       </div>
       
-      {/* Liste des fournisseurs */}
-      <div className="space-y-4">
+      {/* Liste des fournisseurs avec défilement */}
+      <div className="max-h-[400px] overflow-y-auto pr-2 space-y-4">
         {suppliers.map((supplier) => (
           <div key={supplier.id} className="border rounded-md p-3 hover:bg-gray-50">
             <h3 className="font-medium">{supplier.name}</h3>

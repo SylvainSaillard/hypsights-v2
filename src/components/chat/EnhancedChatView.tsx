@@ -156,7 +156,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
         </div>
       </div>
       
-      {/* Nouveau panneau de fournisseurs simplifié */}
+      {/* Panneau de fournisseurs avec défilement */}
       <div className="mt-6">
         <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
           <SuppliersPanel briefId={briefId} />
