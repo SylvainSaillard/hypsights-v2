@@ -113,15 +113,14 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
 }
 
 async function listBriefs(supabaseAdmin: SupabaseClient, userId: string) {
-  const { data, error } = await supabaseAdmin.rpc('get_briefs_with_counts', {
-    p_user_id: userId,
-  });
-
-  if (error) {
-    console.error('Error calling get_briefs_with_counts RPC:', error);
-    throw new HttpError('Failed to fetch briefs with counts', 500);
-  }
-
+  const { data, error } = await supabaseAdmin
+    .from('briefs')
+    .select('id, title, created_at, updated_at')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+    
+  if (error) throw new HttpError('Failed to fetch briefs', 500);
+  
   return { briefs: data || [] };
 }
 
@@ -132,9 +131,7 @@ async function getBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: 
     .from('briefs')
     .select(`
       *,
-      solutions(*),
-      suppliers(*),
-      products(*)
+      solutions:solutions (*, suppliers:suppliers(*))
     `)
     .eq('id', briefId)
     .eq('user_id', userId)
