@@ -10,8 +10,6 @@ interface SolutionsPanelProps {
   onRefresh: () => void;
   onStartFastSearch?: (solutionId: string) => void;
   startingSolutionId?: string | null;
-  briefHasActiveSearch?: boolean;
-  showFastSearchDirectly?: boolean;
 }
 
 /**
@@ -25,150 +23,184 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
   onValidate,
   onRefresh,
   onStartFastSearch,
-  startingSolutionId = null,
-  briefHasActiveSearch = false,
-  showFastSearchDirectly = false
+  startingSolutionId = null
 }) => {
   const { t } = useI18n();
   return (
-    <div className="flex flex-col h-full border rounded-lg overflow-hidden bg-white w-2/5">
-      <div className="p-4 bg-purple-50 border-b">
-        <h2 className="font-semibold text-lg">{t('solutions_panel.title', 'Suggested Solutions')}</h2>
-        <div className="flex gap-2 mt-2">
+    <div className="flex flex-col h-full">
+      {/* Header avec design moderne */}
+      <div className="p-6 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold text-xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+            {t('solutions_panel.title', 'Suggested Solutions')}
+          </h2>
           <button 
             onClick={onRefresh}
             disabled={isLoading}
-            className="px-3 py-1 bg-purple-100 text-purple-800 text-xs rounded-md hover:bg-purple-200 disabled:opacity-50"
+            className="px-4 py-2 bg-white shadow-md border border-purple-200 text-purple-700 text-sm rounded-lg hover:bg-purple-50 hover:shadow-lg disabled:opacity-50 transition-all duration-200 flex items-center gap-2"
           >
+            <svg className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
             {isLoading ? t('solutions_panel.button.refresh_loading', 'Loading...') : t('solutions_panel.button.refresh', 'Refresh')}
           </button>
         </div>
+        
         {error && (
-          <div className="mt-2 p-2 bg-red-50 text-red-700 text-sm rounded">
-            {error}
-            <button 
-              onClick={onRefresh}
-              className="ml-2 underline"
-            >
-              {t('solutions_panel.button.retry', 'Retry')}
-            </button>
+          <div className="mt-4 p-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl shadow-sm">
+            <div className="flex items-center gap-2">
+              <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+              <span>{error}</span>
+              <button 
+                onClick={onRefresh}
+                className="ml-auto px-3 py-1 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
+              >
+                {t('solutions_panel.button.retry', 'Retry')}
+              </button>
+            </div>
           </div>
         )}
       </div>
       
-      {/* Liste des solutions */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      {/* Liste des solutions avec scroll amélioré */}
+      <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
         {solutions.length === 0 && !isLoading && (
-          <div className="text-center text-gray-500 py-8">
-            {t('solutions_panel.no_solutions', 'No solutions proposed yet.')}
+          <div className="text-center py-12">
+            <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center">
+              <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+              </svg>
+            </div>
+            <p className="text-gray-500 text-lg font-medium">
+              {t('solutions_panel.no_solutions', 'No solutions proposed yet.')}
+            </p>
+            <p className="text-gray-400 text-sm mt-2">
+              Start chatting with the AI to get personalized solutions
+            </p>
           </div>
         )}
         
         {isLoading && solutions.length === 0 && (
-          <div className="text-center text-gray-500 py-8">
-            <div className="animate-spin inline-block w-6 h-6 border-2 border-purple-600 border-t-transparent rounded-full mr-2"></div>
-            {t('solutions_panel.loading_solutions', 'Loading solutions...')}
+          <div className="text-center py-12">
+            <div className="relative w-16 h-16 mx-auto mb-4">
+              <div className="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-purple-600 border-t-transparent rounded-full animate-spin"></div>
+            </div>
+            <p className="text-gray-600 text-lg font-medium">
+              {t('solutions_panel.loading_solutions', 'Loading solutions...')}
+            </p>
           </div>
         )}
         
         {solutions.map(solution => (
           <div 
             key={solution.id} 
-            className={`p-4 rounded-lg border ${solution.status === 'validated' 
-              ? 'border-green-300 bg-green-50' 
-              : solution.status === 'in_progress'
-              ? 'border-blue-300 bg-blue-50'
-              : solution.status === 'finished'
-              ? 'border-indigo-300 bg-indigo-50'
-              : 'border-gray-200 hover:border-purple-200'}`}
+            className={`bg-white rounded-xl shadow-md border-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
+              solution.status === 'validated' 
+                ? 'border-green-200 bg-gradient-to-br from-green-50 to-emerald-50' 
+                : solution.status === 'in_progress'
+                ? 'border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50'
+                : solution.status === 'finished'
+                ? 'border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50'
+                : 'border-gray-200 hover:border-purple-300'
+            }`}
           >
-            <div className="flex justify-between items-start">
-              <h3 className="font-semibold text-md">{solution.title}</h3>
-              <div className="text-sm bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
-                {Math.round(solution.ai_confidence * 100)}{t('solutions_panel.ai_confidence_match', '% Match')}
+            <div className="p-6">
+              {/* Header de la solution */}
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="font-bold text-lg text-gray-800 leading-tight pr-4">{solution.title}</h3>
+                <div className="flex-shrink-0">
+                  <div className="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 py-2 rounded-full text-sm font-semibold shadow-md">
+                    {Math.round(solution.ai_confidence * 100)}{t('solutions_panel.ai_confidence_match', '% Match')}
+                  </div>
+                </div>
               </div>
-            </div>
-            
-            <p className="text-sm mt-2 text-gray-600">{solution.description}</p>
-            
-            {solution.keywords && solution.keywords.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-3">
-                {solution.keywords.map((keyword, idx) => (
-                  <span 
-                    key={idx} 
-                    className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full"
-                  >
-                    {keyword}
-                  </span>
-                ))}
-              </div>
-            )}
-            
-            <div className="mt-4 flex justify-between">
-              {(solution.status === 'validated' || solution.status === 'in_progress' || solution.status === 'finished' || showFastSearchDirectly) ? (
-                <>
-                  {solution.status === 'validated' && !showFastSearchDirectly && !['in_progress', 'finished'].includes(solution.status) && (
-                    <div className="flex items-center text-green-600 text-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      {t('solutions_panel.status.validated', 'Solution Validated')}
-                    </div>
-                  )}
-                  
-                  {solution.status === 'in_progress' && (
-                    <div className="flex items-center text-blue-600 text-sm">
-                      <svg className="animate-spin h-5 w-5 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      {t('solutions_panel.status.in_progress', 'Search in progress...')}
-                      {solution.search_progress && (
-                        <span className="ml-2">{solution.search_progress}%</span>
-                      )}
-                    </div>
-                  )}
-                  
-                  {solution.status === 'finished' && (
-                    <div className="flex items-center text-indigo-600 text-sm">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
-                      </svg>
-                      {t('solutions_panel.status.finished', 'Search completed')}
-                    </div>
-                  )}
-                  {/* Bouton pour lancer Fast Search directement depuis une solution */}
-                  {onStartFastSearch && !['in_progress', 'finished'].includes(solution.status) && (
-                    <button
-                      onClick={() => onStartFastSearch(solution.id)}
-                      disabled={startingSolutionId === solution.id || solution.status === 'in_progress'}
-                      className={`${solution.status === 'validated' ? 'ml-2 ' : ''}px-3 py-1 text-sm rounded-md ${startingSolutionId === solution.id || solution.status === 'in_progress'
-                        ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                        : 'bg-blue-500 text-white hover:bg-blue-600'}`}
-                      title={startingSolutionId === solution.id || solution.status === 'in_progress'
-                        ? t('solutions_panel.button.starting_search', 'Starting...')
-                        : t('solutions_panel.start_fast_search_tooltip', 'Start a Fast Search with this solution')}
+              
+              {/* Description */}
+              <p className="text-gray-600 text-sm leading-relaxed mb-4">{solution.description}</p>
+              
+              {/* Keywords avec design amélioré */}
+              {solution.keywords && solution.keywords.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {solution.keywords.map((keyword, idx) => (
+                    <span 
+                      key={idx} 
+                      className="text-xs bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 px-3 py-1 rounded-full border border-gray-300 font-medium"
                     >
-                      {startingSolutionId === solution.id 
-                        ? <span className="flex items-center">
-                            <svg className="animate-spin -ml-1 mr-1 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            {t('solutions_panel.button.starting_search', 'Starting...')}  
-                          </span> 
-                        : t('solutions_panel.button.fast_search', 'Fast Search')} {/* Toujours afficher Fast Search en mode test */}
-                    </button>
-                  )}
-                </>
-              ) : (
-                <button
-                  onClick={() => onValidate(solution.id)}
-                  className="px-4 py-2 bg-purple-500 text-white text-sm rounded-md hover:bg-purple-600"
-                >
-                  {t('solutions_panel.button.validate', 'Validate Solution')}
-                </button>
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
               )}
+              
+              {/* Actions et statuts */}
+              <div className="flex flex-col gap-3">
+                {solution.status === 'validated' ? (
+                  <>
+                    <div className="flex items-center text-green-600 text-sm font-medium">
+                      <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+                      {t('solutions_panel.status.validated', 'Solution validated')}
+                    </div>
+                    
+                    {onStartFastSearch && !['in_progress', 'finished'].includes(solution.status) && (
+                      <button
+                        onClick={() => onStartFastSearch(solution.id)}
+                        disabled={startingSolutionId === solution.id}
+                        className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+                          startingSolutionId === solution.id
+                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                            : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 shadow-md hover:shadow-lg transform hover:scale-105'
+                        }`}
+                      >
+                        {startingSolutionId === solution.id ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                            {t('solutions_panel.button.starting_search', 'Starting...')}
+                          </span>
+                        ) : (
+                          <span className="flex items-center justify-center gap-2">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            {t('solutions_panel.button.fast_search', 'Fast Search')}
+                          </span>
+                        )}
+                      </button>
+                    )}
+                  </>
+                ) : solution.status === 'in_progress' ? (
+                  <div className="flex items-center justify-center text-blue-600 text-sm font-medium py-2">
+                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                    {t('solutions_panel.status.in_progress', 'Search in progress...')}
+                    {solution.search_progress && (
+                      <span className="ml-2 bg-blue-100 px-2 py-1 rounded-full text-xs">
+                        {solution.search_progress}%
+                      </span>
+                    )}
+                  </div>
+                ) : solution.status === 'finished' ? (
+                  <div className="flex items-center justify-center text-indigo-600 text-sm font-medium py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    {t('solutions_panel.status.finished', 'Search completed')}
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => onValidate(solution.id)}
+                    className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      {t('solutions_panel.button.validate', 'Validate Solution')}
+                    </span>
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}
