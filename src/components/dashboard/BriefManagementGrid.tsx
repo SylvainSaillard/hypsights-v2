@@ -98,7 +98,7 @@ const BriefCard = ({ brief }: { brief: Brief }) => {
 
 const BriefManagementGrid: React.FC = () => {
   const { t } = useI18n();
-  const { data, loading, error } = useEdgeFunction('brief-operations', { action: 'list_briefs' }, { method: 'POST' });
+  const { data, loading, error } = useEdgeFunction('brief-operations', { action: 'list_briefs' }, 'POST');
 
   if (loading) {
     return (

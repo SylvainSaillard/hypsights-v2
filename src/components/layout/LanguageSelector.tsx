@@ -25,7 +25,7 @@ const LanguageSelector = () => {
     error
   } = useEdgeFunction('i18n-handler', {
     action: 'get_languages'
-  }, { method: 'POST' });
+  }, 'POST');
   
   const languages: Language[] = languagesData?.languages || [
     { code: 'en', name: 'English', flag: '🇬🇧' },

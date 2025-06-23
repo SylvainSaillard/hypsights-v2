@@ -22,8 +22,8 @@ const BriefCreationPage: React.FC = () => {
     error: briefError 
   } = useEdgeFunction(
     'brief-operations', 
-    { action: 'get_brief', brief_id: briefId },
-    { method: 'POST', enabled: isEditing }
+    isEditing ? { action: 'get_brief', brief_id: briefId } : {}, // Utiliser objet vide pour respecter le type attendu
+    'POST'
   );
 
   // Extraire les données du brief
@@ -40,7 +40,7 @@ const BriefCreationPage: React.FC = () => {
   } = useEdgeFunction(
     'brief-operations',
     submitParams, // Utiliser l'état pour les paramètres
-    { method: 'POST', enabled: false } // Disable automatic fetch
+    'POST'
   );
 
   // Gestion de la réponse après soumission

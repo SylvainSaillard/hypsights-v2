@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
-import { supabase } from '../../lib/supabaseClient';
 
 const SearchResultsPage: React.FC = () => {
   const { briefId } = useParams<{ briefId: string }>();
@@ -16,7 +15,7 @@ const SearchResultsPage: React.FC = () => {
   } = useEdgeFunction(
     'brief-operations',
     { action: 'get_brief', brief_id: briefId },
-    { method: 'POST', enabled: !!briefId }
+    'POST'
   );
 
   // Fetch search results (placeholder for now)
@@ -25,30 +24,24 @@ const SearchResultsPage: React.FC = () => {
     loading: searchLoading,
     error: searchError
   } = useEdgeFunction(
-    'fast-search-handler',
-    { action: 'get_fast_search_results', brief_id: briefId },
-    { method: 'POST', enabled: !!briefId }
+    'brief-operations',
+    { action: 'get_products', brief_id: briefId },
+    'POST'
   );
 
   // Request deep search
   const handleRequestDeepSearch = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('User not authenticated to request deep search.');
-      }
-
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/brief-operations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          action: 'update_brief',
-          brief_id: briefId,
-          request_deep_dive: true
+          action: 'request_deep_search',
+          brief_id: briefId
         }),
+        credentials: 'include'
       });
       
       const result = await response.json();
@@ -90,8 +83,8 @@ const SearchResultsPage: React.FC = () => {
   }
 
   const brief = briefData?.brief;
-  const suppliers = searchData?.suppliers || [];
-  const hasResults = suppliers.length > 0;
+  const products = searchData?.products || [];
+  const hasResults = products.length > 0;
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -126,7 +119,7 @@ const SearchResultsPage: React.FC = () => {
             <h2 className="font-semibold">Fast Search Results</h2>
             <p className="text-sm text-gray-500">
               {hasResults 
-                ? `Found ${suppliers.length} potential suppliers` 
+                ? `Found ${products.length} potential suppliers` 
                 : 'No results found from fast search'}
             </p>
           </div>
@@ -172,21 +165,21 @@ const SearchResultsPage: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Placeholder product/supplier cards */}
-              {suppliers.map((supplier: any) => (
-                <div key={supplier.id} className="border rounded-lg p-4 hover:border-primary transition-colors">
+              {products.map((product: any) => (
+                <div key={product.id} className="border rounded-lg p-4 hover:border-primary transition-colors">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-medium text-gray-900">{supplier.name}</h3>
+                    <h3 className="font-medium text-gray-900">{product.name}</h3>
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {supplier.match_score}% Match
+                      {product.match_score}% Match
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600 mb-3">{supplier.description}</p>
+                  <p className="text-sm text-gray-600 mb-3">{product.description}</p>
                   
-                  {supplier.capabilities && (
+                  {product.capabilities && (
                     <div className="mb-3">
                       <p className="text-xs text-gray-500 mb-1">Capabilities:</p>
                       <div className="flex flex-wrap gap-1">
-                        {supplier.capabilities.map((capability: string) => (
+                        {product.capabilities.map((capability: string) => (
                           <span 
                             key={capability} 
                             className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-md"

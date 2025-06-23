@@ -14,23 +14,15 @@ import { devLog } from '../lib/devTools';
 export function useEdgeFunction(
   endpoint: string, 
   params: Record<string, any> = {},
-  options: { method?: 'GET' | 'POST'; enabled?: boolean } = {}
+  method: 'GET' | 'POST' = 'POST'
 ) {
-  const { method = 'POST', enabled = true } = options;
-
-  console.log(
-    `%c[Hypsights Hook] useEdgeFunction RENDER for ${endpoint}`,
-    'color: blue; font-weight: bold;',
-    { params, options }
-  );
-
   const [state, setState] = useState<{
     data: any;
     loading: boolean;
     error: string | null;
-  }>({
+  }>({ 
     data: null, 
-    loading: enabled, 
+    loading: true, 
     error: null 
   });
   
@@ -67,6 +59,9 @@ export function useEdgeFunction(
       const isNonStandardLocalPort = environment === 'development' && 
                                   window.location.port !== '' && 
                                   window.location.port !== '3000';
+      
+      // Use a proxy approach for local development with non-standard ports
+      const useLocalProxy = isNonStandardLocalPort;
       
       let options: RequestInit = {
         method: method,
@@ -187,21 +182,11 @@ export function useEdgeFunction(
         error: error.message || 'An unknown error occurred' 
       });
     }
-  }, [endpoint, JSON.stringify(params), method, SUPABASE_URL, SUPABASE_ANON_KEY, enabled]);
-
-  useEffect(() => {
-    console.log(
-      `%c[Hypsights Hook] useEdgeFunction EFFECT for ${endpoint}`,
-      'color: green; font-weight: bold;',
-      { enabled, params }
-    );
-    if (enabled) {
-      fetchData();
-    } else {
-      // When disabled, we shouldn't be in a loading state.
-      setState(prev => ({ ...prev, loading: false }));
-    }
-  }, [fetchData, enabled]);
+  }, [endpoint, JSON.stringify(params), method, SUPABASE_URL, SUPABASE_ANON_KEY]);
+  
+  useEffect(() => { 
+    fetchData(); 
+  }, [fetchData]);
   
   return { 
     ...state, 
