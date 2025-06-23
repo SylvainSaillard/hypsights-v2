@@ -132,7 +132,9 @@ async function getBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: 
     .from('briefs')
     .select(`
       *,
-      solutions:solutions (*, suppliers:suppliers(*))
+      solutions(*),
+      suppliers(*),
+      products(*)
     `)
     .eq('id', briefId)
     .eq('user_id', userId)
