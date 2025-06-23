@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import type { ChatMessage } from './ChatInterface';
 import { useI18n } from '../../contexts/I18nContext';
 
@@ -28,29 +28,14 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   onRefresh
 }) => {
   const { t } = useI18n();
-  // Références pour faire défiler vers le bas automatiquement
+  // Références pour faire défiler vers le bas automatiquement - DÉSACTIVÉ TEMPORAIREMENT
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
-  const previousMessagesLengthRef = useRef<number>(0);
   
-  // Effet pour faire défiler vers le bas quand de nouveaux messages arrivent
-  useEffect(() => {
-    // Ne rien faire si pas de messages
-    if (!messages.length) return;
-    
-    // Vérifier si de nouveaux messages sont ajoutés
-    const hasNewMessages = messages.length > previousMessagesLengthRef.current;
-    previousMessagesLengthRef.current = messages.length;
-    
-    // Utiliser un délai pour s'assurer que le rendu est terminé avant de défiler
-    const scrollTimeout = setTimeout(() => {
-      if (messagesEndRef.current) {
-        messagesEndRef.current.scrollIntoView({ behavior: hasNewMessages ? 'smooth' : 'auto' });
-      }
-    }, 100);
-    
-    return () => clearTimeout(scrollTimeout);
-  }, [messages]);
+  // Auto-scrolling désactivé pour tester si c'est la cause du problème d'affichage
+  // useEffect(() => {
+  //   // Code d'auto-scrolling désactivé
+  // }, [messages]);
   
   return (
     <div className="flex flex-col h-full">
@@ -113,7 +98,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
           </div>
         ))}
         
-        {/* Élément invisible pour faire défiler vers le bas */}
+        {/* Élément invisible pour faire défiler vers le bas - toujours présent mais non utilisé */}
         <div ref={messagesEndRef} />
       </div>
       
