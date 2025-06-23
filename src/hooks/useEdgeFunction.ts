@@ -18,7 +18,11 @@ export function useEdgeFunction(
 ) {
   const { method = 'POST', enabled = true } = options;
 
-  devLog(`useEdgeFunction render for ${endpoint}`, { params, options });
+  console.log(
+    `%c[Hypsights Hook] useEdgeFunction RENDER for ${endpoint}`,
+    'color: blue; font-weight: bold;',
+    { params, options }
+  );
 
   const [state, setState] = useState<{
     data: any;
@@ -186,7 +190,11 @@ export function useEdgeFunction(
   }, [endpoint, JSON.stringify(params), method, SUPABASE_URL, SUPABASE_ANON_KEY, enabled]);
 
   useEffect(() => {
-    devLog(`useEdgeFunction effect for ${endpoint}`, { enabled });
+    console.log(
+      `%c[Hypsights Hook] useEdgeFunction EFFECT for ${endpoint}`,
+      'color: green; font-weight: bold;',
+      { enabled }
+    );
     if (enabled) {
       fetchData();
     } else {
