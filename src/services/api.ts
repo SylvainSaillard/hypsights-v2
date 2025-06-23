@@ -55,7 +55,7 @@ export const api = {
   },
   
   /**
-   * Envoie un message dans le chat
+   * Envoie un message dans le chat et retourne les messages mis à jour
    */
   sendMessage: async (briefId: string, message: string): Promise<any> => {
     console.log('API - Sending message for briefId:', briefId);
@@ -73,6 +73,7 @@ export const api = {
       throw new Error(error.message || 'Impossible d\'envoyer le message');
     }
     
+    console.log('API - Message sent successfully, response:', data);
     return data;
   },
   
