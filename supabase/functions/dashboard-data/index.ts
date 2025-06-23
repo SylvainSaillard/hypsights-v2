@@ -248,10 +248,10 @@ async function handleAction(action: string, params: any, user: User, supabaseAdm
   console.log(`Handling action: ${action} with params:`, params);
   
   switch (action) {
-    case 'get_metrics':
-      return { metrics: await getUserMetrics(supabaseAdmin, user.id) };
+    case 'get_user_metrics':
+      return await getUserMetrics(supabaseAdmin, user.id);
     case 'get_briefs_with_stats':
-      return { briefs: await getBriefsWithStats(supabaseAdmin, user.id) };
+      return await getBriefsWithStats(supabaseAdmin, user.id);
     default:
       throw new HttpError(`Unknown action: ${action}`, 400);
   }
