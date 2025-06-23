@@ -96,9 +96,62 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
   }
 }
 
+async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string) {
+  // 1. Get all briefs for the user
+  const { data: briefs, error: briefsError } = await supabaseAdmin
+    .from('briefs')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+
+  if (briefsError) {
+    console.error('Error fetching briefs for stats:', briefsError);
+    throw new HttpError('Failed to fetch briefs', 500);
+  }
+  if (!briefs) return [];
+
+  // 2. For each brief, get stats
+  const briefsWithStats = await Promise.all(
+    briefs.map(async (brief) => {
+      try {
+        const [
+          { count: solutionsCount, error: solError },
+          { count: productsCount, error: prodError },
+          { count: suppliersCount, error: supError }
+        ] = await Promise.all([
+          supabaseAdmin.from('solutions').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id),
+          supabaseAdmin.from('products').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id),
+          supabaseAdmin.from('suppliers').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id)
+        ]);
+
+        if (solError) console.error(`Error counting solutions for brief ${brief.id}:`, solError);
+        if (prodError) console.error(`Error counting products for brief ${brief.id}:`, prodError);
+        if (supError) console.error(`Error counting suppliers for brief ${brief.id}:`, supError);
+
+        return {
+          ...brief,
+          solutions_count: solutionsCount || 0,
+          products_count: productsCount || 0,
+          suppliers_count: suppliersCount || 0,
+        };
+      } catch (error) {
+        console.error(`Failed to get stats for brief ${brief.id}:`, error);
+        return {
+          ...brief,
+          solutions_count: 0,
+          products_count: 0,
+          suppliers_count: 0,
+        };
+      }
+    })
+  );
+
+  return briefsWithStats;
+}
+
 async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
   let userMetadata = {
-    fast_searches_quota: 3, // Default quota for new users
+    fast_searches_quota: 3,
     fast_searches_used: 0,
     deep_searches_count: 0
   };
@@ -107,19 +160,16 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
   let suppliersFound = 0;
   
   try {
-    // Get user quota and usage
     const { data: userData, error: userError } = await supabaseAdmin
       .from('users_metadata')
       .select('fast_searches_quota, fast_searches_used, deep_searches_count')
       .eq('user_id', userId)
       .single();
       
-    // Don't throw error, use defaults if no data found
     if (!userError && userData) {
       userMetadata = userData;
     } else {
       console.log(`No user metadata found for ${userId}, using defaults`);
-      // Create default user metadata if it doesn't exist
       try {
         await supabaseAdmin.from('users_metadata').insert({
           user_id: userId,
@@ -133,37 +183,35 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
     }
   } catch (error) {
     console.error('Error fetching user metadata:', error);
-    // Continue with defaults
   }
   
   try {
-    // Get active briefs count
-    const { count, error } = await supabaseAdmin
+    const { data: userBriefs, error: briefsError } = await supabaseAdmin
       .from('briefs')
-      .select('id', { count: 'exact', head: true })
+      .select('id')
       .eq('user_id', userId);
       
-    if (!error && count !== null) {
-      activeBriefs = count;
-    }
-  } catch (error) {
-    console.error('Error fetching briefs count:', error);
-    // Continue with default value
-  }
-  
-  try {
-    // Get suppliers found count
-    const { count, error } = await supabaseAdmin
-      .from('suppliers')
-      .select('id', { count: 'exact', head: true })
-      .eq('created_by', userId);
+    if (briefsError) {
+      console.error('Error fetching briefs for metrics:', briefsError);
+    } else if (userBriefs) {
+      activeBriefs = userBriefs.length;
+      const briefIds = userBriefs.map(b => b.id);
       
-    if (!error && count !== null) {
-      suppliersFound = count;
+      if (briefIds.length > 0) {
+        const { count, error: suppliersError } = await supabaseAdmin
+          .from('suppliers')
+          .select('id', { count: 'exact', head: true })
+          .in('brief_id', briefIds);
+          
+        if (!suppliersError && count !== null) {
+          suppliersFound = count;
+        } else if (suppliersError) {
+          console.error('Error fetching suppliers count for metrics:', suppliersError);
+        }
+      }
     }
   } catch (error) {
-    console.error('Error fetching suppliers count:', error);
-    // Continue with default value
+    console.error('Error fetching briefs/suppliers metrics:', error);
   }
   
   return {
@@ -181,9 +229,9 @@ async function handleAction(action: string, params: any, user: User, supabaseAdm
   
   switch (action) {
     case 'get_metrics':
-      // Default action to get user metrics
       return { metrics: await getUserMetrics(supabaseAdmin, user.id) };
-      
+    case 'get_briefs_with_stats':
+      return { briefs: await getBriefsWithStats(supabaseAdmin, user.id) };
     default:
       throw new HttpError(`Unknown action: ${action}`, 400);
   }
