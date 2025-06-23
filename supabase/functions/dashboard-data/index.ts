@@ -182,12 +182,7 @@ async function getAllBriefsWithStats(supabaseAdmin: SupabaseClient, userId: stri
       id,
       title,
       description,
-      category,
-      budget,
-      created_at,
-      solutions ( count ),
-      suppliers ( count ),
-      products ( count )
+      created_at
     `)
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
@@ -199,12 +194,11 @@ async function getAllBriefsWithStats(supabaseAdmin: SupabaseClient, userId: stri
 
   const formattedBriefs = data.map(b => {
     const stats = {
-      solutions: b.solutions[0]?.count || 0,
-      suppliers: b.suppliers[0]?.count || 0,
-      products: b.products[0]?.count || 0,
+      solutions: 0,
+      suppliers: 0,
+      products: 0,
     };
-    // Create a new object without the original relations
-    const { solutions, suppliers, products, ...rest } = b;
+    const { ...rest } = b;
     return { ...rest, stats };
   });
 
