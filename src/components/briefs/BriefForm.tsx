@@ -25,11 +25,11 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
   // Using get_translations action instead of get_form_options to work with current deployment
   const { data: translationsData, loading: translationsLoading, error: translationsError } = useEdgeFunction('i18n-handler', {
     action: 'get_translations',
-    group: 'form_options'
-  }, 'POST');
+    keys: ['brief_form_title', 'brief_form_industry_label', 'brief_form_industry_placeholder', 'brief_form_geo_label', 'brief_form_geo_placeholder', 'brief_form_objective_label', 'brief_form_objective_placeholder', 'brief_form_create_button', 'brief_form_creating_button', 'brief_form_error_message']
+  }, { method: 'POST' });
   
   // Hook for draft operations using consistent Edge Function pattern
-  const { refresh: refreshDraft } = useEdgeFunction('brief-operations', {}, 'POST');
+  const { refresh: refreshDraft } = useEdgeFunction('brief-operations', {}, { method: 'POST' });
   
   // Form validation
   const [errors, setErrors] = useState<Record<string, string>>({});

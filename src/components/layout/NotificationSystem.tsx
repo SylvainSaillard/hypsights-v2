@@ -26,7 +26,7 @@ const NotificationSystem: React.FC = () => {
     {
       action: 'list_notifications'
     }, 
-    'POST'
+    { method: 'POST' }
   );
   
   // Use real data from the edge function
