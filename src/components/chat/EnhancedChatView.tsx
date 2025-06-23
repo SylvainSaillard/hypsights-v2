@@ -5,7 +5,6 @@ import { startFastSearchFromSolution } from '../../services/fastSearchService';
 import ChatPanel from './ChatPanel';
 import SolutionsPanel from './SolutionsPanel';
 import { SuppliersPanel } from './SuppliersPanel';
-import { useI18n } from '../../contexts/I18nContext';
 import type { EnhancedChatViewProps } from './types';
 
 /**
@@ -19,7 +18,6 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   onSolutionValidated
 }) => {
   // États locaux
-  const { t } = useI18n();
   const [inputValue, setInputValue] = useState('');
   const [fastSearchQuota, setFastSearchQuota] = useState({ used: 0, total: 3 });
   const [startingSolutionId, setStartingSolutionId] = useState<string | null>(null);
@@ -121,40 +119,48 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   };
   
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full p-6">
       {/* Conteneur principal avec hauteur fixe */}
-      <div className="flex gap-4 h-[600px]">
+      <div className="flex gap-6 h-[600px]">
         {/* Panneau de chat avec hauteur fixe et défilement */}
         <div className="w-3/5 flex flex-col">
-          <ChatPanel
-            messages={messages}
-            isLoading={isLoadingMessages}
-            error={messagesError}
-            inputValue={inputValue}
-            isSending={isSending}
-            onInputChange={setInputValue}
-            onSendMessage={handleSendMessage}
-            onRefresh={loadMessages}
-          />
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 h-full overflow-hidden">
+            <ChatPanel
+              messages={messages}
+              isLoading={isLoadingMessages}
+              error={messagesError}
+              inputValue={inputValue}
+              isSending={isSending}
+              onInputChange={setInputValue}
+              onSendMessage={handleSendMessage}
+              onRefresh={loadMessages}
+            />
+          </div>
         </div>
         
         {/* Panneau de solutions */}
-        <SolutionsPanel
-          solutions={solutions}
-          isLoading={isLoadingSolutions}
-          error={solutionsError}
-          onValidate={validateSolution}
-          onRefresh={loadSolutions}
-          onStartFastSearch={handleStartFastSearchFromSolution}
-          startingSolutionId={startingSolutionId}
-          briefHasActiveSearch={true}
-          showFastSearchDirectly={true}
-        />
+        <div className="w-2/5 flex flex-col">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 h-full overflow-hidden">
+            <SolutionsPanel
+              solutions={solutions}
+              isLoading={isLoadingSolutions}
+              error={solutionsError}
+              onValidate={validateSolution}
+              onRefresh={loadSolutions}
+              onStartFastSearch={handleStartFastSearchFromSolution}
+              startingSolutionId={startingSolutionId}
+              briefHasActiveSearch={true}
+              showFastSearchDirectly={true}
+            />
+          </div>
+        </div>
       </div>
       
       {/* Nouveau panneau de fournisseurs simplifié */}
-      <div className="mt-4">
-        <SuppliersPanel briefId={briefId} />
+      <div className="mt-6">
+        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+          <SuppliersPanel briefId={briefId} />
+        </div>
       </div>
     </div>
   );

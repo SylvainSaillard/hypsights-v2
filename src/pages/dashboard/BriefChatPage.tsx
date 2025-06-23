@@ -127,71 +127,139 @@ const BriefChatPage = () => {
   };
   
   return (
-    <div className="container mx-auto px-4 py-6 h-screen flex flex-col">
-      {/* Header */}
-      <div className="mb-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <button 
-              onClick={() => navigate('/dashboard')}
-              className="text-blue-600 hover:text-blue-800 mb-2 flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
-              </svg>
-              {t('brief.chat.button.back_to_dashboard', 'Back to Dashboard')}
-            </button>
-            
-            <h1 className="text-2xl font-bold">
-              {loading ? t('brief.chat.header.loading', 'Loading...') : brief ? brief.title : t('brief.chat.error.not_found', 'Brief not found')}
-            </h1>
-            
-            {brief && (
-              <div className="flex items-center mt-1">
-                <span className={`px-2 py-1 text-xs rounded-full ${
-                  brief.status === 'draft' 
-                    ? 'bg-yellow-100 text-yellow-800' 
-                    : 'bg-green-100 text-green-800'
-                }`}>
-                  {brief.status === 'draft' ? t('brief.status.draft', 'Draft') : t('brief.status.active', 'Active')}
-                </span>
-                <span className="text-sm text-gray-500 ml-2">
-                  {t('brief.chat.created_on_prefix', 'Created on ')} {new Date(brief.created_at).toLocaleDateString(locale)}
-                </span>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
+      <div className="container mx-auto px-6 py-8 h-screen flex flex-col">
+        {/* Enhanced Header */}
+        <div className="mb-8">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 backdrop-blur-sm bg-white/95">
+            <div className="flex justify-between items-start">
+              <div className="flex-1">
+                {/* Back Button */}
+                <button 
+                  onClick={() => navigate('/dashboard')}
+                  className="group inline-flex items-center text-blue-600 hover:text-blue-700 mb-4 px-3 py-2 rounded-lg hover:bg-blue-50 transition-all duration-200 transform hover:scale-105"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 transition-transform group-hover:-translate-x-1" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+                  </svg>
+                  <span className="font-medium">{t('brief.chat.button.back_to_dashboard', 'Back to Dashboard')}</span>
+                </button>
+                
+                {/* Title Section */}
+                <div className="mb-4">
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2 leading-tight">
+                    {loading ? (
+                      <div className="animate-pulse flex items-center">
+                        <div className="h-8 bg-gray-200 rounded w-64"></div>
+                      </div>
+                    ) : brief ? (
+                      <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                        {brief.title}
+                      </span>
+                    ) : (
+                      t('brief.chat.error.not_found', 'Brief not found')
+                    )}
+                  </h1>
+                  
+                  {brief && (
+                    <div className="flex items-center gap-4 flex-wrap">
+                      {/* Status Badge */}
+                      <div className="flex items-center">
+                        <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold shadow-sm border-2 ${
+                          brief.status === 'draft' 
+                            ? 'bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-700 border-yellow-200' 
+                            : 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 border-green-200'
+                        }`}>
+                          <div className={`w-2 h-2 rounded-full mr-2 ${
+                            brief.status === 'draft' ? 'bg-yellow-500' : 'bg-green-500'
+                          } animate-pulse`}></div>
+                          {brief.status === 'draft' ? t('brief.status.draft', 'Draft') : t('brief.status.active', 'Active')}
+                        </span>
+                      </div>
+                      
+                      {/* Creation Date */}
+                      <div className="flex items-center text-gray-600 bg-gray-100 px-3 py-2 rounded-lg">
+                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-sm font-medium">
+                          {t('brief.chat.created_on_prefix', 'Created on ')} 
+                          <span className="font-semibold text-gray-900">
+                            {new Date(brief.created_at).toLocaleDateString(locale, { 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            )}
+              
+              {/* Optional Action Area */}
+              <div className="flex items-center space-x-3">
+                {brief && (
+                  <div className="text-right">
+                    <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Brief ID</div>
+                    <div className="text-sm font-mono text-gray-700 bg-gray-100 px-2 py-1 rounded">
+                      {brief.id.slice(0, 8)}...
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
+        
+        {/* Enhanced Error Display */}
+        {error && (
+          <div className="mb-6">
+            <div className="bg-gradient-to-r from-red-50 to-pink-50 border-l-4 border-red-400 text-red-700 p-6 rounded-xl shadow-lg">
+              <div className="flex items-center">
+                <svg className="w-6 h-6 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <div className="font-bold text-lg">{t('brief.chat.error.display_title', 'Error')}</div>
+                  <p className="mt-1">{error}</p>
+                  <button 
+                    onClick={() => navigate('/dashboard')}
+                    className="mt-3 inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    {t('brief.chat.button.back_to_dashboard', 'Back to Dashboard')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Enhanced Loading State */}
+        {loading ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="relative">
+                <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-purple-200 border-t-purple-600 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+              </div>
+              <p className="mt-4 text-gray-600 font-medium">{t('brief.chat.header.loading', 'Loading your brief...')}</p>
+            </div>
+          </div>
+        ) : brief && !error ? (
+          <div className="flex-1 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <EnhancedChatView 
+              briefId={brief.id}
+              onSolutionValidated={handleSolutionValidated}
+              onMessageSent={handleMessageSent}
+            />
+          </div>
+        ) : null}
       </div>
-      
-      {/* Affichage des erreurs */}
-      {error && (
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4">
-          <div className="font-semibold">{t('brief.chat.error.display_title', 'Error')}</div>
-          <p>{error}</p>
-          <button 
-            onClick={() => navigate('/dashboard')}
-            className="mt-2 text-red-700 underline"
-          >
-            {t('brief.chat.button.back_to_dashboard', 'Back to Dashboard')}
-          </button>
-        </div>
-      )}
-      
-      {/* Contenu principal */}
-      {loading ? (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700"></div>
-        </div>
-      ) : brief && !error ? (
-        <div className="flex-1">
-          <EnhancedChatView 
-            briefId={brief.id}
-            onSolutionValidated={handleSolutionValidated}
-            onMessageSent={handleMessageSent}
-          />
-        </div>
-      ) : null}
     </div>
   );
 };
