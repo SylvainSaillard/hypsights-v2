@@ -124,7 +124,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
       <div className="flex gap-6 h-[600px]">
         {/* Panneau de chat avec hauteur fixe et défilement */}
         <div className="w-3/5 flex flex-col">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 h-full overflow-hidden">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col h-full">
             <ChatPanel
               messages={messages}
               isLoading={isLoadingMessages}
@@ -140,7 +140,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
         
         {/* Panneau de solutions */}
         <div className="w-2/5 flex flex-col">
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 h-full overflow-hidden">
+          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col h-full">
             <SolutionsPanel
               solutions={solutions}
               isLoading={isLoadingSolutions}
