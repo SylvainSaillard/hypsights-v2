@@ -71,42 +71,6 @@ const BriefManagementGrid: React.FC = () => {
     </div>
   );
 
-  // Gamification helper functions
-  const getBriefLevel = (brief: Brief) => {
-    const totalResults = brief.solutions_count + brief.products_count + brief.suppliers_count;
-    if (totalResults >= 50) return { level: 5, name: 'Expert', color: 'text-purple-600 bg-purple-100' };
-    if (totalResults >= 30) return { level: 4, name: 'Advanced', color: 'text-blue-600 bg-blue-100' };
-    if (totalResults >= 15) return { level: 3, name: 'Intermediate', color: 'text-green-600 bg-green-100' };
-    if (totalResults >= 5) return { level: 2, name: 'Beginner', color: 'text-yellow-600 bg-yellow-100' };
-    return { level: 1, name: 'Starter', color: 'text-gray-600 bg-gray-100' };
-  };
-
-  const getProgressPercentage = (brief: Brief) => {
-    const totalResults = brief.solutions_count + brief.products_count + brief.suppliers_count;
-    const maxForLevel = [0, 5, 15, 30, 50, 100];
-    const currentLevel = getBriefLevel(brief).level;
-    const currentLevelMin = maxForLevel[currentLevel - 1];
-    const currentLevelMax = maxForLevel[currentLevel];
-    
-    if (currentLevel === 5) return 100;
-    
-    const progress = ((totalResults - currentLevelMin) / (currentLevelMax - currentLevelMin)) * 100;
-    return Math.min(Math.max(progress, 0), 100);
-  };
-
-  const getAchievementBadges = (brief: Brief) => {
-    const badges = [];
-    const totalResults = brief.solutions_count + brief.products_count + brief.suppliers_count;
-    
-    if (brief.solutions_count >= 10) badges.push({ icon: '🎯', name: 'Solution Hunter', color: 'bg-purple-500' });
-    if (brief.suppliers_count >= 10) badges.push({ icon: '🏢', name: 'Network Builder', color: 'bg-blue-500' });
-    if (brief.products_count >= 10) badges.push({ icon: '📦', name: 'Product Explorer', color: 'bg-green-500' });
-    if (totalResults >= 50) badges.push({ icon: '👑', name: 'Master Researcher', color: 'bg-yellow-500' });
-    if (totalResults >= 25) badges.push({ icon: '⭐', name: 'Rising Star', color: 'bg-orange-500' });
-    
-    return badges;
-  };
-
   if (loading) {
     return (
       <div className="bg-card rounded-xl shadow-lg p-8 mb-8 border border-gray-100">
@@ -182,9 +146,6 @@ const BriefManagementGrid: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredBriefs.map((brief: Brief) => {
               const hasResults = brief.solutions_count > 0 || brief.products_count > 0 || brief.suppliers_count > 0;
-              const level = getBriefLevel(brief);
-              const progress = getProgressPercentage(brief);
-              const badges = getAchievementBadges(brief);
               const totalResults = brief.solutions_count + brief.products_count + brief.suppliers_count;
               
               const cardClasses = hasResults 
@@ -200,51 +161,7 @@ const BriefManagementGrid: React.FC = () => {
                   {/* Animated background gradient */}
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-green-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   
-                  {/* Level badge */}
-                  <div className="absolute top-4 left-4 z-10">
-                    <div className={`px-3 py-1 rounded-full text-xs font-bold ${level.color} border-2 border-white shadow-lg`}>
-                      <span className="mr-1">Lv.{level.level}</span>
-                      <span>{level.name}</span>
-                    </div>
-                  </div>
-
-                  {/* Achievement badges */}
-                  {badges.length > 0 && (
-                    <div className="absolute top-4 right-4 z-10 flex space-x-1">
-                      {badges.slice(0, 3).map((badge, index) => (
-                        <div 
-                          key={index}
-                          className={`w-8 h-8 rounded-full ${badge.color} flex items-center justify-center text-white text-sm shadow-lg transform hover:scale-110 transition-transform duration-200`}
-                          title={badge.name}
-                        >
-                          {badge.icon}
-                        </div>
-                      ))}
-                      {badges.length > 3 && (
-                        <div className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs shadow-lg">
-                          +{badges.length - 3}
-                        </div>
-                      )}
-                    </div>
-                  )}
-
                   <div className="relative p-6 flex flex-col h-full">
-                    {/* Progress bar */}
-                    <div className="mb-4">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-xs font-medium text-gray-600">Progress to next level</span>
-                        <span className="text-xs font-bold text-gray-800">{Math.round(progress)}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                        <div 
-                          className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 rounded-full transition-all duration-1000 ease-out transform origin-left"
-                          style={{ width: `${progress}%` }}
-                        >
-                          <div className="h-full bg-white/30 animate-pulse"></div>
-                        </div>
-                      </div>
-                    </div>
-
                     {/* Title and Description */}
                     <div className="mb-6 flex-1">
                       <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
