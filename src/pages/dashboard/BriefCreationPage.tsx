@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import MultiStepBriefForm from '../../components/briefs/MultiStepBriefForm';
+import BriefForm from '../../components/briefs/BriefForm';
 import BriefValidationOverlay from '../../components/briefs/BriefValidationOverlay';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
@@ -179,7 +179,7 @@ const BriefCreationPage: React.FC = () => {
           </div>
         </div>
       )}
-      <MultiStepBriefForm 
+      <BriefForm 
         initialData={isEditing ? existingBrief : undefined}
         onSubmit={handleFormSubmit}
         isSubmitting={isSubmitting || submitting || isCallingWebhook}
