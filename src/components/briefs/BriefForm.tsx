@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useI18n } from '../../contexts/I18nContext';
 import '../../styles/design-tokens.css';
+import '../../styles/main.css';
 
 interface BriefFormProps {
   initialData?: BriefData;
@@ -97,26 +98,28 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
     { id: 'marketplace', label: t('brief.org_type.marketplace', 'Marketplace') },
     { id: 'not_specified', label: t('brief.org_type.not_specified', 'Not Specified') },
     { id: 'research_institute', label: t('brief.org_type.research_institute', 'Research Institute') },
+    { id: 'sme', label: t('brief.org_type.sme', 'SME') },
     { id: 'startup', label: t('brief.org_type.startup', 'Startup') },
   ];
 
   // Geography options
   const geographyOptions = [
-    { id: 'anywhere', label: t('brief.geography.anywhere', 'Anywhere') },
-    { id: 'asia_pacific', label: t('brief.geography.asia_pacific', 'Asia-Pacific') },
+    { id: 'africa', label: t('brief.geography.africa', 'Africa') },
+    { id: 'asia', label: t('brief.geography.asia', 'Asia') },
     { id: 'europe', label: t('brief.geography.europe', 'Europe') },
-    { id: 'latin_america', label: t('brief.geography.latin_america', 'Latin America') },
-    { id: 'middle_east_africa', label: t('brief.geography.middle_east_africa', 'Middle East and Africa') },
+    { id: 'middle_east', label: t('brief.geography.middle_east', 'Middle East') },
     { id: 'north_america', label: t('brief.geography.north_america', 'North America') },
+    { id: 'oceania', label: t('brief.geography.oceania', 'Oceania') },
+    { id: 'south_america', label: t('brief.geography.south_america', 'South America') },
   ];
 
   return (
-    <form onSubmit={handleSubmitForm} className="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
-      <div className="space-y-8">
+    <form onSubmit={handleSubmitForm} className="space-y-8">
+      <div className="space-y-6 bg-white p-8 rounded-xl shadow-lg border border-gray-200">
         {/* Title */}
         <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-            {t('brief.form.title', 'Title')}
+          <label htmlFor="title" className="form-label">
+            {t('brief.form.title', 'Brief Title')} *
           </label>
           <input
             type="text"
@@ -124,36 +127,36 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
             name="title"
             value={formData.title}
             onChange={handleInputChange}
-            placeholder={t('brief.form.title_placeholder', 'Enter a clear and concise title for your brief')}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary transition duration-200"
             required
+            placeholder={t('brief.form.title_placeholder', 'Enter a descriptive title for your brief')}
+            className="form-input"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-            {t('brief.form.description', 'Description')}
+          <label htmlFor="description" className="form-label">
+            {t('brief.form.description', 'Brief Description')} *
           </label>
           <textarea
             id="description"
             name="description"
             value={formData.description}
             onChange={handleInputChange}
-            placeholder={t('brief.form.description_placeholder', 'Describe your business need in detail. The more context you provide, the better the AI can assist you.')}
-            rows={5}
-            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary transition duration-200"
             required
+            rows={4}
+            placeholder={t('brief.form.description_placeholder', 'Describe your business needs in detail')}
+            className="form-textarea"
           />
         </div>
 
         {/* Reference Companies */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            {t('brief.form.reference_companies', 'Reference Companies')} ({t('brief.form.optional', 'Optional')})
+          <label className="form-label">
+            {t('brief.form.reference_companies', 'Reference Companies')}
           </label>
           <p className="text-sm text-gray-500 mb-2">
-            {t('brief.form.reference_companies_help', 'Add companies whose work you admire or want to emulate')}
+            {t('brief.form.reference_companies_help', 'Add companies that you consider as references for this brief')}
           </p>
           
           <div className="flex gap-2 mb-2">
@@ -162,28 +165,28 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
               value={companyInput}
               onChange={(e) => setCompanyInput(e.target.value)}
               placeholder={t('brief.form.company_placeholder', 'Enter company name')}
-              className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-primary transition duration-200"
+              className="form-input flex-1"
             />
             <button
               type="button"
               onClick={handleAddCompany}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition duration-200"
+              className="btn btn-secondary"
             >
-              {t('brief.form.add_company', 'Add Company')}
+              {t('brief.form.add', 'Add')}
             </button>
           </div>
           
           {formData.reference_companies.length > 0 && (
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.reference_companies.map((company: string, index: number) => (
-                <div key={index} className="bg-gray-100 px-3 py-1 rounded-full text-sm flex items-center">
-                  {company}
+              {formData.reference_companies.map((company, index) => (
+                <div key={index} className="tag flex items-center">
+                  <span>{company}</span>
                   <button
                     type="button"
                     onClick={() => {
                       setFormData(prev => ({
                         ...prev,
-                        reference_companies: prev.reference_companies.filter((_: string, i: number) => i !== index)
+                        reference_companies: prev.reference_companies.filter((_, i) => i !== index)
                       }));
                     }}
                     className="ml-2 text-gray-500 hover:text-gray-700"
@@ -198,13 +201,13 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
         {/* Required Maturity */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="form-label mb-3">
             {t('brief.form.required_maturity', 'Required Maturity')}
           </label>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {maturityOptions.map(option => (
-              <div key={option.id} className="flex items-center">
+              <div key={option.id} className="checkbox-container">
                 <input
                   type="checkbox"
                   id={`maturity-${option.id}`}
@@ -212,7 +215,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                   value={option.id}
                   checked={formData.required_maturity.includes(option.id)}
                   onChange={handleCheckboxChange}
-                  className="h-5 w-5 text-primary border-gray-300 rounded focus:ring-primary"
+                  className="checkbox-input"
                 />
                 <label htmlFor={`maturity-${option.id}`} className="ml-2 text-sm text-gray-700">
                   {option.label}
@@ -224,7 +227,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
         {/* Required Capabilities */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="form-label mb-3">
             {t('brief.form.required_capabilities', 'Required Capabilities')}
           </label>
           
@@ -234,15 +237,15 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                 key={option.id}
                 className={`px-4 py-2 rounded-full text-sm cursor-pointer transition-all duration-200 border ${
                   formData.required_capabilities.includes(option.id)
-                    ? 'bg-primary text-white border-primary'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    ? 'tag-selected'
+                    : 'tag'
                 }`}
                 onClick={() => {
                   const isSelected = formData.required_capabilities.includes(option.id);
                   setFormData(prev => ({
                     ...prev,
                     required_capabilities: isSelected
-                      ? prev.required_capabilities.filter((id: string) => id !== option.id)
+                      ? prev.required_capabilities.filter(id => id !== option.id)
                       : [...prev.required_capabilities, option.id]
                   }));
                 }}
@@ -255,13 +258,13 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
         {/* Preferred Type(s) of Organisation */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="form-label mb-3">
             {t('brief.form.preferred_organization_types', 'Preferred Type(s) of Organisation')}
           </label>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {organizationTypes.map(option => (
-              <div key={option.id} className="flex items-center">
+              <div key={option.id} className="checkbox-container">
                 <input
                   type="checkbox"
                   id={`org-${option.id}`}
@@ -269,7 +272,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                   value={option.id}
                   checked={formData.preferred_organization_types.includes(option.id)}
                   onChange={handleCheckboxChange}
-                  className="h-5 w-5 text-primary border-gray-300 rounded focus:ring-primary"
+                  className="checkbox-input"
                 />
                 <label htmlFor={`org-${option.id}`} className="ml-2 text-sm text-gray-700">
                   {option.label}
@@ -281,13 +284,13 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
         {/* Preferred Geographies */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className="form-label mb-3">
             {t('brief.form.preferred_geographies', 'Preferred Geographies')}
           </label>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {geographyOptions.map(option => (
-              <div key={option.id} className="flex items-center">
+              <div key={option.id} className="checkbox-container">
                 <input
                   type="checkbox"
                   id={`geo-${option.id}`}
@@ -295,7 +298,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                   value={option.id}
                   checked={formData.preferred_geographies.includes(option.id)}
                   onChange={handleCheckboxChange}
-                  className="h-5 w-5 text-primary border-gray-300 rounded focus:ring-primary"
+                  className="checkbox-input"
                 />
                 <label htmlFor={`geo-${option.id}`} className="ml-2 text-sm text-gray-700">
                   {option.label}
@@ -310,14 +313,14 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
           <button
             type="button"
             onClick={() => window.history.back()}
-            className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition duration-200"
+            className="btn btn-secondary"
           >
             {t('brief.form.cancel', 'Cancel')}
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`px-6 py-2.5 bg-primary text-white rounded-lg shadow-sm hover:bg-primary-dark transition duration-200 ${
+            className={`btn btn-primary ${
               isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
