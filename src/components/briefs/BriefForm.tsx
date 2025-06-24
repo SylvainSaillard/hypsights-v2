@@ -115,11 +115,12 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
   return (
     <form onSubmit={handleSubmitForm} className="space-y-8">
-      <div className="space-y-6 bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+      <div className="space-y-6 bg-white p-8 rounded-xl shadow-lg border-l-4 border border-primary border-l-primary">
+        <h2 className="text-2xl font-semibold text-gray-800 border-b border-gray-200 pb-4 mb-6">Create New Brief</h2>
         {/* Title */}
         <div>
-          <label htmlFor="title" className="form-label">
-            {t('brief.form.title', 'Brief Title')} *
+          <label htmlFor="title" className="form-label text-gray-700 font-medium">
+            {t('brief.form.title', 'Brief Title')} <span className="text-primary">*</span>
           </label>
           <input
             type="text"
@@ -129,14 +130,14 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
             onChange={handleInputChange}
             required
             placeholder={t('brief.form.title_placeholder', 'Enter a descriptive title for your brief')}
-            className="form-input"
+            className="form-input focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-20"
           />
         </div>
 
         {/* Description */}
         <div>
-          <label htmlFor="description" className="form-label">
-            {t('brief.form.description', 'Brief Description')} *
+          <label htmlFor="description" className="form-label text-gray-700 font-medium">
+            {t('brief.form.description', 'Brief Description')} <span className="text-primary">*</span>
           </label>
           <textarea
             id="description"
@@ -146,13 +147,13 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
             required
             rows={4}
             placeholder={t('brief.form.description_placeholder', 'Describe your business needs in detail')}
-            className="form-textarea"
+            className="form-textarea focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-20"
           />
         </div>
 
         {/* Reference Companies */}
         <div>
-          <label className="form-label">
+          <label className="form-label text-gray-700 font-medium">
             {t('brief.form.reference_companies', 'Reference Companies')}
           </label>
           <p className="text-sm text-gray-500 mb-2">
@@ -165,21 +166,21 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
               value={companyInput}
               onChange={(e) => setCompanyInput(e.target.value)}
               placeholder={t('brief.form.company_placeholder', 'Enter company name')}
-              className="form-input flex-1"
+              className="form-input flex-1 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-20"
             />
             <button
               type="button"
               onClick={handleAddCompany}
-              className="btn btn-secondary"
+              className="btn btn-secondary hover:bg-gray-50 border-gray-300"
             >
               {t('brief.form.add', 'Add')}
             </button>
           </div>
           
           {formData.reference_companies.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
+            <div className="flex flex-wrap gap-2 mt-3">
               {formData.reference_companies.map((company, index) => (
-                <div key={index} className="tag flex items-center">
+                <div key={index} className="flex items-center px-3 py-1.5 rounded-full text-sm bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20">
                   <span>{company}</span>
                   <button
                     type="button"
@@ -201,13 +202,13 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
         {/* Required Maturity */}
         <div>
-          <label className="form-label mb-3">
+          <label className="form-label mb-3 text-gray-700 font-medium">
             {t('brief.form.required_maturity', 'Required Maturity')}
           </label>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg">
             {maturityOptions.map(option => (
-              <div key={option.id} className="checkbox-container">
+              <div key={option.id} className="flex items-center hover:bg-white p-2 rounded transition-colors duration-150">
                 <input
                   type="checkbox"
                   id={`maturity-${option.id}`}
@@ -215,7 +216,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                   value={option.id}
                   checked={formData.required_maturity.includes(option.id)}
                   onChange={handleCheckboxChange}
-                  className="checkbox-input"
+                  className="h-5 w-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2"
                 />
                 <label htmlFor={`maturity-${option.id}`} className="ml-2 text-sm text-gray-700">
                   {option.label}
@@ -227,18 +228,18 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
         {/* Required Capabilities */}
         <div>
-          <label className="form-label mb-3">
+          <label className="form-label mb-3 text-gray-700 font-medium">
             {t('brief.form.required_capabilities', 'Required Capabilities')}
           </label>
           
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-3 bg-gray-50 p-4 rounded-lg">
             {capabilityOptions.map(option => (
               <div 
                 key={option.id}
                 className={`px-4 py-2 rounded-full text-sm cursor-pointer transition-all duration-200 border ${
                   formData.required_capabilities.includes(option.id)
-                    ? 'tag-selected'
-                    : 'tag'
+                    ? 'bg-primary text-white border-primary shadow-sm'
+                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
                 }`}
                 onClick={() => {
                   const isSelected = formData.required_capabilities.includes(option.id);
@@ -258,13 +259,13 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
         {/* Preferred Type(s) of Organisation */}
         <div>
-          <label className="form-label mb-3">
+          <label className="form-label mb-3 text-gray-700 font-medium">
             {t('brief.form.preferred_organization_types', 'Preferred Type(s) of Organisation')}
           </label>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg">
             {organizationTypes.map(option => (
-              <div key={option.id} className="checkbox-container">
+              <div key={option.id} className="flex items-center hover:bg-white p-2 rounded transition-colors duration-150">
                 <input
                   type="checkbox"
                   id={`org-${option.id}`}
@@ -272,7 +273,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                   value={option.id}
                   checked={formData.preferred_organization_types.includes(option.id)}
                   onChange={handleCheckboxChange}
-                  className="checkbox-input"
+                  className="h-5 w-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2"
                 />
                 <label htmlFor={`org-${option.id}`} className="ml-2 text-sm text-gray-700">
                   {option.label}
@@ -284,13 +285,13 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
         {/* Preferred Geographies */}
         <div>
-          <label className="form-label mb-3">
+          <label className="form-label mb-3 text-gray-700 font-medium">
             {t('brief.form.preferred_geographies', 'Preferred Geographies')}
           </label>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg">
             {geographyOptions.map(option => (
-              <div key={option.id} className="checkbox-container">
+              <div key={option.id} className="flex items-center hover:bg-white p-2 rounded transition-colors duration-150">
                 <input
                   type="checkbox"
                   id={`geo-${option.id}`}
@@ -298,7 +299,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                   value={option.id}
                   checked={formData.preferred_geographies.includes(option.id)}
                   onChange={handleCheckboxChange}
-                  className="checkbox-input"
+                  className="h-5 w-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2"
                 />
                 <label htmlFor={`geo-${option.id}`} className="ml-2 text-sm text-gray-700">
                   {option.label}
@@ -309,24 +310,24 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
         </div>
 
         {/* Form Actions */}
-        <div className="flex justify-end gap-4 pt-4 border-t border-gray-100">
+        <div className="flex justify-end gap-4 pt-6 mt-4 border-t border-gray-200">
           <button
             type="button"
             onClick={() => window.history.back()}
-            className="btn btn-secondary"
+            className="btn btn-secondary hover:bg-gray-50 border-gray-300"
           >
-            {t('brief.form.cancel', 'Cancel')}
+            <span className="flex items-center"><svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg> {t('brief.form.cancel', 'Cancel')}</span>
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`btn btn-primary ${
-              isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+            className={`btn btn-primary shadow-md hover:shadow-lg transition-all ${
+              isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary-dark'
             }`}
           >
             {isSubmitting 
-              ? t('brief.form.submitting', 'Submitting...') 
-              : t('brief.form.create_brief', 'Create Brief')}
+              ? <span className="flex items-center"><svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> {t('brief.form.submitting', 'Submitting...')}</span>
+              : <span className="flex items-center"><svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg> {t('brief.form.create_brief', 'Create Brief')}</span>}
           </button>
         </div>
       </div>
