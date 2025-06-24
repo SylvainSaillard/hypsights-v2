@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import BriefForm from '../../components/briefs/BriefForm';
-import BriefValidationOverlay from '../../components/briefs/BriefValidationOverlay';
+import { useParams, useNavigate } from 'react-router-dom';
+import { BriefForm, BriefValidationOverlay } from '../../components/briefs';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
 import '../../styles/design-tokens.css';
