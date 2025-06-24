@@ -4,6 +4,7 @@ import LoginPage from './pages/auth/LoginPage'; // Import the new LoginPage
 import SignupPage from './pages/auth/SignupPage'; // Import the new SignupPage
 import LandingPage from './pages/auth/LandingPage'; // Import the new LandingPage
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'; // Import the new ResetPasswordPage
+import './styles/main.css'; // Import main CSS with design tokens
 
 // Brief and search pages
 import BriefCreationPage from './pages/dashboard/BriefCreationPage';
