@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle, AlertTriangle, Info, TrendingUp, Box, Truck, Leaf } from 'react-feather';
+import { CheckCircle, AlertTriangle, Info, TrendingUp, Box, Truck, Globe } from 'react-feather';
 
 // Define the structure for the supplier match data based on the view created
 export interface SupplierMatch {
@@ -138,7 +138,7 @@ const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
             score={match.delivery_capacity_score}
           />
           <MatchScoreBar
-            icon={<Leaf size={24} />}
+            icon={<Globe size={24} />}
             label="Sustainability"
             score={match.sustainability_score}
           />
