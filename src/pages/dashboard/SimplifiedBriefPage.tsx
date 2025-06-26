@@ -1,6 +1,7 @@
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
+import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
 
@@ -119,6 +120,14 @@ const SimplifiedBriefPage: React.FC = () => {
               console.log('Message envoyé');
             }}
           />
+          
+          {/* Panneau de fournisseurs séparé */}
+          <div className="mt-6">
+            <h2 className="text-xl font-bold mb-4">{t('brief.simplified.suppliers', 'Suppliers')}</h2>
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+              <SuppliersPanel briefId={briefId || 'unknown'} />
+            </div>
+          </div>
         </div>
       </div>
     </div>

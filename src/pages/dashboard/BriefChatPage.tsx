@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
+import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
 import { useI18n } from '../../contexts/I18nContext';
 
 interface Brief {
@@ -251,12 +252,23 @@ const BriefChatPage = () => {
             </div>
           </div>
         ) : brief && !error ? (
-          <div className="flex-1 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-            <EnhancedChatView 
-              briefId={brief.id}
-              onSolutionValidated={handleSolutionValidated}
-              onMessageSent={handleMessageSent}
-            />
+          <div className="flex-1 flex flex-col gap-6">
+            {/* Chat et Solutions */}
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+              <EnhancedChatView 
+                briefId={brief.id}
+                onSolutionValidated={handleSolutionValidated}
+                onMessageSent={handleMessageSent}
+              />
+            </div>
+            
+            {/* Panneau de fournisseurs séparé */}
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+              <div className="p-4 border-b border-gray-200">
+                <h2 className="text-xl font-bold">{t('brief.chat.suppliers', 'Suppliers')}</h2>
+              </div>
+              <SuppliersPanel briefId={brief.id} />
+            </div>
           </div>
         ) : null}
       </div>
