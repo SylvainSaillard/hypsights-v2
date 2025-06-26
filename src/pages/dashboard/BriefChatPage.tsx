@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
-import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
 import { useI18n } from '../../contexts/I18nContext';
 
 interface Brief {
@@ -252,29 +251,13 @@ const BriefChatPage = () => {
             </div>
           </div>
         ) : brief && !error ? (
-          <>
-            {/* Chat and Solutions Section */}
-            <div className="flex-1 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-6 p-6">
-              <EnhancedChatView 
-                briefId={brief.id}
-                onSolutionValidated={handleSolutionValidated}
-                onMessageSent={handleMessageSent}
-              />
-            </div>
-            
-            {/* Suppliers Section */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden p-4">
-              <div className="mb-4">
-                <h2 className="text-xl font-bold text-gray-800">
-                  {t('brief.chat.suppliers.title', 'Suppliers')}
-                </h2>
-                <p className="text-sm text-gray-600">
-                  {t('brief.chat.suppliers.description', 'List of suppliers matching your brief requirements')}
-                </p>
-              </div>
-              <SuppliersPanel briefId={brief.id} />
-            </div>
-          </>
+          <div className="flex-1 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+            <EnhancedChatView 
+              briefId={brief.id}
+              onSolutionValidated={handleSolutionValidated}
+              onMessageSent={handleMessageSent}
+            />
+          </div>
         ) : null}
       </div>
     </div>
