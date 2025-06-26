@@ -1,104 +1,74 @@
-// Le React est importé automatiquement avec JSX
 import { useSuppliers } from '../../hooks/useSuppliers';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
+import SupplierMatchCard from '../suppliers/SupplierMatchCard';
 
 interface SuppliersPanelProps {
   briefId: string;
 }
 
-/**
- * Composant simplifié pour afficher les fournisseurs d'un brief
- * Conforme au principe KISS et Thin Client / Fat Edge
- */
 export function SuppliersPanel({ briefId }: SuppliersPanelProps) {
   const { suppliers, isLoading, error, refresh } = useSuppliers(briefId);
-  
-  // Afficher l'état de chargement
+
   if (isLoading && suppliers.length === 0) {
     return (
-      <div className="p-4 border rounded-lg bg-white shadow-sm">
-        <div className="flex items-center justify-center py-8">
+      <div className="p-6 bg-gray-900 rounded-2xl">
+        <div className="flex items-center justify-center py-12">
           <LoadingSpinner />
-          <span className="ml-2 text-gray-600">Chargement des fournisseurs...</span>
+          <span className="ml-4 text-gray-400 text-lg">Finding best suppliers...</span>
         </div>
       </div>
     );
   }
-  
-  // Afficher les erreurs
+
   if (error) {
     return (
-      <div className="p-4 border rounded-lg bg-white shadow-sm">
-        <div className="bg-red-50 p-4 rounded-md">
-          <h3 className="text-red-800 font-medium">Une erreur est survenue</h3>
-          <p className="text-red-700 mt-1">{error}</p>
+      <div className="p-6 bg-gray-900 rounded-2xl">
+        <div className="bg-red-900 bg-opacity-50 p-6 rounded-lg text-center">
+          <h3 className="text-red-300 font-bold text-xl">An error occurred</h3>
+          <p className="text-red-400 mt-2">{error}</p>
           <button 
-            className="mt-2 px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200"
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             onClick={() => refresh()}
           >
-            Réessayer
+            Try again
           </button>
         </div>
       </div>
     );
   }
-  
-  // Afficher un message si aucun fournisseur n'est trouvé
+
   if (suppliers.length === 0) {
     return (
-      <div className="p-4 border rounded-lg bg-white shadow-sm">
-        <div className="text-center py-8">
-          <p className="text-gray-500">Aucun fournisseur trouvé pour ce brief.</p>
+      <div className="p-6 bg-gray-900 rounded-2xl">
+        <div className="text-center py-12">
+          <p className="text-gray-400 text-lg">No suppliers found for this brief yet.</p>
+          <p className="text-gray-500 text-sm mt-2">Please check back later or start a new search.</p>
           <button 
-            className="mt-2 px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             onClick={() => refresh()}
           >
-            Rafraîchir
+            Refresh
           </button>
         </div>
       </div>
     );
   }
-  
-  // Afficher la liste des fournisseurs
+
   return (
-    <div className="p-4 border rounded-lg bg-white shadow-sm">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-medium">Fournisseurs ({suppliers.length})</h2>
+    <div className="p-6 bg-gray-900 rounded-2xl">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-bold text-white">Recommended Suppliers ({suppliers.length})</h2>
         <button 
-          className="px-3 py-1 bg-blue-100 text-blue-800 rounded hover:bg-blue-200"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           onClick={() => refresh()}
         >
-          Rafraîchir
+          Refresh
         </button>
       </div>
       
-      {/* Liste des fournisseurs avec défilement */}
-      <div className="max-h-[400px] overflow-y-auto pr-2 space-y-4">
-        {suppliers.map((supplier) => (
-          <div key={supplier.id} className="border rounded-md p-3 hover:bg-gray-50">
-            <h3 className="font-medium">{supplier.name}</h3>
-            {supplier.description && (
-              <p className="text-gray-600 text-sm mt-1">{supplier.description}</p>
-            )}
-            
-            {/* Produits du fournisseur */}
-            {supplier.products && supplier.products.length > 0 && (
-              <div className="mt-2">
-                <h4 className="text-sm font-medium text-gray-700">Produits ({supplier.products.length})</h4>
-                <ul className="mt-1 space-y-1">
-                  {supplier.products.map((product: any) => (
-                    <li key={product.id} className="text-sm pl-2 border-l-2 border-gray-200">
-                      <span className="font-medium">{product.name}</span>
-                      {product.description && (
-                        <p className="text-xs text-gray-500">{product.description}</p>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {suppliers.map((match) => (
+          <SupplierMatchCard key={match.supplier_id} match={match} />
         ))}
       </div>
     </div>
