@@ -4,7 +4,6 @@ import { useSolutions } from '../../hooks/useSolutions';
 import { startFastSearchFromSolution } from '../../services/fastSearchService';
 import ChatPanel from './ChatPanel';
 import SolutionsPanel from './SolutionsPanel';
-import { SuppliersPanel } from './SuppliersPanel';
 import type { EnhancedChatViewProps } from './types';
 
 /**
@@ -119,9 +118,9 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   };
   
   return (
-    <div className="flex flex-col h-full p-6">
+    <div className="flex h-full">
       {/* Conteneur principal avec hauteur fixe */}
-      <div className="flex gap-6 h-[600px]">
+      <div className="flex gap-6 h-[600px] w-full">
         {/* Panneau de chat avec hauteur fixe et défilement */}
         <div className="w-3/5 flex flex-col">
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden flex flex-col h-full">
@@ -153,13 +152,6 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
               showFastSearchDirectly={true}
             />
           </div>
-        </div>
-      </div>
-      
-      {/* Panneau de fournisseurs avec défilement */}
-      <div className="mt-6">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <SuppliersPanel briefId={briefId} />
         </div>
       </div>
     </div>
