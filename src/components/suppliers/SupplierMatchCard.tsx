@@ -31,12 +31,6 @@ interface SupplierMatchCardProps {
   match: SupplierMatch;
 }
 
-// Helper component for criteria tags at the top
-const CriteriaTag: React.FC<{ label: string; score: number }> = ({ label, score }) => (
-  <div className="bg-gray-700 text-white px-4 py-1.5 rounded-full text-sm font-medium">
-    {label} <span className="font-bold text-gray-300">{score}</span>
-  </div>
-);
 
 // Helper component for the progress bar and score
 const MatchScoreBar: React.FC<{
@@ -99,17 +93,6 @@ const MatchInsightItem: React.FC<{ text: string; type: 'strong' | 'moderate' | '
 const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
   return (
     <div className="bg-gray-900 text-gray-300 p-6 rounded-2xl shadow-2xl border border-gray-700 font-sans">
-      {/* Header with matching criteria */}
-      <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Matching Criteria</h3>
-        <div className="flex flex-wrap gap-3">
-          <CriteriaTag label="Technical Fit" score={match.technical_fit_score} />
-          <CriteriaTag label="Market Relevance" score={match.market_relevance_score} />
-          <CriteriaTag label="Delivery Capacity" score={match.delivery_capacity_score} />
-          <CriteriaTag label="Sustainability" score={match.sustainability_score} />
-        </div>
-      </div>
-
       {/* Match Profile Section */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-4">
