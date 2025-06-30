@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
+import BriefHeader from '../../components/briefs/BriefHeader';
 import { useI18n } from '../../contexts/I18nContext';
 
 interface Brief {
@@ -214,6 +215,8 @@ const BriefChatPage = () => {
           </div>
         </div>
         
+        <BriefHeader />
+
         {/* Enhanced Error Display */}
         {error && (
           <div className="mb-6">
