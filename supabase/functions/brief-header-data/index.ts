@@ -3,12 +3,39 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2';
 
-// Standard CORS headers
+// CORS Template v1.0 (2025-06-04) - Standardized implementation
+const ALLOWED_ORIGINS = [
+  'https://hypsights-v2.netlify.app',
+  'https://hypsights.com',
+  'https://hypsights-v2.vercel.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:52531' // Common Vite dev port
+];
+
 const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*', // More specific origin in production
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-user-locale, x-request-id, accept, accept-encoding, accept-language, cache-control, pragma',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
+  'Access-Control-Allow-Credentials': 'true',
+  'Access-Control-Max-Age': '86400',
+  'Vary': 'Origin'
 };
+
+function getAllowedOrigin(req: Request): string {
+  const origin = req.headers.get('origin') || '';
+  return (origin && ALLOWED_ORIGINS.includes(origin)) 
+    ? origin 
+    : 'https://hypsights-v2.netlify.app';
+}
+
+function getCorsHeaders(req: Request): Record<string, string> {
+  return {
+    ...CORS_HEADERS,
+    'Access-Control-Allow-Origin': getAllowedOrigin(req)
+  };
+}
 
 const FUNCTION_NAME = 'brief-header-data';
 
@@ -141,7 +168,7 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
 
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: CORS_HEADERS });
+    return new Response('ok', { headers: getCorsHeaders(req) });
   }
 
   try {
@@ -153,8 +180,8 @@ serve(async (req: Request) => {
 
     await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_success`, user.id, { briefId });
 
-    return new Response(JSON.stringify({ success: true, data }), {
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        return new Response(JSON.stringify({ success: true, data }), {
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (error) {
@@ -169,8 +196,8 @@ serve(async (req: Request) => {
         console.error(`[${FUNCTION_NAME}] Failed to track error event`, e);
     }
 
-    return new Response(JSON.stringify({ success: false, error: error.message }), {
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        return new Response(JSON.stringify({ success: false, error: error.message }), {
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       status: statusCode,
     });
   }
