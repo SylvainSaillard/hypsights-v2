@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
+
 import BriefHeader from '../../components/briefs/BriefHeader';
 import { useI18n } from '../../contexts/I18nContext';
 
@@ -133,7 +134,7 @@ const BriefChatPage = () => {
       <div className="container mx-auto px-6 py-8 h-screen flex flex-col">
         {/* Enhanced Header */}
         <div className="mb-8">
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 backdrop-blur-sm bg-white/95">
+          <div className="bg-white shadow-lg rounded-xl border border-gray-100 p-4 mb-6">
             <div className="flex justify-between items-start">
               <div className="flex-1">
                 {/* Back Button */}
@@ -212,10 +213,11 @@ const BriefChatPage = () => {
                 )}
               </div>
             </div>
+            {brief && <BriefHeader briefId={brief.id} />}
           </div>
         </div>
         
-        <BriefHeader />
+        
 
         {/* Enhanced Error Display */}
         {error && (

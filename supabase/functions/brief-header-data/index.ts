@@ -107,26 +107,37 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
 
   if (solutionsError) {
     console.error(`[${FUNCTION_NAME}] Error fetching solutions count:`, solutionsError);
-    // Do not throw, a failing KPI should not break the entire header
   }
 
-  // KPI: Suppliers and structured filters
-  const { data: suppliers, error: suppliersError } = await supabaseAdmin
-    .from('suppliers')
-    .select('id, company_info') // Removed products_summary
+  // Step 1: Get supplier_ids from supplier_match_profiles for the current brief
+  const { data: profiles, error: profilesError } = await supabaseAdmin
+    .from('supplier_match_profiles')
+    .select('supplier_id')
     .eq('brief_id', briefId);
 
-  if (suppliersError) {
-    console.error(`[${FUNCTION_NAME}] Error fetching suppliers:`, suppliersError);
-    throw new HttpError('Failed to fetch suppliers', 500); // This is critical, so we throw
+  if (profilesError) {
+    console.error(`[${FUNCTION_NAME}] Error fetching supplier profiles:`, profilesError);
+    throw new HttpError('Failed to fetch supplier profiles', 500);
   }
 
-  const suppliersCount = suppliers?.length || 0;
+  const supplierIds = [...new Set(profiles.map(p => p.supplier_id))];
+  const suppliersCount = supplierIds.length;
   let productsCount = 0;
+  let suppliers = [];
 
-  // KPI: Products count (dependent on suppliers)
-  if (suppliers && suppliers.length > 0) {
-    const supplierIds = suppliers.map(s => s.id);
+  // Step 2: If suppliers are found, fetch their details and count their products
+  if (suppliersCount > 0) {
+    const { data: supplierDetails, error: suppliersError } = await supabaseAdmin
+      .from('suppliers')
+      .select('id, country, company_size, industry')
+      .in('id', supplierIds);
+
+    if (suppliersError) {
+      console.error(`[${FUNCTION_NAME}] Error fetching supplier details:`, suppliersError);
+    } else {
+      suppliers = supplierDetails || [];
+    }
+
     const { count, error: productsError } = await supabaseAdmin
       .from('products')
       .select('id', { count: 'exact', head: true })
@@ -134,41 +145,34 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
 
     if (productsError) {
       console.error(`[${FUNCTION_NAME}] Error fetching products count:`, productsError);
-      // Do not throw, just log and continue
     } else {
       productsCount = count || 0;
     }
   }
 
-  // Structured Filters Aggregation
+  // Step 3: Aggregate structured filters
   const structuredFilters = {
     geographies: new Set<string>(),
     organization_types: new Set<string>(),
     capabilities: new Set<string>(),
-    maturity: new Set<string>(),
   };
 
-  suppliers?.forEach(supplier => {
-    const info = supplier.company_info;
-    if (info?.geography) structuredFilters.geographies.add(info.geography);
-    if (info?.organization_type) structuredFilters.organization_types.add(info.organization_type);
-    if (info?.capabilities && Array.isArray(info.capabilities)) {
-        info.capabilities.forEach(cap => structuredFilters.capabilities.add(cap));
-    }
-    if (info?.maturity) structuredFilters.maturity.add(info.maturity);
+  suppliers.forEach(supplier => {
+    if (supplier.country) structuredFilters.geographies.add(supplier.country);
+    if (supplier.company_size) structuredFilters.organization_types.add(supplier.company_size);
+    if (supplier.industry) structuredFilters.capabilities.add(supplier.industry);
   });
 
   const aggregatedFilters = {
-      geographies: Array.from(structuredFilters.geographies),
-      organization_types: Array.from(structuredFilters.organization_types),
-      capabilities: Array.from(structuredFilters.capabilities),
-      maturity: Array.from(structuredFilters.maturity),
+    geographies: Array.from(structuredFilters.geographies),
+    organization_types: Array.from(structuredFilters.organization_types),
+    capabilities: Array.from(structuredFilters.capabilities),
   };
 
   return {
     brief: {
-        title: brief.title,
-        created_at: brief.created_at
+      title: brief.title,
+      created_at: brief.created_at
     },
     kpis: {
       solutions: solutionsCount || 0,

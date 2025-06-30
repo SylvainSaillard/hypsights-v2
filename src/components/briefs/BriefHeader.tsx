@@ -1,12 +1,16 @@
 // src/components/briefs/BriefHeader.tsx
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
+
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
 import { Building, Package, Lightbulb, MapPin, Users, CheckSquare, BarChart2, Calendar, AlertTriangle } from 'lucide-react';
 
 // --- PROPS INTERFACES ---
+
+interface BriefHeaderProps {
+    briefId: string;
+}
 
 interface KpiCardProps {
     title: string;
@@ -99,8 +103,7 @@ const BriefHeaderSkeleton: React.FC = () => (
 );
 
 
-const BriefHeader: React.FC = () => {
-    const { briefId } = useParams<{ briefId: string }>();
+const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
     const { t } = useI18n();
 
     const { data, loading, error } = useEdgeFunction(

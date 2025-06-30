@@ -8,9 +8,11 @@ type Brief = {
   title: string;
   created_at: string;
   updated_at: string;
-  solutions_count: number;
-  products_count: number;
-  suppliers_count: number;
+  stats: {
+    solutions_count: number;
+    products_count: number;
+    suppliers_count: number;
+  };
 };
 
 /**
@@ -60,10 +62,8 @@ const BriefManagementGrid: React.FC = () => {
       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${hasResults ? colorClass : 'bg-gray-100'} mb-2 transition-all duration-300 transform hover:scale-110`}>
         {icon}
       </div>
-      <div className="text-center">
-        <p className={`text-lg font-bold ${hasResults ? 'text-gray-900' : 'text-gray-400'}`}>
-          {hasResults ? value : '—'}
-        </p>
+      <div>
+        <p className="text-sm text-gray-500"><span className={`inline-block w-2 h-2 rounded-full mr-2 ${hasResults ? 'bg-green-500' : 'bg-gray-400'}`}></span>{hasResults ? t('brief.card.total_results', { count: value }) : t('brief.card.no_results', 'No results yet')}</p>
         <p className="text-xs text-gray-500 leading-tight">
           {label}
         </p>
@@ -145,8 +145,9 @@ const BriefManagementGrid: React.FC = () => {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredBriefs.map((brief: Brief) => {
-              const hasResults = brief.solutions_count > 0 || brief.products_count > 0 || brief.suppliers_count > 0;
-              const totalResults = brief.solutions_count + brief.products_count + brief.suppliers_count;
+              const stats = brief.stats || { solutions_count: 0, products_count: 0, suppliers_count: 0 };
+              const hasResults = stats.solutions_count > 0 || stats.products_count > 0 || stats.suppliers_count > 0;
+              const totalResults = stats.solutions_count + stats.products_count + stats.suppliers_count;
               
               const cardClasses = hasResults 
                 ? 'bg-gradient-to-br from-white to-gray-50 border-2 border-green-300 shadow-xl hover:shadow-2xl'
@@ -188,23 +189,23 @@ const BriefManagementGrid: React.FC = () => {
                     <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-100">
                       <div className="flex justify-around items-center">
                         <StatBox 
-                          label={t('kpi.card.suppliers_found.title', 'Companies')} 
-                          value={brief.suppliers_count} 
-                          hasResults={brief.suppliers_count > 0}
-                          colorClass="bg-gradient-to-br from-green-400 to-green-600 text-white shadow-lg"
+                          label={t('brief.card.suppliers_count', 'Suppliers Found')} 
+                          value={stats.suppliers_count} 
+                          hasResults={stats.suppliers_count > 0}
+                          colorClass="bg-gradient-to-br from-teal-400 to-cyan-500 text-white shadow-lg"
                           icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
                         />
                         <StatBox 
                           label={t('brief.card.products_count', 'Products')} 
-                          value={brief.products_count} 
-                          hasResults={brief.products_count > 0}
+                          value={stats.products_count} 
+                          hasResults={stats.products_count > 0}
                           colorClass="bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg"
                           icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
                         />
                         <StatBox 
                           label={t('brief.card.solutions_count', 'Solutions')} 
-                          value={brief.solutions_count} 
-                          hasResults={brief.solutions_count > 0}
+                          value={stats.solutions_count} 
+                          hasResults={stats.solutions_count > 0}
                           colorClass="bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg"
                           icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707M6.343 17.657l.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>}
                         />
