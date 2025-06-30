@@ -62,8 +62,10 @@ const BriefManagementGrid: React.FC = () => {
       <div className={`w-12 h-12 rounded-full flex items-center justify-center ${hasResults ? colorClass : 'bg-gray-100'} mb-2 transition-all duration-300 transform hover:scale-110`}>
         {icon}
       </div>
-      <div>
-        <p className="text-sm text-gray-500"><span className={`inline-block w-2 h-2 rounded-full mr-2 ${hasResults ? 'bg-green-500' : 'bg-gray-400'}`}></span>{hasResults ? t('brief.card.total_results', { count: value }) : t('brief.card.no_results', 'No results yet')}</p>
+      <div className="text-center">
+        <p className={`text-lg font-bold ${hasResults ? 'text-gray-900' : 'text-gray-400'}`}>
+          {hasResults ? value : '—'}
+        </p>
         <p className="text-xs text-gray-500 leading-tight">
           {label}
         </p>
