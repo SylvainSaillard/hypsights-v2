@@ -23,6 +23,7 @@ const BriefChatPage = () => {
   const [brief, setBrief] = useState<Brief | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isArchiveModalOpen, setArchiveModalOpen] = useState(false);
   
   // Charger les détails du brief
   useEffect(() => {
@@ -67,6 +68,40 @@ const BriefChatPage = () => {
     loadBrief();
   }, [briefId]);
   
+  const handleArchive = async () => {
+    if (!brief) return;
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('User not authenticated');
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dashboard-data`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            action: 'archive_brief',
+            briefId: brief.id,
+          }),
+        }
+      );
+
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to archive brief.');
+      }
+      
+      navigate('/dashboard');
+
+    } catch (error) {
+      setError((error as Error).message);
+    }
+  };
+
   // Gérer la validation d'une solution
   const handleSolutionValidated = async (solutionId: string) => {
     console.log('DEBUG BriefChatPage - Solution validated:', solutionId);
@@ -203,6 +238,12 @@ const BriefChatPage = () => {
               
               {/* Optional Action Area */}
               <div className="flex items-center space-x-3">
+                <button 
+                  onClick={() => setArchiveModalOpen(true)}
+                  className="bg-red-100 text-red-700 hover:bg-red-200 px-4 py-2 rounded-lg font-semibold transition-colors duration-200"
+                >
+                  {t('brief.action.archive', 'Archive')}
+                </button>
                 {brief && (
                   <div className="text-right">
                     <div className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Brief ID</div>
@@ -277,6 +318,19 @@ const BriefChatPage = () => {
           </div>
         ) : null}
       </div>
+
+      {isArchiveModalOpen && brief && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl">
+            <h3 className="text-lg font-bold mb-4">{t('brief.archive.confirm_title', 'Archive Brief')}</h3>
+            <p className="mb-6">{t('brief.archive.confirm_message', `Are you sure you want to archive the brief "${brief.title}"?`)}</p>
+            <div className="flex justify-end space-x-4">
+              <button onClick={() => setArchiveModalOpen(false)} className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">{t('common.cancel', 'Cancel')}</button>
+              <button onClick={handleArchive} className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">{t('common.archive', 'Archive')}</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
