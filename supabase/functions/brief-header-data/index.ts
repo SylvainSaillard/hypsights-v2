@@ -98,9 +98,6 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     console.error(`[${FUNCTION_NAME}] Error fetching brief details:`, briefError);
     throw new HttpError('Failed to fetch brief details or access denied', 404);
   }
-  if (!briefId) {
-    throw new HttpError('Missing briefId parameter', 400);
-  }
 
   // KPI: Solutions count
   const { count: solutionsCount, error: solutionsError } = await supabaseAdmin
@@ -110,22 +107,38 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
 
   if (solutionsError) {
     console.error(`[${FUNCTION_NAME}] Error fetching solutions count:`, solutionsError);
-    throw new HttpError('Failed to fetch solutions count', 500);
+    // Do not throw, a failing KPI should not break the entire header
   }
 
-  // KPI: Suppliers and Products count
+  // KPI: Suppliers and structured filters
   const { data: suppliers, error: suppliersError } = await supabaseAdmin
     .from('suppliers')
-    .select('id, products_summary, company_info')
+    .select('id, company_info') // Removed products_summary
     .eq('brief_id', briefId);
 
   if (suppliersError) {
     console.error(`[${FUNCTION_NAME}] Error fetching suppliers:`, suppliersError);
-    throw new HttpError('Failed to fetch suppliers', 500);
+    throw new HttpError('Failed to fetch suppliers', 500); // This is critical, so we throw
   }
 
   const suppliersCount = suppliers?.length || 0;
-  const productsCount = suppliers?.reduce((acc, s) => acc + (s.products_summary?.length || 0), 0) || 0;
+  let productsCount = 0;
+
+  // KPI: Products count (dependent on suppliers)
+  if (suppliers && suppliers.length > 0) {
+    const supplierIds = suppliers.map(s => s.id);
+    const { count, error: productsError } = await supabaseAdmin
+      .from('products')
+      .select('id', { count: 'exact', head: true })
+      .in('supplier_id', supplierIds);
+
+    if (productsError) {
+      console.error(`[${FUNCTION_NAME}] Error fetching products count:`, productsError);
+      // Do not throw, just log and continue
+    } else {
+      productsCount = count || 0;
+    }
+  }
 
   // Structured Filters Aggregation
   const structuredFilters = {
