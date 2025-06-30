@@ -103,7 +103,6 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
     .from('briefs')
     .select('*')
     .eq('user_id', userId)
-    .eq('status', 'active') // Only fetch active briefs
     .order('created_at', { ascending: false });
 
   if (briefsError) {
@@ -244,31 +243,6 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
   return metrics;
 }
 
-async function archiveBrief(supabaseAdmin: SupabaseClient, userId: string, briefId: string) {
-  if (!briefId) {
-    throw new HttpError('Missing briefId parameter', 400);
-  }
-
-  const { data, error } = await supabaseAdmin
-    .from('briefs')
-    .update({ status: 'archived', updated_at: new Date().toISOString() })
-    .eq('id', briefId)
-    .eq('user_id', userId)
-    .select();
-
-  if (error) {
-    console.error(`[archiveBrief] Error archiving brief ${briefId}:`, error);
-    throw new HttpError('Failed to archive brief', 500);
-  }
-
-  if (data.length === 0) {
-    throw new HttpError('Brief not found or access denied', 404);
-  }
-
-  console.log(`[archiveBrief] Successfully archived brief: ${briefId}`);
-  return { success: true, briefId };
-}
-
 // Handle different dashboard actions
 async function handleAction(action: string, params: any, user: User, supabaseAdmin: SupabaseClient) {
   console.log(`Handling action: ${action} with params:`, params);
@@ -278,9 +252,6 @@ async function handleAction(action: string, params: any, user: User, supabaseAdm
       return await getUserMetrics(supabaseAdmin, user.id);
     case 'get_briefs_with_stats':
       return await getBriefsWithStats(supabaseAdmin, user.id);
-    case 'archive_brief':
-      if (!params.briefId) throw new HttpError('Missing briefId parameter', 400);
-      return await archiveBrief(supabaseAdmin, user.id, params.briefId);
     default:
       throw new HttpError(`Unknown action: ${action}`, 400);
   }

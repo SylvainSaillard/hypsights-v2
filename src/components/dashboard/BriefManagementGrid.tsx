@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../contexts/I18nContext';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
-import { supabase } from '../../lib/supabaseClient';
 
 type Brief = {
   id: string;
@@ -22,11 +21,10 @@ type Brief = {
  * Follows Hypsights design system for consistent UI
  */
 const BriefManagementGrid: React.FC = () => {
-  const [briefToArchive, setBriefToArchive] = useState<Brief | null>(null);
   const { t, locale } = useI18n();
 
   // Fetch briefs with stats from edge function
-  const { data, loading, error, refresh } = useEdgeFunction('dashboard-data', { 
+  const { data, loading, error } = useEdgeFunction('dashboard-data', { 
     action: 'get_briefs_with_stats' 
   }, 'POST');
 
@@ -116,41 +114,6 @@ const BriefManagementGrid: React.FC = () => {
 
   const filteredBriefs = data?.data || [];
 
-      const handleArchive = async () => {
-    if (!briefToArchive) return;
-
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('User not authenticated');
-
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dashboard-data`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({
-            action: 'archive_brief',
-            briefId: briefToArchive.id,
-          }),
-        }
-      );
-
-      const result = await response.json();
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to archive brief.');
-      }
-      
-      setBriefToArchive(null);
-      refresh();
-
-    } catch (error) {
-      console.error('Failed to archive brief:', error);
-    }
-  };
-
   return (
     <div className="bg-card rounded-xl shadow-lg p-8 mb-8 border border-gray-100">
       <div className="flex justify-between items-center mb-8">
@@ -186,38 +149,53 @@ const BriefManagementGrid: React.FC = () => {
             {filteredBriefs.map((brief: Brief) => {
               const stats = brief.stats || { solutions_count: 0, products_count: 0, suppliers_count: 0 };
               const hasResults = stats.solutions_count > 0 || stats.products_count > 0 || stats.suppliers_count > 0;
-
+              const totalResults = stats.solutions_count + stats.products_count + stats.suppliers_count;
               
-
+              const cardClasses = hasResults 
+                ? 'bg-gradient-to-br from-white to-gray-50 border-2 border-green-300 shadow-xl hover:shadow-2xl'
+                : 'bg-white border-2 border-gray-200 shadow-lg hover:shadow-xl';
 
               return (
-                <div key={brief.id} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 flex flex-col">
-                  <div className="flex-grow p-6 flex flex-col">
-                    <div className="flex justify-between items-start mb-4">
-                      <Link to={`/brief/${brief.id}`} className="flex-grow min-w-0">
-                        <h3 className="text-lg font-bold text-gray-800 truncate pr-4">{brief.title}</h3>
-                      </Link>
-                      <button 
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setBriefToArchive(brief); }} 
-                        className="text-gray-400 hover:text-gray-600 p-1 rounded-full flex-shrink-0 z-10"
-                        aria-label="Archive brief"
-                      >
-                        <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg>
-                      </button>
-                    </div>
-                    <div className="flex items-center text-sm text-gray-500 mb-6">
-                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                      <span>{formatDate(brief.created_at)}</span>
+                <div 
+                  key={brief.id}
+                  className={`group relative overflow-hidden rounded-2xl transition-all duration-500 cursor-pointer transform hover:-translate-y-2 hover:rotate-1 ${cardClasses}`}
+                  onClick={() => window.location.href = `/dashboard/briefs/${brief.id}/chat`}
+                >
+                  {/* Animated background gradient */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-green-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  <div className="relative p-6 flex flex-col h-full">
+                    {/* Title and Description */}
+                    <div className="mb-6 flex-1">
+                      <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
+                        {brief.title || t('brief.card.untitled', 'Untitled Brief')}
+                      </h3>
+                      <div className="flex items-center text-sm text-gray-500 mb-2">
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>{formatDate(brief.created_at)}</span>
+                      </div>
+                      
+                      {/* Results summary */}
+                      <div className="flex items-center text-sm">
+                        <div className="flex items-center space-x-1">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          <span className="font-semibold text-green-600">{totalResults}</span>
+                          <span className="text-gray-600">total results found</span>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="bg-gray-50 rounded-xl p-4 mb-6">
-                      <div className="flex justify-around items-start text-center">
+                    {/* Gamified Stats */}
+                    <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-100">
+                      <div className="flex justify-around items-center">
                         <StatBox 
-                          label={t('brief.card.suppliers_count', 'Suppliers')} 
+                          label={t('brief.card.suppliers_count', 'Suppliers Found')} 
                           value={stats.suppliers_count} 
                           hasResults={stats.suppliers_count > 0}
-                          colorClass="bg-gradient-to-br from-teal-400 to-cyan-600 text-white shadow-lg"
-                          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h6m-3 4v4m-3 0h6" /></svg>}
+                          colorClass="bg-gradient-to-br from-teal-400 to-cyan-500 text-white shadow-lg"
+                          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
                         />
                         <StatBox 
                           label={t('brief.card.products_count', 'Products')} 
@@ -235,59 +213,46 @@ const BriefManagementGrid: React.FC = () => {
                         />
                       </div>
                     </div>
-                  
-                    <div className="mt-auto">
-                      <Link to={`/brief/${brief.id}`} className={`relative w-full block py-3 px-6 rounded-xl font-bold text-center transition-all duration-300 transform hover:scale-105 overflow-hidden ${
-                        hasResults 
-                          ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg hover:shadow-xl' 
-                          : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-md hover:shadow-lg'
-                      }`}>
-                        <div className="relative flex items-center justify-center">
-                          {hasResults ? (
-                            <>
-                              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                              <span>{t('brief.action.view_results', 'Explore Results')}</span>
-                            </>
-                          ) : (
-                            <>
-                              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
-                              <span>{t('brief.action.complete_submit', 'Start Your Quest')}</span>
-                            </>
-                          )}
-                        </div>
-                      </Link>
-                    </div>
+
+                    {/* Gamified Action Button */}
+                    <button className={`relative w-full py-4 px-6 rounded-xl font-bold text-center transition-all duration-300 transform hover:scale-105 overflow-hidden ${
+                      hasResults 
+                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-xl hover:shadow-2xl' 
+                        : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg hover:shadow-xl'
+                    }`}>
+                      {/* Button shine effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                      
+                      <div className="relative flex items-center justify-center">
+                        {hasResults ? (
+                          <>
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            <span>
+                              {totalResults > 0 ? 
+                                t('brief.action.view_results_count', `⚡ Explore ${totalResults} Results`) :
+                                t('brief.action.view_results', '⚡ View Results')
+                              }
+                            </span>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            <span>{t('brief.action.complete_submit', '🚀 Start Your Quest')}</span>
+                          </>
+                        )}
+                      </div>
+                    </button>
                   </div>
                 </div>
               )
             })}
           </div>
         </div>
-      )}
 
-      {briefToArchive && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl">
-            <h3 className="text-lg font-bold mb-4">{t('brief.archive.confirm_title', 'Archive Brief')}</h3>
-            <p className="mb-6">{t('brief.archive.confirm_message', `Are you sure you want to archive the brief "${briefToArchive.title}"?`)}</p>
-            <div className="flex justify-end space-x-4">
-              <button onClick={() => setBriefToArchive(null)} className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">{t('common.cancel', 'Cancel')}</button>
-              <button onClick={handleArchive} className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">{t('common.archive', 'Archive')}</button>
-            </div>
-          </div>
-        </div>
-      )}\n
-      {briefToArchive && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg shadow-xl">
-            <h3 className="text-lg font-bold mb-4">{t('brief.archive.confirm_title', 'Archive Brief')}</h3>
-            <p className="mb-6">{t('brief.archive.confirm_message', `Are you sure you want to archive the brief "${briefToArchive.title}"?`)}</p>
-            <div className="flex justify-end space-x-4">
-              <button onClick={() => setBriefToArchive(null)} className="px-4 py-2 rounded-lg bg-gray-200 hover:bg-gray-300">{t('common.cancel', 'Cancel')}</button>
-              <button onClick={handleArchive} className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700">{t('common.archive', 'Archive')}</button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );
