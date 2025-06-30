@@ -5,6 +5,7 @@ import { startFastSearchFromSolution } from '../../services/fastSearchService';
 import ChatPanel from './ChatPanel';
 import SolutionsPanel from './SolutionsPanel';
 import type { EnhancedChatViewProps } from './types';
+import { supabase } from '../../lib/supabaseClient';
 
 /**
  * Composant de chat amélioré avec affichage des solutions et des fournisseurs
@@ -39,30 +40,45 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     validateSolution
   } = useSolutions(briefId, onSolutionValidated);
   
-  // Charger le quota de Fast Search depuis le profil utilisateur
+  // Charger le quota de Fast Search
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchQuota = async () => {
       try {
-        const response = await fetch('/functions/v1/user-profile', {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          console.error('User not authenticated for quota check.');
+          return;
+        }
+
+        const response = await fetch('/functions/v1/dashboard-data', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'get_user_profile' })
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({ action: 'get_user_metrics' }),
         });
+
+        if (!response.ok) {
+          throw new Error(`Failed to fetch quota: ${response.statusText}`);
+        }
         
-        const data = await response.json();
+        const result = await response.json();
         
-        if (data.success && data.data.user) {
+        if (result.success && result.data?.fast_search_usage) {
           setFastSearchQuota({
-            used: data.data.user.fast_search_used || 0,
-            total: data.data.user.fast_search_quota || 3
+            used: result.data.fast_search_usage.used ?? 0,
+            total: result.data.fast_search_usage.total ?? 3,
           });
+        } else {
+          console.error('Error fetching quota:', result.error || 'No data received');
         }
       } catch (error) {
-        console.error('Failed to fetch user profile:', error);
+        console.error('Exception while fetching user quota:', error);
       }
     };
     
-    fetchUserProfile();
+    fetchQuota();
   }, []);
   
   // Gestionnaire d'envoi de message

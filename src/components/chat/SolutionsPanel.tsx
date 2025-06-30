@@ -10,6 +10,8 @@ interface SolutionsPanelProps {
   onRefresh: () => void;
   onStartFastSearch?: (solutionId: string) => void;
   startingSolutionId?: string | null;
+  briefHasActiveSearch?: boolean;
+  showFastSearchDirectly?: boolean;
 }
 
 /**
