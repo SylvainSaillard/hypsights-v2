@@ -280,6 +280,8 @@ async function parseParams(req: Request) {
 }
 
 serve(async (req: Request) => {
+  // Enhanced logging for debugging CORS and request entry
+  console.log(`[${FUNCTION_NAME}] Request received. Method: ${req.method}, Origin: ${req.headers.get('origin')}, URL: ${req.url}`);
   console.log(`[${FUNCTION_NAME}] Received ${req.method} from ${req.headers.get('origin')}`);
   
   if (req.method === 'OPTIONS') {
