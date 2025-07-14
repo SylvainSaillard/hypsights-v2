@@ -53,6 +53,16 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
     });
   };
 
+  const handleCapabilityChange = (capabilityId: string) => {
+    setFormData(prev => {
+      const currentCapabilities = prev.required_capabilities || [];
+      const newCapabilities = currentCapabilities.includes(capabilityId)
+        ? currentCapabilities.filter(c => c !== capabilityId)
+        : [...currentCapabilities, capabilityId];
+      return { ...prev, required_capabilities: newCapabilities };
+    });
+  };
+
   const handleAddCompany = () => {
     if (companyInput.trim()) {
       setFormData(prev => ({
@@ -206,9 +216,9 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
             {t('brief.form.required_maturity', 'Required Maturity')}
           </label>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
             {maturityOptions.map(option => (
-              <div key={option.id} className="flex items-center hover:bg-white p-2 rounded transition-colors duration-150">
+              <label key={option.id} htmlFor={`maturity-${option.id}`} className="flex items-center p-3 rounded-lg hover:bg-slate-100 transition-colors duration-200 cursor-pointer">
                 <input
                   type="checkbox"
                   id={`maturity-${option.id}`}
@@ -216,12 +226,12 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                   value={option.id}
                   checked={formData.required_maturity.includes(option.id)}
                   onChange={handleCheckboxChange}
-                  className="h-5 w-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2"
+                  className="custom-checkbox"
                 />
-                <label htmlFor={`maturity-${option.id}`} className="ml-2 text-sm text-gray-700">
+                <span className="ml-3 text-sm text-slate-700 font-medium">
                   {option.label}
-                </label>
-              </div>
+                </span>
+              </label>
             ))}
           </div>
         </div>
@@ -231,28 +241,20 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
           <label className="form-label mb-3 text-gray-700 font-medium">
             {t('brief.form.required_capabilities', 'Required Capabilities')}
           </label>
-          
-          <div className="flex flex-wrap gap-3 bg-gray-50 p-4 rounded-lg">
+          <div className="flex flex-wrap gap-3 bg-slate-50 p-4 rounded-lg">
             {capabilityOptions.map(option => (
-              <div 
+              <button
                 key={option.id}
-                className={`px-4 py-2 rounded-full text-sm cursor-pointer transition-all duration-200 border ${
+                type="button"
+                onClick={() => handleCapabilityChange(option.id)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${
                   formData.required_capabilities.includes(option.id)
-                    ? 'bg-primary text-white border-primary shadow-sm'
-                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    ? 'bg-emerald-500 text-white border-emerald-500 shadow-md'
+                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100 hover:border-slate-400'
                 }`}
-                onClick={() => {
-                  const isSelected = formData.required_capabilities.includes(option.id);
-                  setFormData(prev => ({
-                    ...prev,
-                    required_capabilities: isSelected
-                      ? prev.required_capabilities.filter(id => id !== option.id)
-                      : [...prev.required_capabilities, option.id]
-                  }));
-                }}
               >
                 {option.label}
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -263,9 +265,9 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
             {t('brief.form.preferred_organization_types', 'Preferred Type(s) of Organisation')}
           </label>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
             {organizationTypes.map(option => (
-              <div key={option.id} className="flex items-center hover:bg-white p-2 rounded transition-colors duration-150">
+              <label key={option.id} htmlFor={`org-${option.id}`} className="flex items-center p-3 rounded-lg hover:bg-slate-100 transition-colors duration-200 cursor-pointer">
                 <input
                   type="checkbox"
                   id={`org-${option.id}`}
@@ -273,12 +275,12 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                   value={option.id}
                   checked={formData.preferred_organization_types.includes(option.id)}
                   onChange={handleCheckboxChange}
-                  className="h-5 w-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2"
+                  className="custom-checkbox"
                 />
-                <label htmlFor={`org-${option.id}`} className="ml-2 text-sm text-gray-700">
+                <span className="ml-3 text-sm text-slate-700 font-medium">
                   {option.label}
-                </label>
-              </div>
+                </span>
+              </label>
             ))}
           </div>
         </div>
@@ -289,9 +291,9 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
             {t('brief.form.preferred_geographies', 'Preferred Geographies')}
           </label>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
             {geographyOptions.map(option => (
-              <div key={option.id} className="flex items-center hover:bg-white p-2 rounded transition-colors duration-150">
+              <label key={option.id} htmlFor={`geo-${option.id}`} className="flex items-center p-3 rounded-lg hover:bg-slate-100 transition-colors duration-200 cursor-pointer">
                 <input
                   type="checkbox"
                   id={`geo-${option.id}`}
@@ -299,12 +301,12 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                   value={option.id}
                   checked={formData.preferred_geographies.includes(option.id)}
                   onChange={handleCheckboxChange}
-                  className="h-5 w-5 text-primary border-gray-300 rounded focus:ring-primary focus:ring-2"
+                  className="custom-checkbox"
                 />
-                <label htmlFor={`geo-${option.id}`} className="ml-2 text-sm text-gray-700">
+                <span className="ml-3 text-sm text-slate-700 font-medium">
                   {option.label}
-                </label>
-              </div>
+                </span>
+              </label>
             ))}
           </div>
         </div>
@@ -321,8 +323,8 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
           <button
             type="submit"
             disabled={isSubmitting}
-            className={`btn btn-primary shadow-md hover:shadow-lg transition-all ${
-              isSubmitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-primary-dark'
+            className={`btn bg-emerald-600 text-white hover:bg-emerald-700 shadow-md hover:shadow-lg transition-all ${
+              isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
             }`}
           >
             {isSubmitting 
