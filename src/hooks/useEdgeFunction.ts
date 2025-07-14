@@ -35,6 +35,13 @@ export function useEdgeFunction(
     : 'production';
   
   const fetchData = useCallback(async () => {
+    // Ne pas exécuter la requête si l'action n'est pas spécifiée.
+    // Cela évite les appels non désirés au chargement du composant.
+    if (!params || !params.action) {
+      setState(prev => ({ ...prev, loading: false }));
+      return;
+    }
+
     try {
       setState(prev => ({ ...prev, loading: true }));
       
@@ -60,9 +67,7 @@ export function useEdgeFunction(
                                   window.location.port !== '' && 
                                   window.location.port !== '3000';
       
-      // Use a proxy approach for local development with non-standard ports
-      const useLocalProxy = isNonStandardLocalPort;
-      
+
       let options: RequestInit = {
         method: method,
         headers: {
