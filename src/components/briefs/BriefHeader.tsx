@@ -81,7 +81,7 @@ const StructuredFilterCard: React.FC<{ title: string; items: string[]; icon: Rea
     </div>
 );
 
-const BriefHeaderSkeleton: React.FC = () => (
+export const BriefHeaderSkeleton: React.FC = () => (
     <div className="animate-pulse bg-slate-900 p-6 rounded-lg mb-6">
         <div className="h-8 bg-slate-700 rounded w-3/4 mb-2"></div>
         <div className="h-4 bg-slate-700 rounded w-1/4 mb-8"></div>

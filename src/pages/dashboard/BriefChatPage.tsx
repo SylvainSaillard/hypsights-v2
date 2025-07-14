@@ -4,7 +4,7 @@ import { supabase } from '../../lib/supabaseClient';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
 
-import BriefHeader from '../../components/briefs/BriefHeader';
+import BriefHeader, { BriefHeaderSkeleton } from '../../components/briefs/BriefHeader';
 import { useI18n } from '../../contexts/I18nContext';
 
 interface Brief {
@@ -143,9 +143,8 @@ const BriefChatPage = () => {
             </svg>
             <span className="font-medium">{t('brief.chat.button.back_to_dashboard', 'Back to Dashboard')}</span>
           </button>
-          {brief && <BriefHeader briefId={brief.id} />}
         </div>
-        
+
         {/* Enhanced Error Display */}
         {error && (
           <div className="mb-6">
@@ -172,19 +171,13 @@ const BriefChatPage = () => {
           </div>
         )}
         
-        {/* Enhanced Loading State */}
+        {/* Loading or Content Display */}
         {loading ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <div className="relative">
-                <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
-                <div className="absolute inset-0 rounded-full border-4 border-purple-200 border-t-purple-600 animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
-              </div>
-              <p className="mt-4 text-gray-600 font-medium">{t('brief.chat.header.loading', 'Loading your brief...')}</p>
-            </div>
-          </div>
+          <BriefHeaderSkeleton />
         ) : brief && !error ? (
           <div className="flex-1 flex flex-col gap-6">
+            <BriefHeader briefId={brief.id} />
+
             {/* Chat et Solutions */}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
               <EnhancedChatView 
