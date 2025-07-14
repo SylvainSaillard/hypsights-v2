@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { BriefForm } from '../../components/briefs';
+import { BriefForm, BriefValidationOverlay } from '../../components/briefs';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
 import '../../styles/design-tokens.css';
@@ -192,9 +192,9 @@ const BriefCreationPage: React.FC = () => {
       )}
       
 
-      
+      {/* Overlay de validation avec animation de chargement */}
+      {isCallingWebhook && <BriefValidationOverlay isLoading={isCallingWebhook} />}
 
-      
       {/* Brief Form */}
       <BriefForm 
         initialData={isEditing ? existingBrief : undefined}
