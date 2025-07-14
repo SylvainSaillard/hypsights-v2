@@ -13,10 +13,10 @@ interface BriefData {
   title: string;
   description: string;
   reference_companies: string[];
-  required_maturity: string[];
-  required_capabilities: string[];
-  preferred_organization_types: string[];
-  preferred_geographies: string[];
+  maturity: string[];
+  capabilities: string[];
+  organization_types: string[];
+  geographies: string[];
   [key: string]: string | string[];
 }
 
@@ -26,10 +26,10 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
     title: initialData?.title || '',
     description: initialData?.description || '',
     reference_companies: initialData?.reference_companies || [],
-    required_maturity: initialData?.required_maturity || [],
-    required_capabilities: initialData?.required_capabilities || [],
-    preferred_organization_types: initialData?.preferred_organization_types || [],
-    preferred_geographies: initialData?.preferred_geographies || [],
+    maturity: initialData?.maturity || [],
+    capabilities: initialData?.capabilities || [],
+    organization_types: initialData?.organization_types || [],
+    geographies: initialData?.geographies || [],
   });
 
   const [companyInput, setCompanyInput] = useState('');
@@ -55,11 +55,11 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
   const handleCapabilityChange = (capabilityId: string) => {
     setFormData(prev => {
-      const currentCapabilities = prev.required_capabilities || [];
+      const currentCapabilities = prev.capabilities || [];
       const newCapabilities = currentCapabilities.includes(capabilityId)
         ? currentCapabilities.filter(c => c !== capabilityId)
         : [...currentCapabilities, capabilityId];
-      return { ...prev, required_capabilities: newCapabilities };
+      return { ...prev, capabilities: newCapabilities };
     });
   };
 
@@ -222,9 +222,9 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                 <input
                   type="checkbox"
                   id={`maturity-${option.id}`}
-                  name="required_maturity"
+                  name="maturity"
                   value={option.id}
-                  checked={formData.required_maturity.includes(option.id)}
+                  checked={formData.maturity.includes(option.id)}
                   onChange={handleCheckboxChange}
                   className="custom-checkbox"
                 />
@@ -248,7 +248,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                 type="button"
                 onClick={() => handleCapabilityChange(option.id)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${
-                  formData.required_capabilities.includes(option.id)
+                  formData.capabilities.includes(option.id)
                     ? 'bg-emerald-500 text-white border-emerald-500 shadow-md'
                     : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100 hover:border-slate-400'
                 }`}
@@ -271,9 +271,9 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                 <input
                   type="checkbox"
                   id={`org-${option.id}`}
-                  name="preferred_organization_types"
+                  name="organization_types"
                   value={option.id}
-                  checked={formData.preferred_organization_types.includes(option.id)}
+                  checked={formData.organization_types.includes(option.id)}
                   onChange={handleCheckboxChange}
                   className="custom-checkbox"
                 />
@@ -297,9 +297,9 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                 <input
                   type="checkbox"
                   id={`geo-${option.id}`}
-                  name="preferred_geographies"
+                  name="geographies"
                   value={option.id}
-                  checked={formData.preferred_geographies.includes(option.id)}
+                  checked={formData.geographies.includes(option.id)}
                   onChange={handleCheckboxChange}
                   className="custom-checkbox"
                 />
