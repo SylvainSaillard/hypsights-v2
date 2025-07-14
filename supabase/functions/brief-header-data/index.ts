@@ -86,10 +86,10 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     throw new HttpError('Missing briefId parameter', 400);
   }
 
-  // Get Brief Details
+  // Get Brief Details, including structured filters
   const { data: brief, error: briefError } = await supabaseAdmin
     .from('briefs')
-    .select('title, created_at')
+    .select('title, created_at, geographies, organization_types, capabilities, maturity, reference_companies')
     .eq('id', briefId)
     .eq('user_id', userId)
     .single();
@@ -150,23 +150,36 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     }
   }
 
-  // Step 3: Aggregate structured filters
-  const structuredFilters = {
-    geographies: new Set<string>(),
-    organization_types: new Set<string>(),
-    capabilities: new Set<string>(),
-  };
+  /* --- DEPRECATED (2024-07-15): Aggregate filters from search results ---
+     This logic aggregates filters from the suppliers found. It's kept for reference
+     in case we want to display both defined brief filters and resulting filters.
 
-  suppliers.forEach(supplier => {
-    if (supplier.country) structuredFilters.geographies.add(supplier.country);
-    if (supplier.company_size) structuredFilters.organization_types.add(supplier.company_size);
-    if (supplier.industry) structuredFilters.capabilities.add(supplier.industry);
-  });
+      const structuredFilters = {
+        geographies: new Set<string>(),
+        organization_types: new Set<string>(),
+        capabilities: new Set<string>(),
+      };
 
+      suppliers.forEach(supplier => {
+        if (supplier.country) structuredFilters.geographies.add(supplier.country);
+        if (supplier.company_size) structuredFilters.organization_types.add(supplier.company_size);
+        if (supplier.industry) structuredFilters.capabilities.add(supplier.industry);
+      });
+
+      const aggregatedFiltersFromSuppliers = {
+        geographies: Array.from(structuredFilters.geographies),
+        organization_types: Array.from(structuredFilters.organization_types),
+        capabilities: Array.from(structuredFilters.capabilities),
+      };
+  */
+
+  // Step 3: Use structured filters directly from the brief (Source of Truth)
   const aggregatedFilters = {
-    geographies: Array.from(structuredFilters.geographies),
-    organization_types: Array.from(structuredFilters.organization_types),
-    capabilities: Array.from(structuredFilters.capabilities),
+    geographies: brief.geographies || [],
+    organization_types: brief.organization_types || [],
+    capabilities: brief.capabilities || [],
+    maturity: brief.maturity || [],
+    reference_companies: brief.reference_companies || [],
   };
 
   return {
