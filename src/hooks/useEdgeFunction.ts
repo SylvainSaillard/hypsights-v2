@@ -11,39 +11,38 @@ import { devLog } from '../lib/devTools';
  * @param method - HTTP method to use (default: 'POST')
  * @returns Object containing data, loading state, error, and refresh function
  */
-export function useEdgeFunction(
-  endpoint: string, 
+export function useEdgeFunction<T>(
+  endpoint: string,
   params: Record<string, any> = {},
-  method: 'GET' | 'POST' = 'POST'
+  method: 'GET' | 'POST' = 'POST',
+  disabled: boolean = false
 ) {
   const [state, setState] = useState<{
-    data: any;
+    data: T | null;
     loading: boolean;
     error: string | null;
-  }>({ 
-    data: null, 
-    loading: true, 
-    error: null 
+  }>({
+    data: null,
+    loading: !disabled,
+    error: null,
   });
-  
+
   const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
   const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-  
-  // Detect environment for debugging purposes - defined outside of fetch to be available in catch block
-  const getEnvironment = () => (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') 
-    ? 'development' 
-    : 'production';
-  
+
+  const getEnvironment = () =>
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'development'
+      : 'production';
+
   const fetchData = useCallback(async () => {
-    // Ne pas exécuter la requête si l'action n'est pas spécifiée.
-    // Cela évite les appels non désirés au chargement du composant.
-    if (!params || !params.action) {
-      setState(prev => ({ ...prev, loading: false }));
+    if (disabled) {
+      setState((prev) => ({ ...prev, loading: false }));
       return;
     }
 
     try {
-      setState(prev => ({ ...prev, loading: true }));
+      setState((prev) => ({ ...prev, loading: true, error: null }));
       
       // Generate a unique request ID to prevent duplicate submissions
       // This is especially important with React.StrictMode double-rendering
