@@ -102,14 +102,11 @@ const BriefHeaderSkeleton: React.FC = () => (
 
 const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
     const { t } = useI18n();
-    console.log(`[BriefHeader] Mounting for briefId: ${briefId}. Fetching data...`);
 
   const { data, loading, error } = useEdgeFunction('brief-header-data', 
     { brief_id: briefId }, 
     'POST'
   );
-
-  console.log('[BriefHeader] Data state:', { briefId, loading, error, data });
 
     if (loading) return <BriefHeaderSkeleton />;
     

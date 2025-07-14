@@ -1,5 +1,6 @@
 // supabase/functions/brief-header-data/index.ts
 
+// @deno-ts-ignore
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -109,35 +110,23 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     console.error(`[${FUNCTION_NAME}] Error fetching solutions count:`, solutionsError);
   }
 
-  // Step 1: Get suppliers directly linked to the brief
-  const { data: briefSuppliers, error: briefSuppliersError } = await supabaseAdmin
+  // Step 1: Get suppliers linked to the brief and count them.
+  const { data: suppliers, error: suppliersError } = await supabaseAdmin
     .from('suppliers')
-    .select('id')
+    .select('*') // Select all fields for later use
     .eq('brief_id', briefId);
 
-  if (briefSuppliersError) {
-    console.error(`[${FUNCTION_NAME}] Error fetching brief suppliers:`, briefSuppliersError);
-    throw new HttpError('Failed to fetch brief suppliers', 500);
+  if (suppliersError) {
+    console.error(`[${FUNCTION_NAME}] Error fetching suppliers:`, suppliersError);
+    throw new HttpError('Failed to fetch suppliers', 500);
   }
 
-  const supplierIds = briefSuppliers.map(s => s.id);
-  const suppliersCount = supplierIds.length;
+  const suppliersCount = suppliers?.length || 0;
+  const supplierIds = suppliers?.map(s => s.id) || [];
   let productsCount = 0;
-  let suppliers = [];
 
-  // Step 2: If suppliers are found, fetch their details and count their products
+  // Step 2: If suppliers exist, count their associated products.
   if (suppliersCount > 0) {
-    const { data: supplierDetails, error: suppliersError } = await supabaseAdmin
-      .from('suppliers')
-      .select('id, country, company_size, industry')
-      .in('id', supplierIds);
-
-    if (suppliersError) {
-      console.error(`[${FUNCTION_NAME}] Error fetching supplier details:`, suppliersError);
-    } else {
-      suppliers = supplierDetails || [];
-    }
-
     const { count, error: productsError } = await supabaseAdmin
       .from('products')
       .select('id', { count: 'exact', head: true })
@@ -145,6 +134,7 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
 
     if (productsError) {
       console.error(`[${FUNCTION_NAME}] Error fetching products count:`, productsError);
+      // Do not throw, return partial data instead
     } else {
       productsCount = count || 0;
     }
@@ -203,17 +193,18 @@ serve(async (req: Request) => {
 
   try {
     const user = await authenticateUser(req);
-    const { briefId } = await req.json();
+    const { brief_id: briefId } = await req.json();
 
     const supabaseAdmin = createSupabaseClient(true);
     const data = await getBriefHeaderData(supabaseAdmin, user.id, briefId);
 
     await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_success`, user.id, { briefId });
 
-        return new Response(JSON.stringify({ success: true, data }), {
+    return new Response(JSON.stringify({ success: true, data }), {
       headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       status: 200,
     });
+
   } catch (error) {
     console.error(`[${FUNCTION_NAME}] Error:`, error);
     const statusCode = error instanceof HttpError ? error.status : 500;
@@ -221,12 +212,13 @@ serve(async (req: Request) => {
     // Attempt to track error without exposing user object if auth failed
     try {
         const supabaseAdmin = createSupabaseClient(true);
+        // We don't have a user ID if auth fails, so we can't track it to a user.
         await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_error`, 'system_error', { error: error.message });
     } catch(e) {
         console.error(`[${FUNCTION_NAME}] Failed to track error event`, e);
     }
 
-        return new Response(JSON.stringify({ success: false, error: error.message }), {
+    return new Response(JSON.stringify({ success: false, error: error.message }), {
       headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       status: statusCode,
     });
