@@ -109,18 +109,18 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     console.error(`[${FUNCTION_NAME}] Error fetching solutions count:`, solutionsError);
   }
 
-  // Step 1: Get supplier_ids from supplier_match_profiles for the current brief
-  const { data: profiles, error: profilesError } = await supabaseAdmin
-    .from('supplier_match_profiles')
-    .select('supplier_id')
+  // Step 1: Get suppliers directly linked to the brief
+  const { data: briefSuppliers, error: briefSuppliersError } = await supabaseAdmin
+    .from('suppliers')
+    .select('id')
     .eq('brief_id', briefId);
 
-  if (profilesError) {
-    console.error(`[${FUNCTION_NAME}] Error fetching supplier profiles:`, profilesError);
-    throw new HttpError('Failed to fetch supplier profiles', 500);
+  if (briefSuppliersError) {
+    console.error(`[${FUNCTION_NAME}] Error fetching brief suppliers:`, briefSuppliersError);
+    throw new HttpError('Failed to fetch brief suppliers', 500);
   }
 
-  const supplierIds = [...new Set(profiles.map(p => p.supplier_id))];
+  const supplierIds = briefSuppliers.map(s => s.id);
   const suppliersCount = supplierIds.length;
   let productsCount = 0;
   let suppliers = [];
