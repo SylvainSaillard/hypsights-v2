@@ -141,7 +141,6 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
       suppliersCount = count || 0;
     }
 
-    // Temporarily disabled for debugging
     /*
     const { count: products, error: productsError } = await supabaseAdmin
       .from('products')
