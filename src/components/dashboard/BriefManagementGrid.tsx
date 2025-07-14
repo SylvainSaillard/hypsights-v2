@@ -24,7 +24,7 @@ const BriefManagementGrid: React.FC = () => {
   const { t, locale } = useI18n();
 
   // Fetch briefs with stats from edge function
-  const { data, loading, error } = useEdgeFunction<{ data: Brief[] }>('dashboard-data', { 
+  const { data, loading, error } = useEdgeFunction('dashboard-data', { 
     action: 'get_briefs_with_stats' 
   }, 'POST');
 
