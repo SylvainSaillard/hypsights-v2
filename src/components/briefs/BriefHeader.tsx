@@ -104,7 +104,9 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
     const { t } = useI18n();
     const { data, loading, error } = useEdgeFunction('brief-header-data', { briefId }, 'POST');
 
-    if (loading) return <BriefHeaderSkeleton />;
+    const headerData = data?.data as BriefHeaderData | undefined;
+
+    if (loading || !headerData) return <BriefHeaderSkeleton />;
     
     if (error) return (
         <div className="bg-red-900/20 border border-red-500/30 text-red-400 p-4 rounded-lg mb-6" role="alert">
@@ -114,10 +116,6 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
             </div>
         </div>
     );
-
-    const headerData = data?.data as BriefHeaderData | undefined;
-
-    if (!headerData) return null;
 
     const { brief, kpis, structured_filters } = headerData;
     const reference_companies = structured_filters.reference_companies || [];

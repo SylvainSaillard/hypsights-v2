@@ -96,49 +96,54 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
 
   if (briefError) {
     console.error(`[${FUNCTION_NAME}] Error fetching brief details:`, briefError);
-    throw new HttpError('Failed to fetch brief details or access denied', 404);
   }
 
-  // KPI: Solutions count
-  const { count: solutionsCount, error: solutionsError } = await supabaseAdmin
+  // --- KPI Calculation ---
+  let solutionsCount = 0;
+  let suppliersCount = 0;
+  let productsCount = 0;
+
+  // 1. Get solutions count
+  const { count: solutions, error: solutionsError } = await supabaseAdmin
     .from('solutions')
     .select('id', { count: 'exact', head: true })
     .eq('brief_id', briefId);
 
   if (solutionsError) {
     console.error(`[${FUNCTION_NAME}] Error fetching solutions count:`, solutionsError);
+  } else {
+    solutionsCount = solutions || 0;
   }
 
-  // Step 1: Get suppliers directly linked to the brief
-  const { data: briefSuppliers, error: briefSuppliersError } = await supabaseAdmin
-    .from('suppliers')
-    .select('id')
-    .eq('brief_id', briefId);
+  // 2. Get suppliers and products counts
+  const { data: supplierMatches, error: supplierMatchesError } = await supabaseAdmin
+    .from('supplier_match_profiles')
+    .select('supplier_id')
+    .eq('brief_id', briefId)
+    .limit(500); // Optimization: limit to 500 to prevent timeout
 
-  if (briefSuppliersError) {
-    console.error(`[${FUNCTION_NAME}] Error fetching brief suppliers:`, briefSuppliersError);
-    throw new HttpError('Failed to fetch brief suppliers', 500);
+  if (supplierMatchesError) {
+    console.error(`[${FUNCTION_NAME}] Error fetching supplier matches:`, supplierMatchesError);
   }
 
-  const supplierIds = briefSuppliers.map(s => s.id);
-  const suppliersCount = supplierIds.length;
-  let productsCount = 0;
-  let suppliers = [];
+  const supplierIds = supplierMatches?.map(match => match.supplier_id) || [];
 
-  // Step 2: If suppliers are found, fetch their details and count their products
-  if (suppliersCount > 0) {
-    const { data: supplierDetails, error: suppliersError } = await supabaseAdmin
+  if (supplierIds.length > 0) {
+    // Get suppliers count
+    const { count, error: suppliersError } = await supabaseAdmin
       .from('suppliers')
-      .select('id, country, company_size, industry')
+      .select('id', { count: 'exact', head: true })
       .in('id', supplierIds);
 
     if (suppliersError) {
-      console.error(`[${FUNCTION_NAME}] Error fetching supplier details:`, suppliersError);
+      console.error(`[${FUNCTION_NAME}] Error fetching suppliers count:`, suppliersError);
     } else {
-      suppliers = supplierDetails || [];
+      suppliersCount = count || 0;
     }
 
-    const { count, error: productsError } = await supabaseAdmin
+    // Temporarily disabled for debugging
+    /*
+    const { count: products, error: productsError } = await supabaseAdmin
       .from('products')
       .select('id', { count: 'exact', head: true })
       .in('supplier_id', supplierIds);
@@ -146,32 +151,10 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     if (productsError) {
       console.error(`[${FUNCTION_NAME}] Error fetching products count:`, productsError);
     } else {
-      productsCount = count || 0;
+      productsCount = products || 0;
     }
+    */
   }
-
-  /* --- DEPRECATED (2024-07-15): Aggregate filters from search results ---
-     This logic aggregates filters from the suppliers found. It's kept for reference
-     in case we want to display both defined brief filters and resulting filters.
-
-      const structuredFilters = {
-        geographies: new Set<string>(),
-        organization_types: new Set<string>(),
-        capabilities: new Set<string>(),
-      };
-
-      suppliers.forEach(supplier => {
-        if (supplier.country) structuredFilters.geographies.add(supplier.country);
-        if (supplier.company_size) structuredFilters.organization_types.add(supplier.company_size);
-        if (supplier.industry) structuredFilters.capabilities.add(supplier.industry);
-      });
-
-      const aggregatedFiltersFromSuppliers = {
-        geographies: Array.from(structuredFilters.geographies),
-        organization_types: Array.from(structuredFilters.organization_types),
-        capabilities: Array.from(structuredFilters.capabilities),
-      };
-  */
 
   // Step 3: Use structured filters directly from the brief (Source of Truth)
   const aggregatedFilters = {
