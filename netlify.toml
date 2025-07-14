@@ -9,6 +9,13 @@
 [context.production.environment]
   VITE_SUPABASE_URL = "https://lmqagaenmseopcctkrwv.supabase.co"
 
+# Proxy redirect for Supabase functions
+[[redirects]]
+  from = "/functions/v1/*"
+  to = "https://lmqagaenmseopcctkrwv.supabase.co/functions/v1/:splat"
+  status = 200
+  force = true # Ensure this rule is applied
+
 # SPA routing configuration
 [[redirects]]
   from = "/*"
