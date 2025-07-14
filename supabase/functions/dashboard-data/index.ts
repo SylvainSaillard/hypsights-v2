@@ -122,22 +122,22 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
       try {
         const [
           { count: solutionsCount, error: solError },
+          { count: suppliersCount, error: supError },
           { count: productsCount, error: prodError },
-          { count: suppliersCount, error: supError }
         ] = await Promise.all([
           supabaseAdmin.from('solutions').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id),
-          supabaseAdmin.from('products').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id),
-          supabaseAdmin.from('suppliers').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id)
+          supabaseAdmin.from('suppliers').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id),
+          supabaseAdmin.from('products').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id)
         ]);
 
         if (solError) console.error(`[getBriefsWithStats] Error counting solutions for brief ${brief.id}:`, solError);
-        if (prodError) console.error(`[getBriefsWithStats] Error counting products for brief ${brief.id}:`, prodError);
         if (supError) console.error(`[getBriefsWithStats] Error counting suppliers for brief ${brief.id}:`, supError);
+        if (prodError) console.error(`[getBriefsWithStats] Error counting products for brief ${brief.id}:`, prodError);
 
         const stats = {
           solutions_count: solutionsCount || 0,
-          products_count: productsCount || 0,
           suppliers_count: suppliersCount || 0,
+          products_count: productsCount || 0,
         };
         console.log(`[getBriefsWithStats] Stats for brief ${brief.id}:`, JSON.stringify(stats));
 
@@ -235,8 +235,10 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
     activeBriefs: activeBriefs || 0,
     completedSearches: (userMetadata.fast_searches_used || 0) + (userMetadata.deep_searches_count || 0),
     suppliersFound: suppliersFound || 0,
-    quotaUsed: userMetadata.fast_searches_used || 0,
-    quotaLimit: userMetadata.fast_searches_quota || 3
+    fast_search_usage: {
+      used: userMetadata.fast_searches_used || 0,
+      total: userMetadata.fast_searches_quota || 3,
+    },
   };
 
   console.log('[getUserMetrics] Returning metrics:', JSON.stringify(metrics));
