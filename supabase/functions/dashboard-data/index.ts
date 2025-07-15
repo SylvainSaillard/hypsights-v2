@@ -98,11 +98,13 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
 
 async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string) {
   console.log(`[getBriefsWithStats] Starting for user: ${userId}`);
-  // 1. Get all briefs for the user
+  // 1. Get all non-archived briefs for the user
+  console.log('[getBriefsWithStats] Fetching active briefs for user:', userId);
   const { data: briefs, error: briefsError } = await supabaseAdmin
     .from('briefs')
     .select('*')
     .eq('user_id', userId)
+    .neq('status', 'archived') // Exclude archived briefs
     .order('created_at', { ascending: false });
 
   if (briefsError) {
@@ -260,6 +262,28 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
   return metrics;
 }
 
+async function archiveBrief(supabaseAdmin: SupabaseClient, userId: string, briefId: string) {
+  console.log(`[archiveBrief] Attempting to archive brief ${briefId} for user ${userId}`);
+
+  if (!briefId) {
+    throw new HttpError('Brief ID is required', 400);
+  }
+
+  const { error } = await supabaseAdmin
+    .from('briefs')
+    .update({ status: 'archived', updated_at: new Date().toISOString() })
+    .eq('id', briefId)
+    .eq('user_id', userId); // Ensure user can only archive their own briefs
+
+  if (error) {
+    console.error(`[archiveBrief] Error archiving brief ${briefId}:`, error);
+    throw new HttpError('Failed to archive brief', 500);
+  }
+
+  console.log(`[archiveBrief] Brief ${briefId} archived successfully.`);
+  return { success: true, message: `Brief ${briefId} archived.` };
+}
+
 // Handle different dashboard actions
 async function handleAction(action: string, params: any, user: User, supabaseAdmin: SupabaseClient) {
   console.log(`Handling action: ${action} with params:`, params);
@@ -269,6 +293,8 @@ async function handleAction(action: string, params: any, user: User, supabaseAdm
       return await getUserMetrics(supabaseAdmin, user.id);
     case 'get_briefs_with_stats':
       return await getBriefsWithStats(supabaseAdmin, user.id);
+    case 'archive_brief':
+      return await archiveBrief(supabaseAdmin, user.id, params.brief_id);
     default:
       throw new HttpError(`Unknown action: ${action}`, 400);
   }

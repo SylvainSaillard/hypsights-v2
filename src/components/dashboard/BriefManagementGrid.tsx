@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../contexts/I18nContext';
-import useEdgeFunction from '../../hooks/useEdgeFunction';
+import { useEdgeFunction } from '@/hooks/useEdgeFunction';
+import { supabase } from '@/lib/supabaseClient';
 
 type Brief = {
   id: string;
@@ -22,9 +23,42 @@ const BriefManagementGrid: React.FC = () => {
   const { t, locale } = useI18n();
 
   // Fetch briefs with stats from edge function
-  const { data, loading, error } = useEdgeFunction('dashboard-data', { 
+  const { data, loading, error, refresh } = useEdgeFunction('dashboard-data', { 
     action: 'get_briefs_with_stats' 
   }, { method: 'POST' });
+
+  const handleArchive = async (briefId: string) => {
+    if (window.confirm(t('brief.card.confirm_archive', 'Are you sure you want to archive this brief?'))) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+
+        if (!token) {
+          throw new Error('Authentication token not found.');
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dashboard-data`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ action: 'archive_brief', brief_id: briefId }),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Failed to archive brief.');
+        }
+
+        refresh(); // Refresh the grid to remove the archived brief
+      } catch (error: any) {
+        console.error('Archive error:', error);
+        alert(`Error: ${error.message}`);
+      }
+    }
+  };
 
   // Log data for debugging
   useEffect(() => {
@@ -36,17 +70,6 @@ const BriefManagementGrid: React.FC = () => {
     }
   }, [data, error]);
   
-  // Function to format date as "DD MMM YYYY"
-  const formatDate = (dateString: string) => {
-    // Use the locale from i18n context for date formatting
-    const date = new Date(dateString);
-    return new Intl.DateTimeFormat(locale, { 
-      day: '2-digit', 
-      month: 'short', 
-      year: 'numeric' 
-    }).format(date);
-  };
-
   type StatBoxProps = {
     icon: React.ReactNode;
     label: string;
@@ -164,16 +187,24 @@ const BriefManagementGrid: React.FC = () => {
                   <div className="relative p-6 flex flex-col h-full">
                     {/* Title and Description */}
                     <div className="mb-6 flex-1">
-                      <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
-                        {brief.title || t('brief.card.untitled', 'Untitled Brief')}
-                      </h3>
-                      <div className="flex items-center text-sm text-gray-500 mb-2">
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span>{formatDate(brief.created_at)}</span>
+                      <div className="flex justify-between items-start mb-4">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-800 truncate" title={brief.title}>
+                            {brief.title}
+                          </h3>
+                          <p className="text-sm text-gray-500">
+                            {new Date(brief.created_at).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}
+                          </p>
+                        </div>
+                        <button 
+                          onClick={() => handleArchive(brief.id)}
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-full transition-colors duration-200"
+                          title={t('brief.card.archive_button', 'Archive Brief')}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        </button>
                       </div>
-                      
+
                       {/* Results summary */}
                       <div className="flex items-center text-sm">
                         <div className="flex items-center space-x-1">
