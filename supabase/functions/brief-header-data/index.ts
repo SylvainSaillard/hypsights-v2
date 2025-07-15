@@ -111,6 +111,7 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
   }
 
   // Step 1: Get suppliers linked to the brief and count them.
+  console.log(`[${FUNCTION_NAME}] Fetching suppliers for briefId: ${briefId} and userId: ${userId}`);
   const { data: suppliers, error: suppliersError } = await supabaseAdmin
     .from('suppliers')
     .select('*') // Select all fields for later use
@@ -118,9 +119,10 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     .eq('user_id', userId);
 
   if (suppliersError) {
-    console.error(`[${FUNCTION_NAME}] Error fetching suppliers:`, suppliersError);
+    console.error(`[${FUNCTION_NAME}] Database error fetching suppliers:`, JSON.stringify(suppliersError, null, 2));
     throw new HttpError('Failed to fetch suppliers', 500);
   }
+  console.log(`[${FUNCTION_NAME}] Successfully fetched suppliers. Count: ${suppliers.length}`);
 
   const suppliersCount = suppliers?.length || 0;
   const supplierIds = suppliers?.map(s => s.id) || [];
