@@ -173,16 +173,12 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
   };
 
   return {
-    brief: {
-      title: brief.title,
-      created_at: brief.created_at
-    },
-    kpis: {
-      solutions: solutionsCount || 0,
-      companies: suppliersCount,
-      products: productsCount,
-    },
-    structured_filters: aggregatedFilters,
+    title: brief.title,
+    created_at: brief.created_at,
+    solutions_count: solutionsCount || 0,
+    suppliers_count: suppliersCount,
+    products_count: productsCount,
+    ...aggregatedFilters
   };
 }
 

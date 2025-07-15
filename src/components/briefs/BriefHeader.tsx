@@ -8,29 +8,17 @@ interface BriefHeaderProps {
     briefId: string;
 }
 
-interface BriefInfo {
+interface BriefHeaderData {
     title: string;
     created_at: string;
-}
-
-interface Kpis {
-    solutions: number;
-    companies: number;
-    products: number;
-}
-
-interface StructuredFilters {
+    solutions_count: number;
+    suppliers_count: number;
+    products_count: number;
     geographies: string[];
     organization_types: string[];
     capabilities: string[];
     maturity: string[];
     reference_companies?: string[];
-}
-
-interface BriefHeaderData {
-    brief: BriefInfo;
-    kpis: Kpis;
-    structured_filters: StructuredFilters;
 }
 
 // --- UI COMPONENTS ---
@@ -126,31 +114,30 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
 
     if (!headerData) return null;
 
-    const { brief, kpis, structured_filters } = headerData;
-    const reference_companies = structured_filters.reference_companies || [];
+    const { title, created_at, solutions_count, suppliers_count, products_count, geographies, organization_types, capabilities, maturity, reference_companies = [] } = headerData;
 
     const filterCards = [
-        { key: 'geographies', title: t('brief.header.filters.geographies', 'Geographies'), items: structured_filters.geographies, icon: <MapPin size={16} /> },
-        { key: 'organization_types', title: t('brief.header.filters.organization_types', 'Organization Types'), items: structured_filters.organization_types, icon: <Building2 size={16} /> },
-        { key: 'capabilities', title: t('brief.header.filters.capabilities', 'Capabilities'), items: structured_filters.capabilities, icon: <CheckSquare size={16} /> },
-        { key: 'maturity', title: t('brief.header.filters.maturity', 'Maturity'), items: structured_filters.maturity, icon: <BarChart2 size={16} /> }
+        { key: 'geographies', title: t('brief.header.filters.geographies', 'Geographies'), items: geographies, icon: <MapPin size={16} /> },
+        { key: 'organization_types', title: t('brief.header.filters.organization_types', 'Organization Types'), items: organization_types, icon: <Building2 size={16} /> },
+        { key: 'capabilities', title: t('brief.header.filters.capabilities', 'Capabilities'), items: capabilities, icon: <CheckSquare size={16} /> },
+        { key: 'maturity', title: t('brief.header.filters.maturity', 'Maturity'), items: maturity, icon: <BarChart2 size={16} /> }
     ];
 
     return (
         <div className="bg-slate-900 p-6 rounded-lg mb-6 border border-slate-800">
             <div className="flex items-center mb-1">
                 <FileText className="text-green-400 mr-3" size={28} />
-                <h1 className="text-2xl font-bold text-white">{brief.title}</h1>
+                <h1 className="text-2xl font-bold text-white">{title}</h1>
             </div>
-            <p className="text-slate-400 text-sm mb-6 ml-10">{new Date(brief.created_at).toLocaleDateString()}</p>
+            <p className="text-slate-400 text-sm mb-6 ml-10">{new Date(created_at).toLocaleDateString()}</p>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                <KpiCard title={t('brief.header.kpi.companies', 'Companies')} value={kpis.companies} icon={<Building2 size={20} className="text-blue-200" />} color="#2563eb40" />
-                <KpiCard title={t('brief.header.kpi.products', 'Products')} value={kpis.products} icon={<Package size={20} className="text-purple-200" />} color="#7c3aed40" />
-                <KpiCard title={t('brief.header.kpi.solutions', 'Solutions')} value={kpis.solutions} icon={<Lightbulb size={20} className="text-amber-200" />} color="#d9770640" />
+                <KpiCard title={t('brief.header.kpi.companies', 'Companies')} value={suppliers_count} icon={<Building2 size={20} className="text-blue-200" />} color="#2563eb40" />
+                <KpiCard title={t('brief.header.kpi.products', 'Products')} value={products_count} icon={<Package size={20} className="text-purple-200" />} color="#7c3aed40" />
+                <KpiCard title={t('brief.header.kpi.solutions', 'Solutions')} value={solutions_count} icon={<Lightbulb size={20} className="text-amber-200" />} color="#d9770640" />
             </div>
 
-            {reference_companies.length > 0 && (
+            {reference_companies && reference_companies.length > 0 && (
                 <FilterGroup title={t('brief.header.reference_companies', 'Reference Companies')} items={reference_companies} icon={<Users size={16} />} />
             )}
 
