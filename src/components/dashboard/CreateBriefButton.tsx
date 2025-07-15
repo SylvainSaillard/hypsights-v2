@@ -11,7 +11,7 @@ const CreateBriefButton: React.FC = () => {
   return (
     <Link 
       to="/dashboard/briefs/new" 
-      className="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground font-semibold rounded-md shadow-sm hover:scale-105 transition duration-200"
+      className="inline-flex items-center px-6 py-3 bg-green-600 text-white font-bold rounded-lg shadow-lg hover:bg-green-700 hover:scale-105 transition-all duration-200 transform"
     >
       <svg 
         xmlns="http://www.w3.org/2000/svg" 
