@@ -187,27 +187,29 @@ const BriefManagementGrid: React.FC = () => {
                     {/* Gamified Stats */}
                     <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-100">
                       <div className="flex justify-around items-center">
-                        <StatBox 
-                          label={t('brief.card.suppliers_count', 'Suppliers')} 
-                          value={brief.suppliers_count} 
-                          hasResults={brief.suppliers_count > 0}
-                          colorClass="bg-gradient-to-br from-green-400 to-green-600 text-white shadow-lg"
-                          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.653-.124-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.653.124-1.283.356-1.857m0 0a3.001 3.001 0 015.288 0M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
-                        />
-                        <StatBox 
-                          label={t('brief.card.products_count', 'Products')} 
-                          value={brief.products_count} 
-                          hasResults={brief.products_count > 0}
-                          colorClass="bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg"
-                          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
-                        />
-                        <StatBox 
-                          label={t('brief.card.solutions_count', 'Solutions')} 
-                          value={brief.solutions_count} 
-                          hasResults={brief.solutions_count > 0}
-                          colorClass="bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg"
-                          icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707M6.343 17.657l.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>}
-                        />
+                        <div className="grid grid-cols-3 gap-4">
+                          <StatBox 
+                            label={t('brief.card.suppliers_count', 'Suppliers')} 
+                            value={brief.suppliers_count} 
+                            hasResults={brief.suppliers_count > 0}
+                            colorClass="bg-gradient-to-br from-yellow-400 to-orange-500 text-white shadow-lg"
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>}
+                          />
+                          <StatBox 
+                            label={t('brief.card.products_count', 'Products')} 
+                            value={brief.products_count} 
+                            hasResults={brief.products_count > 0}
+                            colorClass="bg-gradient-to-br from-blue-400 to-blue-600 text-white shadow-lg"
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>}
+                          />
+                          <StatBox 
+                            label={t('brief.card.solutions_count', 'Solutions')} 
+                            value={brief.solutions_count} 
+                            hasResults={brief.solutions_count > 0}
+                            colorClass="bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg"
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707M6.343 17.657l.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>}
+                          />
+                        </div>
                       </div>
                     </div>
 

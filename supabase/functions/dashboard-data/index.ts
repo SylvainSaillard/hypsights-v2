@@ -120,30 +120,47 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
     briefs.map(async (brief) => {
       console.log(`[getBriefsWithStats] Getting stats for brief: ${brief.id}`);
       try {
+        // Get supplier matches first
+        const { data: matchedSuppliers, error: matchedSuppliersError } = await supabaseAdmin
+          .from('supplier_match_profiles')
+          .select('supplier_id')
+          .eq('brief_id', brief.id);
+
+        if (matchedSuppliersError) {
+          console.error(`[getBriefsWithStats] Error fetching matched suppliers for brief ${brief.id}:`, matchedSuppliersError);
+          // Continue with 0 counts if this fails
+        }
+
+        const supplierIds = matchedSuppliers?.map(s => s.supplier_id) || [];
+        const suppliers_count = supplierIds.length;
+
+        // Get other stats
         const [
-          { count: solutionsCount, error: solError },
-          { count: suppliersCount, error: supError },
-          { count: productsCount, error: prodError },
+          { count: solutions_count, error: solutionsError },
+          { count: products_count, error: productsError }
         ] = await Promise.all([
-          supabaseAdmin.from('solutions').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id),
-          supabaseAdmin.from('suppliers').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id),
-          supabaseAdmin.from('products').select('id', { count: 'exact', head: true }).eq('brief_id', brief.id)
+          supabaseAdmin
+            .from('solutions')
+            .select('id', { count: 'exact', head: true })
+            .eq('brief_id', brief.id),
+          supplierIds.length > 0
+            ? supabaseAdmin
+                .from('products')
+                .select('id', { count: 'exact', head: true })
+                .in('supplier_id', supplierIds)
+            : Promise.resolve({ count: 0, error: null })
         ]);
 
-        if (solError) console.error(`[getBriefsWithStats] Error counting solutions for brief ${brief.id}:`, solError);
-        if (supError) console.error(`[getBriefsWithStats] Error counting suppliers for brief ${brief.id}:`, supError);
-        if (prodError) console.error(`[getBriefsWithStats] Error counting products for brief ${brief.id}:`, prodError);
+        if (solutionsError) console.error(`[getBriefsWithStats] Error getting solutions count for brief ${brief.id}:`, solutionsError);
+        if (productsError) console.error(`[getBriefsWithStats] Error getting products count for brief ${brief.id}:`, productsError);
 
-        const stats = {
-          solutions_count: solutionsCount || 0,
-          suppliers_count: suppliersCount || 0,
-          products_count: productsCount || 0,
-        };
-        console.log(`[getBriefsWithStats] Stats for brief ${brief.id}:`, JSON.stringify(stats));
+        console.log(`[getBriefsWithStats] Stats for brief ${brief.id}: solutions=${solutions_count}, suppliers=${suppliers_count}, products=${products_count}`);
 
         return {
           ...brief,
-          ...stats,
+          solutions_count: solutions_count || 0,
+          suppliers_count: suppliers_count || 0,
+          products_count: products_count || 0,
         };
       } catch (error) {
         console.error(`[getBriefsWithStats] Failed to get stats for brief ${brief.id}:`, error);
