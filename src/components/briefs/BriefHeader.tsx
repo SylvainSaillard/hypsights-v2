@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
-import { FileText, Building2, Package, Lightbulb, Users, MapPin, CheckSquare, BarChart2, AlertTriangle } from 'lucide-react';
+import { FileText, Building2, Package, Lightbulb, Users, MapPin, CheckSquare, BarChart2, AlertTriangle, ChevronDown } from 'lucide-react';
 
 // --- TYPE INTERFACES ---
 interface BriefHeaderProps {
@@ -10,6 +10,7 @@ interface BriefHeaderProps {
 
 interface BriefHeaderData {
     title: string;
+    description: string;
     created_at: string;
     solutions_count: number;
     suppliers_count: number;
@@ -19,6 +20,12 @@ interface BriefHeaderData {
     capabilities: string[];
     maturity: string[];
     reference_companies?: string[];
+    goals?: string;
+    timeline?: string;
+    budget?: string;
+    key_questions?: string[];
+    nda_required?: boolean;
+    report_format?: string;
 }
 
 // --- UI COMPONENTS ---
@@ -88,8 +95,24 @@ const BriefHeaderSkeleton: React.FC = () => (
     </div>
 );
 
+const DetailItem: React.FC<{ label: string; value?: string | string[] | boolean | null }> = ({ label, value }) => {
+  if (value === null || value === undefined || (Array.isArray(value) && value.length === 0)) return null;
+
+  const displayValue = Array.isArray(value) 
+    ? value.join(', ') 
+    : typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value;
+
+  return (
+    <div className="py-2">
+      <dt className="text-sm font-medium text-slate-400">{label}</dt>
+      <dd className="mt-1 text-sm text-white whitespace-pre-wrap">{displayValue}</dd>
+    </div>
+  );
+};
+
 const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
     const { t } = useI18n();
+    const [detailsVisible, setDetailsVisible] = useState(false);
 
   const { data, loading, error } = useEdgeFunction('brief-header-data', 
     { brief_id: briefId }, 
@@ -114,7 +137,11 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
 
     if (!headerData) return null;
 
-    const { title, created_at, solutions_count, suppliers_count, products_count, geographies, organization_types, capabilities, maturity, reference_companies = [] } = headerData;
+    const { 
+        title, created_at, solutions_count, suppliers_count, products_count, 
+        geographies, organization_types, capabilities, maturity, reference_companies = [],
+        description, goals, timeline, budget, key_questions, nda_required, report_format 
+    } = headerData;
 
     const filterCards = [
         { key: 'geographies', title: t('brief.header.filters.geographies', 'Geographies'), items: geographies, icon: <MapPin size={16} /> },
@@ -124,7 +151,7 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
     ];
 
     return (
-        <div className="bg-slate-900 p-6 rounded-lg mb-6 border border-slate-800">
+        <div className="bg-slate-900 p-6 rounded-xl mb-6 border border-slate-800">
             <div className="flex items-center mb-1">
                 <FileText className="text-green-400 mr-3" size={28} />
                 <h1 className="text-2xl font-bold text-white">{title}</h1>
@@ -151,6 +178,34 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
                         cardProps.items && cardProps.items.length > 0 && <StructuredFilterCard key={key} {...cardProps} />
                     ))}
                 </div>
+            </div>
+
+            {/* Collapsible Brief Details */}
+            <div className="mt-8 border-t border-slate-800 pt-6">
+                <button
+                    onClick={() => setDetailsVisible(!detailsVisible)}
+                    className="flex justify-between items-center w-full text-left text-slate-300 hover:text-white transition-colors"
+                >
+                    <h3 className="font-semibold text-sm">
+                        {t('brief.header.details.title', 'Brief Details')}
+                    </h3>
+                    <ChevronDown
+                        size={20}
+                        className={`text-slate-400 transform transition-transform ${detailsVisible ? 'rotate-180' : ''}`}
+                    />
+                </button>
+
+                {detailsVisible && (
+                    <dl className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
+                        <DetailItem label={t('brief.header.details.description', 'Description')} value={description} />
+                        <DetailItem label={t('brief.header.details.goals', 'Goals')} value={goals} />
+                        <DetailItem label={t('brief.header.details.timeline', 'Timeline')} value={timeline} />
+                        <DetailItem label={t('brief.header.details.budget', 'Budget')} value={budget} />
+                        <DetailItem label={t('brief.header.details.key_questions', 'Key Questions')} value={key_questions} />
+                        <DetailItem label={t('brief.header.details.nda_required', 'NDA Required')} value={nda_required} />
+                        <DetailItem label={t('brief.header.details.report_format', 'Report Format')} value={report_format} />
+                    </dl>
+                )}
             </div>
         </div>
     );

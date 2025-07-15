@@ -90,7 +90,7 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
   // Get Brief Details, including structured filters
   const { data: brief, error: briefError } = await supabaseAdmin
     .from('briefs')
-    .select('title, created_at, geographies, organization_types, capabilities, maturity, reference_companies')
+    .select('*, title, description, created_at, geographies, organization_types, capabilities, maturity, reference_companies, goals, timeline, budget, key_questions, nda_required, report_format')
     .eq('id', briefId)
     .eq('user_id', userId)
     .single();
@@ -110,18 +110,33 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     console.error(`[${FUNCTION_NAME}] Error fetching solutions count:`, solutionsError);
   }
 
-  // Step 1: Get suppliers linked to the brief and count them.
-  console.log(`[${FUNCTION_NAME}] Fetching suppliers for briefId: ${briefId} and userId: ${userId}`);
-  const { data: suppliers, error: suppliersError } = await supabaseAdmin
-    .from('suppliers')
-    .select('*') // Select all fields for later use
-    .eq('brief_id', briefId)
-    .eq('user_id', userId);
+  // Step 1: Use the join table `supplier_match_profiles` to find suppliers for the brief.
+  const { data: supplierMatches, error: matchError } = await supabaseAdmin
+    .from('supplier_match_profiles')
+    .select('supplier_id')
+    .eq('brief_id', briefId);
 
-  if (suppliersError) {
-    console.error(`[${FUNCTION_NAME}] Database error fetching suppliers:`, JSON.stringify(suppliersError, null, 2));
-    throw new HttpError('Failed to fetch suppliers', 500);
+  if (matchError) {
+    console.error(`[${FUNCTION_NAME}] Error fetching supplier matches:`, matchError);
+    throw new HttpError('Failed to fetch supplier matches', 500);
   }
+
+  const supplierIdsFromMatches = supplierMatches.map(m => m.supplier_id).filter(id => id);
+
+  let suppliers: any[] = [];
+  if (supplierIdsFromMatches.length > 0) {
+    const { data: fetchedSuppliers, error: suppliersError } = await supabaseAdmin
+      .from('suppliers')
+      .select('*')
+      .in('id', supplierIdsFromMatches);
+
+    if (suppliersError) {
+      console.error(`[${FUNCTION_NAME}] Database error fetching suppliers:`, JSON.stringify(suppliersError, null, 2));
+      throw new HttpError('Failed to fetch suppliers', 500);
+    }
+    suppliers = fetchedSuppliers;
+  }
+
   console.log(`[${FUNCTION_NAME}] Successfully fetched suppliers. Count: ${suppliers.length}`);
 
   const suppliersCount = suppliers?.length || 0;
