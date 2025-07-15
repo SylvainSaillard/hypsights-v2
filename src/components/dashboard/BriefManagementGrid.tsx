@@ -187,7 +187,7 @@ const BriefManagementGrid: React.FC = () => {
                     {/* Gamified Stats */}
                     <div className="mb-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl border border-gray-100">
                       <div className="flex justify-around items-center">
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid grid-cols-3 gap-8">
                           <StatBox 
                             label={t('brief.card.suppliers_count', 'Suppliers')} 
                             value={brief.suppliers_count} 
