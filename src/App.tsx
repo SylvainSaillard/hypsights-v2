@@ -81,12 +81,12 @@ const DashboardOverviewPage = () => {
       
       <KpiCards />
       
-      <div className="mb-8 bg-card rounded-lg shadow-md p-6">
+      {/* <div className="mb-8 bg-card rounded-lg shadow-md p-6">
         <h2 className="text-xl font-semibold mb-4">{t('dashboard.recent_activity.title', 'Recent Activity')}</h2>
         <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-500 text-center">
           {t('dashboard.recent_activity.placeholder', 'Your recent activities will appear here')}
         </div>
-      </div>
+      </div> */}
       
       <BriefManagementGrid />
     </div>
