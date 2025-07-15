@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../contexts/I18nContext';
 import { useEdgeFunction } from '@/hooks/useEdgeFunction';
 import { supabase } from '@/lib/supabaseClient';
+import ConfirmationModal from '../common/ConfirmationModal';
 
 type Brief = {
   id: string;
@@ -27,36 +28,51 @@ const BriefManagementGrid: React.FC = () => {
     action: 'get_briefs_with_stats' 
   }, { method: 'POST' });
 
-  const handleArchive = async (briefId: string) => {
-    if (window.confirm(t('brief.card.confirm_archive', 'Are you sure you want to archive this brief?'))) {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [briefToArchive, setBriefToArchive] = useState<string | null>(null);
 
-        if (!token) {
-          throw new Error('Authentication token not found.');
-        }
+  const openConfirmationModal = (briefId: string) => {
+    setBriefToArchive(briefId);
+    setIsModalOpen(true);
+  };
 
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dashboard-data`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-          },
-          body: JSON.stringify({ action: 'archive_brief', brief_id: briefId }),
-        });
+  const closeConfirmationModal = () => {
+    setBriefToArchive(null);
+    setIsModalOpen(false);
+  };
 
-        const result = await response.json();
+  const handleConfirmArchive = async () => {
+    if (!briefToArchive) return;
 
-        if (!response.ok || !result.success) {
-          throw new Error(result.error || 'Failed to archive brief.');
-        }
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
 
-        refresh(); // Refresh the grid to remove the archived brief
-      } catch (error: any) {
-        console.error('Archive error:', error);
-        alert(`Error: ${error.message}`);
+      if (!token) {
+        throw new Error('Authentication token not found.');
       }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dashboard-data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ action: 'archive_brief', brief_id: briefToArchive }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to archive brief.');
+      }
+
+      refresh();
+    } catch (error: any) {
+      console.error('Archive error:', error);
+      alert(`Error: ${error.message}`);
+    } finally {
+      closeConfirmationModal();
     }
   };
 
@@ -200,7 +216,7 @@ const BriefManagementGrid: React.FC = () => {
                           onClick={(e) => { 
                             e.preventDefault(); 
                             e.stopPropagation(); 
-                            handleArchive(brief.id); 
+                            openConfirmationModal(brief.id); 
                           }}
                           className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-full transition-colors duration-200 z-10"
                           title={t('brief.card.archive_button', 'Archive Brief')}
@@ -288,6 +304,16 @@ const BriefManagementGrid: React.FC = () => {
         </div>
 
       )}
+
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={closeConfirmationModal}
+        onConfirm={handleConfirmArchive}
+        title={t('brief.card.archive_modal.title', 'Archive Brief')}
+        message={t('brief.card.archive_modal.message', 'Are you sure you want to archive this brief? This action cannot be undone.')}
+        confirmText={t('brief.card.archive_modal.confirm_button', 'Archive')}
+        cancelText={t('brief.card.archive_modal.cancel_button', 'Cancel')}
+      />
     </div>
   );
 };
