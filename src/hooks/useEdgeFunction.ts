@@ -41,15 +41,6 @@ export function useEdgeFunction(
     : 'production';
   
   const fetchData = useCallback(async () => {
-    // Ne pas exécuter la requête si l'action n'est pas spécifiée.
-    // Cela évite les appels non désirés au chargement du composant.
-    if (!params || !params.action) {
-      if (enabled) {
-        setState(prev => ({ ...prev, loading: false }));
-      }
-      return;
-    }
-
     try {
       setState(prev => ({ ...prev, loading: true, error: null }));
       
