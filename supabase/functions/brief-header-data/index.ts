@@ -114,7 +114,8 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
   const { data: suppliers, error: suppliersError } = await supabaseAdmin
     .from('suppliers')
     .select('*') // Select all fields for later use
-    .eq('brief_id', briefId);
+    .eq('brief_id', briefId)
+    .eq('user_id', userId);
 
   if (suppliersError) {
     console.error(`[${FUNCTION_NAME}] Error fetching suppliers:`, suppliersError);
