@@ -90,7 +90,7 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
   // Get Brief Details, including structured filters
   const { data: brief, error: briefError } = await supabaseAdmin
     .from('briefs')
-    .select('*, title, description, created_at, geographies, organization_types, capabilities, maturity, reference_companies, goals, timeline, budget, key_questions, nda_required, report_format')
+    .select('*')
     .eq('id', briefId)
     .eq('user_id', userId)
     .single();
@@ -191,12 +191,10 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
   };
 
   return {
-    title: brief.title,
-    created_at: brief.created_at,
+    ...brief,
     solutions_count: solutionsCount || 0,
     suppliers_count: suppliersCount,
-    products_count: productsCount,
-    ...aggregatedFilters
+    products_count: productsCount
   };
 }
 

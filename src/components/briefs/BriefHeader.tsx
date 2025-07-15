@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
-import { FileText, Building2, Package, Lightbulb, Users, MapPin, CheckSquare, BarChart2, AlertTriangle, ChevronDown } from 'lucide-react';
+import { AlertTriangle, BarChart2, Building2, Calendar, CheckSquare, ChevronDown, CircleDollarSign, FileBarChart2, FileText, HelpCircle, Lightbulb, MapPin, Package, ShieldCheck, Star, Target, TrendingUp, Users, Wrench } from 'lucide-react';
 
 // --- TYPE INTERFACES ---
 interface BriefHeaderProps {
@@ -95,7 +95,7 @@ const BriefHeaderSkeleton: React.FC = () => (
     </div>
 );
 
-const DetailItem: React.FC<{ label: string; value?: string | string[] | boolean | null }> = ({ label, value }) => {
+const DetailItem: React.FC<{ icon?: React.ReactNode; label: string; value?: string | boolean | string[] | null }> = ({ icon, label, value }) => {
   if (value === null || value === undefined || (Array.isArray(value) && value.length === 0)) return null;
 
   const displayValue = Array.isArray(value) 
@@ -104,7 +104,10 @@ const DetailItem: React.FC<{ label: string; value?: string | string[] | boolean 
 
   return (
     <div className="py-2">
-      <dt className="text-sm font-medium text-slate-400">{label}</dt>
+      <dt className="text-sm font-medium text-gray-400 flex items-center">
+        {icon && <span className="mr-2">{icon}</span>}
+        {label}
+      </dt>
       <dd className="mt-1 text-sm text-white whitespace-pre-wrap">{displayValue}</dd>
     </div>
   );
@@ -197,13 +200,18 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
 
                 {detailsVisible && (
                     <dl className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                        <DetailItem label={t('brief.header.details.description', 'Description')} value={description} />
-                        <DetailItem label={t('brief.header.details.goals', 'Goals')} value={goals} />
-                        <DetailItem label={t('brief.header.details.timeline', 'Timeline')} value={timeline} />
-                        <DetailItem label={t('brief.header.details.budget', 'Budget')} value={budget} />
-                        <DetailItem label={t('brief.header.details.key_questions', 'Key Questions')} value={key_questions} />
-                        <DetailItem label={t('brief.header.details.nda_required', 'NDA Required')} value={nda_required} />
-                        <DetailItem label={t('brief.header.details.report_format', 'Report Format')} value={report_format} />
+                      {description && <DetailItem icon={<FileText size={16} />} label={t('brief.header.details.description', 'Description')} value={description} />}
+              {goals && <DetailItem icon={<Target size={16} />} label={t('brief.header.details.goals', 'Goals')} value={goals} />}
+              {timeline && <DetailItem icon={<Calendar size={16} />} label={t('brief.header.details.timeline', 'Timeline')} value={timeline} />}
+              {budget && <DetailItem icon={<CircleDollarSign size={16} />} label={t('brief.header.details.budget', 'Budget')} value={budget} />}
+              {key_questions && <DetailItem icon={<HelpCircle size={16} />} label={t('brief.header.details.key_questions', 'Key Questions')} value={key_questions} />}
+              <DetailItem icon={<ShieldCheck size={16} />} label={t('brief.header.details.nda_required', 'NDA Required')} value={nda_required ? 'Yes' : 'No'} />
+              {report_format && <DetailItem icon={<FileBarChart2 size={16} />} label={t('brief.header.details.report_format', 'Report Format')} value={report_format} />}
+              {geographies && geographies.length > 0 && <DetailItem icon={<MapPin size={16} />} label={t('brief.header.details.geographies', 'Geographies')} value={geographies.join(', ')} />}
+              {organization_types && organization_types.length > 0 && <DetailItem icon={<Building2 size={16} />} label={t('brief.header.details.organization_types', 'Organization Types')} value={organization_types.join(', ')} />}
+              {capabilities && capabilities.length > 0 && <DetailItem icon={<Wrench size={16} />} label={t('brief.header.details.capabilities', 'Capabilities')} value={capabilities.join(', ')} />}
+              {maturity && maturity.length > 0 && <DetailItem icon={<TrendingUp size={16} />} label={t('brief.header.details.maturity', 'Maturity')} value={maturity.join(', ')} />}
+              {reference_companies && reference_companies.length > 0 && <DetailItem icon={<Star size={16} />} label={t('brief.header.details.reference_companies', 'Reference Companies')} value={reference_companies.join(', ')} />}
                     </dl>
                 )}
             </div>
