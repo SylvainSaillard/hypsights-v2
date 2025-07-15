@@ -36,10 +36,10 @@ const DashboardLayout = () => {
     <div className="min-h-screen bg-hypsights-background">
       <nav className="bg-card shadow-md p-4">
         <div className="container mx-auto max-w-container flex justify-between items-center">
-          <div className="flex items-center">
+          <Link to="/dashboard" className="flex items-center space-x-2">
+            <img src="/logo.png" alt="Hypsights Logo" className="h-8 w-auto" />
             <span className="text-xl font-bold text-primary">{t('app.name', 'Hypsights')}</span>
-            <span className="ml-1 text-xs bg-gray-100 px-1 rounded">v2</span>
-          </div>
+          </Link>
           <div className="flex items-center gap-4 space-x-4">
             <div className="flex space-x-2">
               <Link to="/dashboard" className="px-3 py-2 text-sm rounded-md hover:bg-gray-100">{t('nav.dashboard', 'Dashboard')}</Link>
