@@ -20,7 +20,7 @@ const SimplifiedBriefPage: React.FC = () => {
   } = useEdgeFunction(
     'brief-operations',
     { action: 'get_brief', brief_id: briefId },
-    'POST'
+    { method: 'POST' }
   );
 
   // Loading state

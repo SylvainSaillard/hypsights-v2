@@ -15,7 +15,7 @@ const SearchResultsPage: React.FC = () => {
   } = useEdgeFunction(
     'brief-operations',
     { action: 'get_brief', brief_id: briefId },
-    'POST'
+    { method: 'POST', enabled: !!briefId }
   );
 
   // Fetch search results (placeholder for now)
@@ -26,7 +26,7 @@ const SearchResultsPage: React.FC = () => {
   } = useEdgeFunction(
     'brief-operations',
     { action: 'get_products', brief_id: briefId },
-    'POST'
+    { method: 'POST', enabled: !!briefId }
   );
 
   // Request deep search

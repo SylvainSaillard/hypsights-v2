@@ -235,10 +235,8 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
     activeBriefs: activeBriefs || 0,
     completedSearches: (userMetadata.fast_searches_used || 0) + (userMetadata.deep_searches_count || 0),
     suppliersFound: suppliersFound || 0,
-    fast_search_usage: {
-      used: userMetadata.fast_searches_used || 0,
-      total: userMetadata.fast_searches_quota || 3,
-    },
+    fast_searches_used: userMetadata.fast_searches_used || 0,
+    fast_searches_quota: userMetadata.fast_searches_quota || 3,
   };
 
   console.log('[getUserMetrics] Returning metrics:', JSON.stringify(metrics));

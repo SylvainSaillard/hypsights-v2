@@ -11,18 +11,24 @@ import { devLog } from '../lib/devTools';
  * @param method - HTTP method to use (default: 'POST')
  * @returns Object containing data, loading state, error, and refresh function
  */
+interface UseEdgeFunctionOptions {
+  method?: 'GET' | 'POST';
+  enabled?: boolean;
+}
+
 export function useEdgeFunction(
   endpoint: string, 
   params: Record<string, any> = {},
-  method: 'GET' | 'POST' = 'POST'
+  options: UseEdgeFunctionOptions = {}
 ) {
+  const { method = 'POST', enabled = true } = options;
   const [state, setState] = useState<{
     data: any;
     loading: boolean;
     error: string | null;
   }>({ 
     data: null, 
-    loading: true, 
+    loading: enabled, 
     error: null 
   });
   
@@ -38,12 +44,14 @@ export function useEdgeFunction(
     // Ne pas exécuter la requête si l'action n'est pas spécifiée.
     // Cela évite les appels non désirés au chargement du composant.
     if (!params || !params.action) {
-      setState(prev => ({ ...prev, loading: false }));
+      if (enabled) {
+        setState(prev => ({ ...prev, loading: false }));
+      }
       return;
     }
 
     try {
-      setState(prev => ({ ...prev, loading: true }));
+      setState(prev => ({ ...prev, loading: true, error: null }));
       
       // Generate a unique request ID to prevent duplicate submissions
       // This is especially important with React.StrictMode double-rendering
@@ -187,11 +195,13 @@ export function useEdgeFunction(
         error: error.message || 'An unknown error occurred' 
       });
     }
-  }, [endpoint, JSON.stringify(params), method, SUPABASE_URL, SUPABASE_ANON_KEY]);
-  
-  useEffect(() => { 
-    fetchData(); 
-  }, [fetchData]);
+  }, [endpoint, JSON.stringify(params), method, SUPABASE_URL, SUPABASE_ANON_KEY, enabled]);
+
+  useEffect(() => {
+    if (enabled) {
+      fetchData();
+    }
+  }, [fetchData, enabled]);
   
   return { 
     ...state, 

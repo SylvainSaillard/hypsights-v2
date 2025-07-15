@@ -22,11 +22,9 @@ const NotificationSystem: React.FC = () => {
   
   // Always fetch real notifications following the simplified architecture
   const { data, loading, error, refresh } = useEdgeFunction(
-    'notifications', 
-    {
-      action: 'list_notifications'
-    }, 
-    'POST'
+    'notification-handler',
+    { action: 'get_notifications' },
+    { method: 'POST' }
   );
   
   // Use real data from the edge function

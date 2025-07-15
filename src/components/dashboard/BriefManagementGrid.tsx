@@ -26,7 +26,7 @@ const BriefManagementGrid: React.FC = () => {
   // Fetch briefs with stats from edge function
   const { data, loading, error } = useEdgeFunction('dashboard-data', { 
     action: 'get_briefs_with_stats' 
-  }, 'POST');
+  }, { method: 'POST' });
 
   // Log data for debugging
   useEffect(() => {

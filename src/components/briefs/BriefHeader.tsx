@@ -105,7 +105,10 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
 
   const { data, loading, error } = useEdgeFunction('brief-header-data', 
     { brief_id: briefId }, 
-    'POST'
+    { 
+      method: 'POST',
+      enabled: !!briefId, // Only run query if briefId is available
+    }
   );
 
     if (loading) return <BriefHeaderSkeleton />;

@@ -14,7 +14,7 @@ const KpiCards: React.FC = () => {
   // Fetch dashboard data from edge function explicitly using POST method
   // This helps avoid CORS issues since our Edge Functions better support POST
   const { t } = useI18n();
-  const { data, loading, error, refresh: _refresh } = useEdgeFunction('dashboard-data', { action: 'get_user_metrics' }, 'POST');
+  const { data, loading, error, refresh: _refresh } = useEdgeFunction('dashboard-data', { action: 'get_user_metrics' }, { method: 'POST' });
   
   // Log debugging information for CORS issues
   React.useEffect(() => {
