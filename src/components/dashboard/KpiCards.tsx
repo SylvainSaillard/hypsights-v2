@@ -61,12 +61,12 @@ const KpiCards: React.FC = () => {
     activeBriefs: 0,
     completedSearches: 0,
     suppliersFound: 0,
-    quotaUsed: 0,
-    quotaLimit: 3
+    fast_searches_used: 0,
+    fast_searches_quota: 3
   };
   
   // Calculate quota percentage
-  const quotaPercentage = Math.min(100, Math.round((metrics.quotaUsed / metrics.quotaLimit) * 100));
+  const quotaPercentage = Math.min(100, Math.round((metrics.fast_searches_used / metrics.fast_searches_quota) * 100));
   
   // Determine quota status color
   const getQuotaStatusColor = () => {
@@ -117,7 +117,7 @@ const KpiCards: React.FC = () => {
     },
     {
       title: t('kpi.card.fast_search_quota.title', 'Fast Search Quota'),
-      value: `${metrics.quotaUsed}/${metrics.quotaLimit}`,
+      value: `${metrics.fast_searches_used}/${metrics.fast_searches_quota}`,
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className={`h-7 w-7 ${getQuotaStatusColor()} drop-shadow-sm`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />

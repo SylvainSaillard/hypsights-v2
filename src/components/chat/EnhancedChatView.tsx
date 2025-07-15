@@ -65,10 +65,10 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
         
         const result = await response.json();
         
-        if (result.success && result.data?.fast_search_usage) {
+        if (result.success && result.data) {
           setFastSearchQuota({
-            used: result.data.fast_search_usage.used ?? 0,
-            total: result.data.fast_search_usage.total ?? 3,
+            used: result.data.fast_searches_used ?? 0,
+            total: result.data.fast_searches_quota ?? 3,
           });
         } else {
           console.error('Error fetching quota:', result.error || 'No data received');
