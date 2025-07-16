@@ -252,7 +252,30 @@ function validateInput(action: string, params: any): any {
 
 // Action pour démarrer une recherche rapide avec appel webhook ACTIVÉ
 async function startFastSearch(params: any, user: User, supabase: SupabaseClient): Promise<any> {
-  const { brief_id, solution_id } = params;
+  // Vérification du quota de l'utilisateur
+  const { data: userMetadata, error: metaError } = await supabase
+    .from('users_metadata')
+    .select('fast_searches_quota, fast_searches_used')
+    .eq('user_id', user.id)
+    .single();
+
+  if (metaError) {
+    console.error('Erreur lors de la récupération des métadonnées utilisateur:', metaError);
+    throw new HttpError('Failed to retrieve user quota information.', 500);
+  }
+
+  if (userMetadata.fast_searches_used >= userMetadata.fast_searches_quota) {
+    throw new HttpError('Fast search quota exceeded.', 429);
+  }
+
+  // Incrémentation du compteur de recherches utilisées
+  const { error: updateError } = await supabase.rpc('increment_fast_searches_used', { p_user_id: user.id });
+
+  if (updateError) {
+      console.error('Erreur lors de lincrémentation du quota:', updateError);
+      throw new HttpError('Failed to update user quota.', 500);
+  }
+    const { brief_id, solution_id } = params;
   console.log('Démarrage Fast Search avec appel webhook et données de la solution');
   console.log('Paramètres reçus:', { brief_id, solution_id, user_id: user.id });
   

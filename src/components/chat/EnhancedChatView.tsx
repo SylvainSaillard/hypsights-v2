@@ -163,6 +163,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
               onValidate={validateSolution}
               onRefresh={loadSolutions}
               onStartFastSearch={handleStartFastSearchFromSolution}
+              fastSearchQuota={fastSearchQuota}
               startingSolutionId={startingSolutionId}
               briefHasActiveSearch={true}
               showFastSearchDirectly={true}
