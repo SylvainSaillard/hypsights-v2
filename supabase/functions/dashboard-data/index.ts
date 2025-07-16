@@ -182,10 +182,11 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
 
 async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
   console.log(`[getUserMetrics] Starting for user: ${userId}`);
-  let userMetadata = {
+  let userMetadata: any = {
     fast_searches_quota: 3,
     fast_searches_used: 0,
-    deep_searches_count: 0
+    deep_searches_count: 0,
+    completedSearches: 0
   };
   
   let activeBriefs = 0;
@@ -222,7 +223,8 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
     const { data: userBriefs, error: briefsError } = await supabaseAdmin
       .from('briefs')
       .select('id')
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .neq('status', 'archived');
       
     if (briefsError) {
       console.error('[getUserMetrics] Error fetching briefs for metrics:', briefsError);
@@ -232,17 +234,31 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
       const briefIds = userBriefs.map(b => b.id);
       
       if (briefIds.length > 0) {
-        console.log(`[getUserMetrics] Fetching suppliers for ${briefIds.length} briefs.`);
-        const { count, error: suppliersError } = await supabaseAdmin
-          .from('suppliers')
+        // Calculate suppliersFound from supplier_match_profiles
+        const { count: suppliersCount, error: suppliersError } = await supabaseAdmin
+          .from('supplier_match_profiles')
           .select('id', { count: 'exact', head: true })
           .in('brief_id', briefIds);
-          
-        if (!suppliersError && count !== null) {
-          suppliersFound = count;
+
+        if (suppliersError) {
+          console.error('[getUserMetrics] Error fetching supplier_match_profiles count:', suppliersError);
+        } else {
+          suppliersFound = suppliersCount || 0;
           console.log(`[getUserMetrics] Found ${suppliersFound} suppliers.`);
-        } else if (suppliersError) {
-          console.error('[getUserMetrics] Error fetching suppliers count for metrics:', suppliersError);
+        }
+
+        // Calculate completedSearches from solutions with status 'finished'
+        const { count: searchesCount, error: searchesError } = await supabaseAdmin
+          .from('solutions')
+          .select('id', { count: 'exact', head: true })
+          .in('brief_id', briefIds)
+          .eq('status', 'finished');
+
+        if (searchesError) {
+          console.error('[getUserMetrics] Error fetching finished solutions count:', searchesError);
+        } else {
+          userMetadata.completedSearches = searchesCount || 0;
+          console.log(`[getUserMetrics] Found ${userMetadata.completedSearches} completed searches.`);
         }
       }
     }
@@ -252,7 +268,7 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
   
   const metrics = {
     activeBriefs: activeBriefs || 0,
-    completedSearches: (userMetadata.fast_searches_used || 0) + (userMetadata.deep_searches_count || 0),
+    completedSearches: userMetadata.completedSearches || 0,
     suppliersFound: suppliersFound || 0,
     fast_searches_used: userMetadata.fast_searches_used || 0,
     fast_searches_quota: userMetadata.fast_searches_quota || 3,
