@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
+import PremiumDeepSearchCTA from '../../components/ctas/PremiumDeepSearchCTA';
 
 import BriefHeader from '../../components/briefs/BriefHeader';
 import { useI18n } from '../../contexts/I18nContext';
@@ -197,6 +198,8 @@ const BriefChatPage = () => {
                 onMessageSent={handleMessageSent}
               />
             </div>
+
+            <PremiumDeepSearchCTA />
             
             {/* Panneau de fournisseurs séparé */}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
