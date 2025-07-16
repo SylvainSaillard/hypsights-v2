@@ -11,8 +11,7 @@ interface SolutionsPanelProps {
   onStartFastSearch?: (solutionId: string) => void;
   startingSolutionId?: string | null;
   briefHasActiveSearch?: boolean;
-    showFastSearchDirectly?: boolean;
-  fastSearchQuota?: { used: number; total: number };
+  showFastSearchDirectly?: boolean;
 }
 
 /**
@@ -26,8 +25,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
   onValidate,
   onRefresh,
   onStartFastSearch,
-  startingSolutionId = null,
-  fastSearchQuota
+  startingSolutionId = null
 }) => {
   const { t } = useI18n();
   return (
@@ -151,7 +149,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                     {onStartFastSearch && !['in_progress', 'finished'].includes(solution.status) && (
                       <button
                         onClick={() => onStartFastSearch(solution.id)}
-                        disabled={startingSolutionId === solution.id || (fastSearchQuota && fastSearchQuota.used >= fastSearchQuota.total)}
+                        disabled={startingSolutionId === solution.id}
                         className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
                           startingSolutionId === solution.id
                             ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
