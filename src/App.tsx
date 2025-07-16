@@ -17,6 +17,7 @@ import CorsTest from './components/debug/CorsTest';
 
 // Other placeholder components
 import NotificationSystem from './components/layout/NotificationSystem';
+import UserProfileDropdown from './components/common/UserProfileDropdown';
 import LanguageSelector from './components/layout/LanguageSelector';
 
 const DashboardLayout = () => {
@@ -41,19 +42,9 @@ const DashboardLayout = () => {
             <span className="text-xl font-bold text-primary">{t('app.name', 'Hypsights')}</span>
           </Link>
           <div className="flex items-center gap-4 space-x-4">
-            <div className="flex space-x-2">
-              <Link to="/dashboard" className="px-3 py-2 text-sm rounded-md hover:bg-gray-100">{t('nav.dashboard', 'Dashboard')}</Link>
-              <Link to="/dashboard/debug" className="px-3 py-2 text-sm rounded-md hover:bg-gray-100 text-primary">{t('nav.debug', 'Debug')}</Link>
-            </div>
             <LanguageSelector />
             <NotificationSystem />
-            {user && <span className="text-sm hidden md:inline">{t('user.logged_in_as', 'Logged in as:')} {user.email}</span>}
-            <button 
-              onClick={handleLogout}
-              className="px-3 py-2 text-sm font-medium bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 text-gray-700"
-            >
-              {t('action.sign_out', 'Sign out')}
-            </button>
+            <UserProfileDropdown user={user} onSignOut={handleLogout} />
           </div>
         </div>
       </nav>
