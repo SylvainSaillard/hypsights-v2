@@ -12,6 +12,7 @@ interface SolutionsPanelProps {
   startingSolutionId?: string | null;
   briefHasActiveSearch?: boolean;
   showFastSearchDirectly?: boolean;
+  fastSearchQuota?: { used: number; total: number };
 }
 
 /**
@@ -25,9 +26,11 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
   onValidate,
   onRefresh,
   onStartFastSearch,
-  startingSolutionId = null
+  startingSolutionId = null,
+  fastSearchQuota
 }) => {
   const { t } = useI18n();
+  const isQuotaReached = fastSearchQuota ? fastSearchQuota.used >= fastSearchQuota.total : false;
   return (
     <div className="flex flex-col h-full">
       {/* Header avec design moderne */}
@@ -149,7 +152,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                     {onStartFastSearch && !['in_progress', 'finished'].includes(solution.status) && (
                       <button
                         onClick={() => onStartFastSearch(solution.id)}
-                        disabled={startingSolutionId === solution.id}
+                        disabled={startingSolutionId === solution.id || isQuotaReached}
                         className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
                           startingSolutionId === solution.id
                             ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
@@ -166,7 +169,9 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
-                            {t('solutions_panel.button.fast_search', 'Fast Search')}
+                            {isQuotaReached 
+                              ? t('solutions_panel.button.quota_reached', 'Quota Reached') 
+                              : t('solutions_panel.button.fast_search', 'Fast Search')}
                           </span>
                         )}
                       </button>
