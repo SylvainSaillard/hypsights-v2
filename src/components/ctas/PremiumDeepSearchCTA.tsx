@@ -2,7 +2,7 @@ import React from 'react';
 
 const PremiumDeepSearchCTA: React.FC = () => {
   return (
-    <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-lg shadow-lg text-white my-4">
+        <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-2xl shadow-lg text-white my-4">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold flex items-center">
