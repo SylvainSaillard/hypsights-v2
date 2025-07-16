@@ -36,9 +36,9 @@ const DashboardLayout = () => {
     <div className="min-h-screen bg-hypsights-background">
       <nav className="bg-card shadow-md p-4">
         <div className="container mx-auto max-w-container flex justify-between items-center">
-          <Link to="/dashboard" className="flex items-center">
+          <Link to="/dashboard" className="flex items-center space-x-2">
             <img src="https://lmqagaenmseopcctkrwv.supabase.co/storage/v1/object/public/assets/logo_hypsights_v2-removebg-preview.png" alt="Hypsights Logo" className="h-16 w-auto" />
-            
+            <span className="text-xl font-bold text-primary">{t('app.name', 'Hypsights')}</span>
           </Link>
           <div className="flex items-center gap-4 space-x-4">
             <div className="flex space-x-2">
