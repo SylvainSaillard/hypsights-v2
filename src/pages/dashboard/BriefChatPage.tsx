@@ -199,7 +199,7 @@ const BriefChatPage = () => {
               />
             </div>
 
-            <PremiumDeepSearchCTA />
+            <PremiumDeepSearchCTA briefId={brief.id} />
             
             {/* Panneau de fournisseurs séparé */}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
