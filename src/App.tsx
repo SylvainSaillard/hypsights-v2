@@ -10,6 +10,7 @@ import './styles/main.css'; // Import main CSS with design tokens
 import BriefCreationPage from './pages/dashboard/BriefCreationPage';
 import BriefChatPage from './pages/dashboard/BriefChatPage';
 import SimplifiedBriefPage from './pages/dashboard/SimplifiedBriefPage';
+import ProfilePage from './pages/account/ProfilePage';
 import SearchResultsPage from './pages/dashboard/SearchResultsPage';
 
 // Debug components
@@ -131,6 +132,7 @@ function App() {
         <Route path="briefs/:briefId/chat" element={<BriefChatPage />} />
         <Route path="briefs/:briefId/visual" element={<SimplifiedBriefPage />} />
         <Route path="briefs/:briefId/search" element={<SearchResultsPage />} />
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
       
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/"} replace />} />
