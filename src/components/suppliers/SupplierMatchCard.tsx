@@ -78,7 +78,13 @@ const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
         <div className="flex justify-between items-start mb-4">
           <div>
             <div className="flex items-center mb-1">
-              <h2 className="text-2xl font-bold mr-3">{match.supplier_name}</h2>
+              {match.website ? (
+                <a href={match.website} target="_blank" rel="noopener noreferrer" className="text-2xl font-bold mr-3 text-gray-800 hover:text-blue-600 hover:underline transition-colors">
+                  {match.supplier_name}
+                </a>
+              ) : (
+                <h2 className="text-2xl font-bold mr-3">{match.supplier_name}</h2>
+              )}
               {match.is_top_match && (
                 <span className="bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full flex items-center">
                   <Star size={12} className="mr-1.5" /> Top Match
