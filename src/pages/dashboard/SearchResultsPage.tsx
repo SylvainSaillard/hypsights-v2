@@ -168,7 +168,14 @@ const SearchResultsPage: React.FC = () => {
                 <div key={supplier.id} className="border rounded-lg p-4 hover:border-primary transition-colors">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="font-medium text-gray-900">{supplier.name}</h3>
+                      <a 
+                        href={supplier.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="font-medium text-gray-900 hover:text-primary hover:underline"
+                      >
+                        {supplier.name}
+                      </a>
                       <p className="text-sm text-gray-500">{supplier.short_description}</p>
                     </div>
                     {supplier.match_profile && (
