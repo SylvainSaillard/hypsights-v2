@@ -18,14 +18,14 @@ const SearchResultsPage: React.FC = () => {
     { method: 'POST', enabled: !!briefId }
   );
 
-  // Fetch search results (placeholder for now)
+  // Fetch search results from the correct handler
   const {
     data: searchData,
     loading: searchLoading,
     error: searchError
   } = useEdgeFunction(
-    'brief-operations',
-    { action: 'get_products', brief_id: briefId },
+    'fast-search-handler',
+    { action: 'get_fast_search_results', brief_id: briefId },
     { method: 'POST', enabled: !!briefId }
   );
 
@@ -83,8 +83,8 @@ const SearchResultsPage: React.FC = () => {
   }
 
   const brief = briefData?.brief;
-  const products = searchData?.products || [];
-  const hasResults = products.length > 0;
+  const suppliers = searchData?.suppliers || [];
+  const hasResults = suppliers.length > 0;
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -119,7 +119,7 @@ const SearchResultsPage: React.FC = () => {
             <h2 className="font-semibold">Fast Search Results</h2>
             <p className="text-sm text-gray-500">
               {hasResults 
-                ? `Found ${products.length} potential suppliers` 
+                ? `Found ${suppliers.length} potential suppliers` 
                 : 'No results found from fast search'}
             </p>
           </div>
@@ -163,28 +163,40 @@ const SearchResultsPage: React.FC = () => {
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Placeholder product/supplier cards */}
-              {products.map((product: any) => (
-                <div key={product.id} className="border rounded-lg p-4 hover:border-primary transition-colors">
+            <div className="space-y-4">
+              {suppliers.map((supplier: any) => (
+                <div key={supplier.id} className="border rounded-lg p-4 hover:border-primary transition-colors">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-medium text-gray-900">{product.name}</h3>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                      {product.match_score}% Match
-                    </span>
+                    <div>
+                      <h3 className="font-medium text-gray-900">{supplier.name}</h3>
+                      <p className="text-sm text-gray-500">{supplier.short_description}</p>
+                    </div>
+                    {supplier.match_profile && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        {supplier.match_profile.overall_match_score}% Match
+                      </span>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-600 mb-3">{product.description}</p>
-                  
-                  {product.capabilities && (
+                  <p className="text-sm text-gray-600 mb-3">{supplier.long_description}</p>
+
+                  {supplier.match_profile && (
+                    <div className="bg-gray-50 p-3 rounded-md mb-3">
+                      <h4 className="text-xs font-semibold text-gray-600 mb-2">Match Profile</h4>
+                      <p className="text-xs text-gray-500"><span className="font-medium">Strengths:</span> {supplier.match_profile.strengths}</p>
+                      <p className="text-xs text-gray-500"><span className="font-medium">Weaknesses:</span> {supplier.match_profile.weaknesses}</p>
+                    </div>
+                  )}
+
+                  {supplier.products && supplier.products.length > 0 && (
                     <div className="mb-3">
-                      <p className="text-xs text-gray-500 mb-1">Capabilities:</p>
+                      <p className="text-xs text-gray-500 mb-1">Products:</p>
                       <div className="flex flex-wrap gap-1">
-                        {product.capabilities.map((capability: string) => (
+                        {supplier.products.map((product: any) => (
                           <span 
-                            key={capability} 
+                            key={product.id} 
                             className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-md"
                           >
-                            {capability}
+                            {product.name}
                           </span>
                         ))}
                       </div>

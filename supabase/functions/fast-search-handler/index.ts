@@ -439,15 +439,41 @@ async function getFastSearchResults(params: any, user: User, supabase: SupabaseC
     
     console.log('Début de la récupération des fournisseurs pour le brief:', brief_id);
     
-    // Récupérer les fournisseurs associés au brief
-    const { data: suppliers, error: suppliersError } = await supabase
-      .from('suppliers')
-      .select('*, products:products!products_supplier_id_fkey(*)')
+    // Étape 1: Récupérer les profils de correspondance des fournisseurs pour le brief donné
+    const { data: profiles, error: profilesError } = await supabase
+      .from('supplier_match_profiles')
+      .select(`
+        *,
+        suppliers:supplier_id (*,
+          products:products!products_supplier_id_fkey(*)
+        )
+      `)
       .eq('brief_id', brief_id);
+
+    if (profilesError) {
+      console.error('Erreur lors de la récupération des profils de fournisseurs:', profilesError);
+      throw profilesError;
+    }
+
+    // Étape 2: Transformer les données pour correspondre à la structure attendue
+    const suppliers = profiles.map(profile => ({
+      ...profile.suppliers,
+      match_profile: {
+        technical_fit: profile.technical_fit,
+        market_relevance: profile.market_relevance,
+        delivery_capacity: profile.delivery_capacity,
+        sustainability_score: profile.sustainability_score,
+        overall_match_score: profile.overall_match_score,
+        match_summary: profile.match_summary,
+        strengths: profile.strengths,
+        weaknesses: profile.weaknesses
+      },
+      products: profile.suppliers.products || []
+    }));
     
-    if (suppliersError) {
-      console.error('Erreur lors de la récupération des fournisseurs:', suppliersError);
-      throw suppliersError;
+    if (profilesError) {
+      console.error('Erreur lors de la récupération des fournisseurs:', profilesError);
+      throw profilesError;
     }
     
     console.log(`Récupération de ${suppliers?.length || 0} fournisseurs pour le brief ${brief_id}`);
