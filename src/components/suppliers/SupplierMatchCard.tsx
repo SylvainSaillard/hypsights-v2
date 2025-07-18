@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, CheckCircle, Key, Briefcase, Share2, ExternalLink, Info, TrendingUp, Truck, Globe } from 'react-feather';
+import { Star, TrendingUp, CheckCircle, Share2, Briefcase, MapPin, Globe, Info, Key, ExternalLink, Truck } from 'react-feather';
 
 // Updated data structure for the supplier match
 export interface SupplierMatch {
@@ -115,9 +115,36 @@ const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
               )) ?? <span className="text-xs text-gray-500">Not specified</span>}
             </div>
           </div>
-          <div className="border border-gray-200 rounded-lg p-4">
-            <h3 className="text-sm font-semibold mb-3 flex items-center text-gray-600"><Briefcase size={14} className="mr-2 text-indigo-600"/>Company Overview</h3>
-            <p className="text-sm text-gray-700">{match.company_overview || 'Not specified'}</p>
+          <div className="w-1/2 pl-2">
+            <div className="bg-gray-800 p-4 rounded-lg h-full">
+              <h4 className="text-sm font-semibold text-gray-400 mb-3 flex items-center">
+                <Briefcase size={14} className="mr-2" /> Company Overview
+              </h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                {match.country && (
+                  <li className="flex items-center">
+                    <MapPin size={14} className="mr-3 text-gray-500" />
+                    <span>{match.country}</span>
+                  </li>
+                )}
+                {match.website && (
+                  <li className="flex items-center">
+                    <Globe size={14} className="mr-3 text-gray-500" />
+                    <a href={match.website} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 hover:underline">
+                      {match.website.replace(/^(https?:\/\/)?(www\.)?/, '')}
+                    </a>
+                  </li>
+                )}
+                {match.company_overview && (
+                  <li className="flex items-start pt-1">
+                    <Info size={14} className="mr-3 text-gray-500 mt-1 flex-shrink-0" />
+                    <p className="italic text-gray-400">
+                      {match.company_overview}
+                    </p>
+                  </li>
+                )}
+              </ul>
+            </div>
           </div>
         </div>
 
