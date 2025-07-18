@@ -63,6 +63,7 @@ const MatchScoreBar: React.FC<{ icon: React.ReactNode; label: string; score: num
 // --- MAIN COMPONENT --- //
 
 const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
+  console.log('SupplierMatchCard data for:', match.supplier_name, match);
   return (
     <div className="font-sans rounded-2xl overflow-hidden border border-gray-700 shadow-lg">
       {/* TOP BANNER */}
