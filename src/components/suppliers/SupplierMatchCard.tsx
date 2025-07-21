@@ -116,34 +116,56 @@ const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
             </div>
           </div>
           <div className="w-1/2 pl-2">
-            <div className="bg-gray-800 p-4 rounded-lg h-full">
-              <h4 className="text-sm font-semibold text-gray-400 mb-3 flex items-center">
-                <Briefcase size={14} className="mr-2" /> Company Overview
+            <div className="bg-gradient-to-br from-gray-800 to-gray-900 p-5 rounded-xl h-full border border-gray-700 shadow-lg">
+              <h4 className="text-sm font-bold text-white mb-4 flex items-center">
+                <Briefcase size={16} className="mr-2 text-blue-400" /> Company Overview
               </h4>
-              <ul className="space-y-2 text-sm text-gray-300">
+              <div className="space-y-3">
                 {match.country && (
-                  <li className="flex items-center">
-                    <MapPin size={14} className="mr-3 text-gray-500" />
-                    <span>{match.country}</span>
-                  </li>
+                  <div className="flex items-center p-2 rounded-lg bg-gray-700/50 hover:bg-gray-700/70 transition-colors duration-200">
+                    <div className="flex-shrink-0 w-8 h-8 bg-green-500/20 rounded-full flex items-center justify-center mr-3">
+                      <MapPin size={14} className="text-green-400" />
+                    </div>
+                    <div>
+                      <span className="text-xs text-gray-400 block">Location</span>
+                      <span className="text-sm font-medium text-white">{match.country}</span>
+                    </div>
+                  </div>
                 )}
                 {match.website && (
-                  <li className="flex items-center">
-                    <Globe size={14} className="mr-3 text-gray-500" />
-                    <a href={match.website} target="_blank" rel="noopener noreferrer" className="hover:text-blue-400 hover:underline">
-                      {match.website.replace(/^(https?:\/\/)?(www\.)?/, '')}
-                    </a>
-                  </li>
+                  <div className="flex items-center p-2 rounded-lg bg-gray-700/50 hover:bg-gray-700/70 transition-colors duration-200">
+                    <div className="flex-shrink-0 w-8 h-8 bg-blue-500/20 rounded-full flex items-center justify-center mr-3">
+                      <Globe size={14} className="text-blue-400" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-xs text-gray-400 block">Website</span>
+                      <a 
+                        href={match.website} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="text-sm font-medium text-blue-300 hover:text-blue-200 hover:underline transition-colors duration-200 truncate block"
+                      >
+                        {match.website.replace(/^(https?:\/\/)?(www\.)?/, '')}
+                      </a>
+                    </div>
+                  </div>
                 )}
                 {match.company_overview && (
-                  <li className="flex items-start pt-1">
-                    <Info size={14} className="mr-3 text-gray-500 mt-1 flex-shrink-0" />
-                    <p className="italic text-gray-400">
-                      {match.company_overview}
-                    </p>
-                  </li>
+                  <div className="p-3 rounded-lg bg-gray-700/30 border-l-4 border-purple-400">
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 w-8 h-8 bg-purple-500/20 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                        <Info size={14} className="text-purple-400" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-gray-400 block mb-1">Description</span>
+                        <p className="text-sm text-gray-200 leading-relaxed">
+                          {match.company_overview}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 )}
-              </ul>
+              </div>
             </div>
           </div>
         </div>
