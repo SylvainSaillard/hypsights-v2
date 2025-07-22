@@ -1,13 +1,13 @@
 import { useSuppliers } from '../../hooks/useSuppliers';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
-import SupplierMatchCard from '../suppliers/SupplierMatchCard';
+import { SolutionSection } from '../suppliers/SolutionSection';
 
 interface SuppliersPanelProps {
   briefId: string;
 }
 
 export function SuppliersPanel({ briefId }: SuppliersPanelProps) {
-  const { suppliers, isLoading, error, refresh } = useSuppliers(briefId);
+  const { suppliers, solutionGroups, isLoading, error, refresh } = useSuppliers(briefId);
 
   if (isLoading && suppliers.length === 0) {
     return (
@@ -67,8 +67,13 @@ export function SuppliersPanel({ briefId }: SuppliersPanelProps) {
       </div>
       
       <div className="space-y-6">
-        {suppliers.map((match) => (
-          <SupplierMatchCard key={match.supplier_id} match={match} />
+        {solutionGroups.map((solutionGroup, index) => (
+          <SolutionSection 
+            key={solutionGroup.solutionId}
+            solutionName={solutionGroup.solutionName}
+            suppliers={solutionGroup.suppliers}
+            defaultExpanded={index === 0} // Première solution dépliée par défaut
+          />
         ))}
       </div>
     </div>

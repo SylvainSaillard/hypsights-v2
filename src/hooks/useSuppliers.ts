@@ -3,14 +3,45 @@ import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 import { supabase } from '../lib/supabaseClient';
 import type { SupplierMatch } from '../components/suppliers/SupplierMatchCard';
 
+// Structure pour organiser les fournisseurs par solution
+export interface SolutionGroup {
+  solutionId: string;
+  solutionName: string;
+  suppliers: SupplierMatch[];
+}
+
 /**
  * Hook pour récupérer les fournisseurs et leurs profils de correspondance pour un brief donné.
  * Interroge la vue `supplier_matches` et écoute les changements en temps réel sur la table `supplier_match_profiles`.
  */
 export function useSuppliers(briefId: string) {
   const [suppliers, setSuppliers] = useState<SupplierMatch[]>([]);
+  const [solutionGroups, setSolutionGroups] = useState<SolutionGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<any>(null);
+
+  // Fonction pour grouper les fournisseurs par solution
+  const groupSuppliersBySolution = (suppliersList: SupplierMatch[]): SolutionGroup[] => {
+    const groups = new Map<string, SolutionGroup>();
+    
+    suppliersList.forEach(supplier => {
+      const solutionId = supplier.solution_id || 'unknown';
+      const solutionName = supplier.solution_name || 'Unknown Solution';
+      
+      if (!groups.has(solutionId)) {
+        groups.set(solutionId, {
+          solutionId,
+          solutionName,
+          suppliers: []
+        });
+      }
+      
+      groups.get(solutionId)!.suppliers.push(supplier);
+    });
+    
+    // Trier les groupes par nombre de fournisseurs (décroissant)
+    return Array.from(groups.values()).sort((a, b) => b.suppliers.length - a.suppliers.length);
+  };
 
   const fetchSuppliers = useCallback(async () => {
     if (!briefId) return;
@@ -27,7 +58,9 @@ export function useSuppliers(briefId: string) {
 
       if (error) throw error;
 
-      setSuppliers(data || []);
+      const suppliersList = data || [];
+      setSuppliers(suppliersList);
+      setSolutionGroups(groupSuppliersBySolution(suppliersList));
     } catch (err) {
       setError(err);
       console.error('Error fetching suppliers:', err);
@@ -65,6 +98,7 @@ export function useSuppliers(briefId: string) {
 
   return {
     suppliers,
+    solutionGroups,
     isLoading,
     error,
     refresh: fetchSuppliers,
