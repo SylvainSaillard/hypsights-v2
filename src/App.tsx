@@ -100,10 +100,20 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 };
 
 function App() {
-  const { user, isLoading } = useAuth(); // Use actual useAuth
+  const { user, isLoading, isPasswordRecovery } = useAuth(); // Use actual useAuth
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading application...</div>;
+  }
+
+  // If the user is in the password recovery flow, show the reset page.
+  // The user is authenticated at this point to allow the password to be updated.
+  if (isPasswordRecovery) {
+    return (
+      <Routes>
+        <Route path="*" element={<ResetPasswordPage />} />
+      </Routes>
+    );
   }
 
   return (
