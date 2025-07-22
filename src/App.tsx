@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate, Outlet, Link } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext'; // Import useAuth
 import LoginPage from './pages/auth/LoginPage'; // Import the new LoginPage
@@ -21,6 +22,7 @@ import CorsTest from './components/debug/CorsTest';
 import NotificationSystem from './components/layout/NotificationSystem';
 import UserProfileDropdown from './components/common/UserProfileDropdown';
 import LanguageSelector from './components/layout/LanguageSelector';
+import { useI18n } from './contexts/I18nContext';
 
 const DashboardLayout = () => {
   const { t } = useI18n(); // Added for translations
@@ -60,7 +62,6 @@ const DashboardLayout = () => {
 import KpiCards from './components/dashboard/KpiCards';
 import BriefManagementGrid from './components/dashboard/BriefManagementGrid';
 import CreateBriefButton from './components/dashboard/CreateBriefButton';
-import { useI18n } from './contexts/I18nContext'; // Import useI18n
 
 const DashboardOverviewPage = () => {
   const { t, locale } = useI18n(); // Get the t function and locale
@@ -74,13 +75,6 @@ const DashboardOverviewPage = () => {
       
       <KpiCards />
       
-      {/* <div className="mb-8 bg-card rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4">{t('dashboard.recent_activity.title', 'Recent Activity')}</h2>
-        <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-500 text-center">
-          {t('dashboard.recent_activity.placeholder', 'Your recent activities will appear here')}
-        </div>
-      </div> */}
-      
       <BriefManagementGrid />
     </div>
   );
@@ -90,7 +84,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { user, isLoading } = useAuth(); // Use actual useAuth
 
   if (isLoading) {
-    // You can return a loading spinner or a blank page here
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
@@ -101,13 +94,21 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 };
 
 function App() {
-  const { user, isLoading, isPasswordRecovery } = useAuth(); // Use actual useAuth
+  const { user, isLoading } = useAuth();
+  const [isRecovery, setIsRecovery] = useState(false);
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash.includes('type=recovery')) {
+      setIsRecovery(true);
+    }
+  }, []);
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading application...</div>;
   }
 
-  if (isPasswordRecovery) {
+  if (isRecovery) {
     return <UpdatePasswordPage />;
   }
 
@@ -146,4 +147,3 @@ function App() {
 }
 
 export default App;
-
