@@ -101,10 +101,14 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 };
 
 function App() {
-  const { user, isLoading } = useAuth(); // Use actual useAuth
+  const { user, isLoading, isPasswordRecovery } = useAuth(); // Use actual useAuth
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-screen">Loading application...</div>;
+  }
+
+  if (isPasswordRecovery) {
+    return <UpdatePasswordPage />;
   }
 
   return (
@@ -114,7 +118,6 @@ function App() {
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} />
       <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <SignupPage />} />
       <Route path="/reset-password" element={user ? <Navigate to="/dashboard" /> : <ResetPasswordPage />} />
-      <Route path="/update-password" element={<UpdatePasswordPage />} />
 
       {/* Protected Dashboard Routes */}
       <Route 
