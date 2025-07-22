@@ -1,12 +1,11 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
-  isPasswordRecovery: boolean;
   login: (email?: string, password?: string) => Promise<void>;
   signup: (email?: string, password?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -18,7 +17,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isPasswordRecovery, setIsPasswordRecovery] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -32,12 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     getSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-            async (event: AuthChangeEvent, session: Session | null) => {
-        if (event === 'PASSWORD_RECOVERY') {
-          setIsPasswordRecovery(true);
-        } else {
-          setIsPasswordRecovery(false);
-        }
+      async (_event: any, session: Session | null) => {
         setSession(session);
         setUser(session?.user ?? null);
         setIsLoading(false);
@@ -116,7 +109,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     user,
     session,
     isLoading,
-    isPasswordRecovery,
     login,
     signup,
     logout
