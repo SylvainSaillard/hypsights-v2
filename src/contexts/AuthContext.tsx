@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             async (event: AuthChangeEvent, session: Session | null) => {
         if (event === 'PASSWORD_RECOVERY') {
           setIsPasswordRecovery(true);
-        } else {
+        } else if (event === 'SIGNED_IN' || event === 'SIGNED_OUT') {
           setIsPasswordRecovery(false);
         }
         setSession(session);
