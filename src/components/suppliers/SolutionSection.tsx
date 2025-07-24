@@ -5,11 +5,12 @@ import type { SupplierMatch } from './SupplierMatchCard';
 
 interface SolutionSectionProps {
   solutionName: string;
+  solutionNumber?: number;
   suppliers: SupplierMatch[];
   defaultExpanded?: boolean;
 }
 
-export function SolutionSection({ solutionName, suppliers, defaultExpanded = true }: SolutionSectionProps) {
+export function SolutionSection({ solutionName, solutionNumber, suppliers, defaultExpanded = true }: SolutionSectionProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
   const toggleExpanded = () => {
@@ -29,8 +30,13 @@ export function SolutionSection({ solutionName, suppliers, defaultExpanded = tru
               <Package size={20} className="text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">{solutionName}</h3>
+              <h3 className="text-lg font-bold text-white">
+                {solutionNumber ? `Solution ${solutionNumber}` : solutionName}
+              </h3>
               <p className="text-blue-100 text-sm">
+                {solutionNumber && solutionName && (
+                  <span className="block mb-1">{solutionName}</span>
+                )}
                 {suppliers.length} supplier{suppliers.length > 1 ? 's' : ''} found
               </p>
             </div>

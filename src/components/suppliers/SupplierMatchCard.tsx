@@ -15,6 +15,7 @@ export interface SupplierMatch {
   brief_id: string;
   solution_id?: string;
   solution_name?: string;
+  solution_number?: number;
   overall_match_score: number;
   technical_fit_score: number;
   market_relevance_score: number;

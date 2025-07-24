@@ -7,6 +7,7 @@ import type { SupplierMatch } from '../components/suppliers/SupplierMatchCard';
 export interface SolutionGroup {
   solutionId: string;
   solutionName: string;
+  solutionNumber?: number;
   suppliers: SupplierMatch[];
 }
 
@@ -27,11 +28,13 @@ export function useSuppliers(briefId: string) {
     suppliersList.forEach(supplier => {
       const solutionId = supplier.solution_id || 'unknown';
       const solutionName = supplier.solution_name || 'Unknown Solution';
+      const solutionNumber = supplier.solution_number;
       
       if (!groups.has(solutionId)) {
         groups.set(solutionId, {
           solutionId,
           solutionName,
+          solutionNumber,
           suppliers: []
         });
       }
@@ -39,8 +42,12 @@ export function useSuppliers(briefId: string) {
       groups.get(solutionId)!.suppliers.push(supplier);
     });
     
-    // Trier les groupes par nombre de fournisseurs (décroissant)
-    return Array.from(groups.values()).sort((a, b) => b.suppliers.length - a.suppliers.length);
+    // Trier les groupes par numéro de solution (croissant)
+    return Array.from(groups.values()).sort((a, b) => {
+      const numA = a.solutionNumber || 999;
+      const numB = b.solutionNumber || 999;
+      return numA - numB;
+    });
   };
 
   const fetchSuppliers = useCallback(async () => {

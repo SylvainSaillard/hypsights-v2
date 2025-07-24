@@ -71,6 +71,7 @@ export function SuppliersPanel({ briefId }: SuppliersPanelProps) {
           <SolutionSection 
             key={solutionGroup.solutionId}
             solutionName={solutionGroup.solutionName}
+            solutionNumber={solutionGroup.solutionNumber}
             suppliers={solutionGroup.suppliers}
             defaultExpanded={index === 0} // Première solution dépliée par défaut
           />
