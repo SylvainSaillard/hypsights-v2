@@ -13,6 +13,7 @@ type Brief = {
   solutions_count: number;
   products_count: number;
   suppliers_count: number;
+  fast_searches_used: number;
 };
 
 /**
@@ -259,6 +260,13 @@ const BriefManagementGrid: React.FC = () => {
                             hasResults={brief.solutions_count > 0}
                             colorClass="bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-lg"
                             icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m12.728 0l.707-.707M6.343 17.657l.707.707m12.728 0l-.707.707M12 21v-1m0-16a9 9 0 110 18 9 9 0 010-18z" /></svg>}
+                          />
+                          <StatBox 
+                            label={t('brief.card.fast_searches_used', 'Fast Searches')} 
+                            value={brief.fast_searches_used} 
+                            hasResults={brief.fast_searches_used > 0}
+                            colorClass="bg-gradient-to-br from-green-400 to-green-600 text-white shadow-lg"
+                            icon={<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>}
                           />
                         </div>
                       </div>

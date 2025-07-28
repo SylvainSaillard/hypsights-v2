@@ -139,7 +139,8 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
         // Get other stats
         const [
           { count: solutions_count, error: solutionsError },
-          { count: products_count, error: productsError }
+          { count: products_count, error: productsError },
+          { count: fast_searches_used, error: fastSearchesError }
         ] = await Promise.all([
           supabaseAdmin
             .from('solutions')
@@ -150,19 +151,26 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
                 .from('products')
                 .select('id', { count: 'exact', head: true })
                 .in('supplier_id', supplierIds)
-            : Promise.resolve({ count: 0, error: null })
+            : Promise.resolve({ count: 0, error: null }),
+          supabaseAdmin
+            .from('solutions')
+            .select('id', { count: 'exact', head: true })
+            .eq('brief_id', brief.id)
+            .not('fast_search_launched_at', 'is', null)
         ]);
 
         if (solutionsError) console.error(`[getBriefsWithStats] Error getting solutions count for brief ${brief.id}:`, solutionsError);
         if (productsError) console.error(`[getBriefsWithStats] Error getting products count for brief ${brief.id}:`, productsError);
+        if (fastSearchesError) console.error(`[getBriefsWithStats] Error getting fast searches count for brief ${brief.id}:`, fastSearchesError);
 
-        console.log(`[getBriefsWithStats] Stats for brief ${brief.id}: solutions=${solutions_count}, suppliers=${suppliers_count}, products=${products_count}`);
+        console.log(`[getBriefsWithStats] Stats for brief ${brief.id}: solutions=${solutions_count}, suppliers=${suppliers_count}, products=${products_count}, fast_searches=${fast_searches_used}`);
 
         return {
           ...brief,
           solutions_count: solutions_count || 0,
           suppliers_count: suppliers_count || 0,
           products_count: products_count || 0,
+          fast_searches_used: fast_searches_used || 0,
         };
       } catch (error) {
         console.error(`[getBriefsWithStats] Failed to get stats for brief ${brief.id}:`, error);
@@ -171,6 +179,7 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
           solutions_count: 0,
           products_count: 0,
           suppliers_count: 0,
+          fast_searches_used: 0,
         };
       }
     })
