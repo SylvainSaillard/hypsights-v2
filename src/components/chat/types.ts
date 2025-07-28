@@ -1,5 +1,4 @@
 // Types et interfaces partagés pour les composants de chat
-import type { ChatMessage } from './ChatInterface';
 
 // Interface pour les produits
 export interface Product {
@@ -38,6 +37,7 @@ export interface Solution {
   type?: string;
   fast_search_launched_at?: string | null;
   search_progress?: number; // Optionnel: pourcentage de progression (0-100)
+  solution_number?: number;
 }
 
 // Props pour le composant EnhancedChatView
