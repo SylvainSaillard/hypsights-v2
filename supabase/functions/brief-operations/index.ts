@@ -131,7 +131,7 @@ async function getBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: 
     .from('briefs')
     .select(`
       *,
-      solutions:solutions (*, suppliers:suppliers(*))
+      solutions:solutions(*, suppliers:suppliers(*))
     `)
     .eq('id', briefId)
     .eq('user_id', userId)
@@ -141,6 +141,9 @@ async function getBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: 
     console.error('Error fetching brief:', error);
     throw new HttpError('Brief not found', 404);
   }
+
+  const solutions = data.solutions || [];
+  const fastSearchesUsed = solutions.filter(s => s.fast_search_launched_at).length;
   
   // Format array fields for frontend display, now including solutions
   const formattedBrief = {
@@ -150,7 +153,8 @@ async function getBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: 
     geographies: data.geographies || [],
     organization_types: data.organization_types || [],
     capabilities: data.capabilities || [],
-    solutions: data.solutions || [] // Ensure solutions is always an array
+    solutions: solutions, // Ensure solutions is always an array
+    fast_searches_used: fastSearchesUsed
   };
   
   console.log('Formatted brief data:', JSON.stringify(formattedBrief, null, 2));
