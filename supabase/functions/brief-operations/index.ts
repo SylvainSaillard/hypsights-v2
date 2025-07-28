@@ -127,35 +127,46 @@ async function listBriefs(supabaseAdmin: SupabaseClient, userId: string) {
 async function getBrief(supabaseAdmin: SupabaseClient, briefId: string, userId: string) {
   console.log(`Fetching brief ${briefId} for user ${userId}`);
   
-  const { data, error } = await supabaseAdmin
+  const { data: brief, error } = await supabaseAdmin
     .from('briefs')
     .select(`
       *,
-      solutions:solutions (*, suppliers:suppliers(*))
-    `)
-    .eq('id', briefId)
-    .eq('user_id', userId)
+      solutions:solutions (*, fast_search_launched_at, suppliers:suppliers(*))
+    `).eq('user_id', userId)
     .single();
-    
+
   if (error) {
-    console.error('Error fetching brief:', error);
-    throw new HttpError('Brief not found', 404);
+    console.error(`Brief ${briefId} not found for user ${userId}:`, error);
+    throw new HttpError('Brief not found or access denied', 404);
   }
   
   // Format array fields for frontend display, now including solutions
   const formattedBrief = {
-    ...data,
-    reference_companies: data.reference_companies || [],
-    maturity: data.maturity || [],
-    geographies: data.geographies || [],
-    organization_types: data.organization_types || [],
-    capabilities: data.capabilities || [],
-    solutions: data.solutions || [] // Ensure solutions is always an array
+    ...brief,
+    reference_companies: brief.reference_companies || [],
+    maturity: brief.maturity || [],
+    geographies: brief.geographies || [],
+    organization_types: brief.organization_types || [],
+    capabilities: brief.capabilities || [],
+    solutions: brief.solutions || [] // Ensure solutions is always an array
   };
   
   console.log('Formatted brief data:', JSON.stringify(formattedBrief, null, 2));
   
-  return { brief: formattedBrief };
+  const solutionCount = brief.solutions?.length || 0;
+  const supplierMatchCount = brief.solutions?.reduce((acc, s) => acc + (s.suppliers?.length || 0), 0) || 0;
+  const fastSearchConsumedCount = brief.solutions?.filter(s => s.fast_search_launched_at).length || 0;
+
+  return {
+    brief: {
+      ...formattedBrief,
+      kpis: {
+        solution_count: solutionCount,
+        supplier_match_count: supplierMatchCount,
+        fast_search_consumed_count: fastSearchConsumedCount
+      }
+    }
+  };
 }
 
 async function createBrief(supabaseAdmin: SupabaseClient, briefData: any, userId: string) {

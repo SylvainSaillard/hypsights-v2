@@ -12,9 +12,12 @@ interface BriefHeaderData {
     title: string;
     description: string;
     created_at: string;
-    solutions_count: number;
-    suppliers_count: number;
-    products_count: number;
+    kpis: {
+        solutions_count: number;
+        suppliers_count: number;
+        products_count: number;
+        fast_search_consumed_count: number;
+    };
     geographies: string[];
     organization_types: string[];
     capabilities: string[];
@@ -80,7 +83,8 @@ const BriefHeaderSkeleton: React.FC = () => (
     <div className="animate-pulse bg-slate-900 p-6 rounded-lg mb-6">
         <div className="h-8 bg-slate-700 rounded w-3/4 mb-2"></div>
         <div className="h-4 bg-slate-700 rounded w-1/4 mb-8"></div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <div className="h-24 bg-slate-800 rounded-xl"></div>
             <div className="h-24 bg-slate-800 rounded-xl"></div>
             <div className="h-24 bg-slate-800 rounded-xl"></div>
             <div className="h-24 bg-slate-800 rounded-xl"></div>
@@ -142,7 +146,30 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
 
     if (!headerData) return null;
 
-    const { title, description, created_at, solutions_count, suppliers_count, products_count, geographies, organization_types, capabilities, maturity, reference_companies } = headerData;
+    const {
+        title,
+        description,
+        created_at,
+        kpis,
+        geographies,
+        organization_types,
+        capabilities,
+        maturity,
+        reference_companies,
+        goals,
+        timeline,
+        budget,
+        key_questions,
+        nda_required,
+        report_format
+    } = data.brief as BriefHeaderData;
+
+    const {
+        solutions_count = 0,
+        suppliers_count = 0,
+        products_count = 0,
+        fast_search_consumed_count = 0
+    } = kpis || {};
 
     const filterCards = [
         { key: 'geographies', title: t('brief.header.filters.geographies', 'Geographies'), items: geographies, icon: <MapPin size={16} /> },
@@ -159,10 +186,11 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
             </div>
             <p className="text-slate-400 text-sm mb-6 ml-10">{new Date(created_at).toLocaleDateString()}</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <KpiCard title={t('brief.header.kpi.companies', 'Companies')} value={suppliers_count} icon={<Building2 size={20} className="text-blue-200" />} color="#2563eb40" />
                 <KpiCard title={t('brief.header.kpi.products', 'Products')} value={products_count} icon={<Package size={20} className="text-purple-200" />} color="#7c3aed40" />
                 <KpiCard title={t('brief.header.kpi.solutions', 'Solutions')} value={solutions_count} icon={<Lightbulb size={20} className="text-amber-200" />} color="#d9770640" />
+                <KpiCard title={t('brief.header.kpi.fast_searches', 'Fast Searches')} value={fast_search_consumed_count} icon={<AlertTriangle size={20} className="text-red-200" />} color="#ef444440" />
             </div>
 
             {reference_companies && reference_companies.length > 0 && (
