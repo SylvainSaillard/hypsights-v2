@@ -110,6 +110,17 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     console.error(`[${FUNCTION_NAME}] Error fetching solutions count:`, solutionsError);
   }
 
+  // KPI: Fast searches used count
+  const { count: fastSearchesUsed, error: fastSearchesError } = await supabaseAdmin
+    .from('solutions')
+    .select('id', { count: 'exact', head: true })
+    .eq('brief_id', briefId)
+    .not('fast_search_launched_at', 'is', null);
+
+  if (fastSearchesError) {
+    console.error(`[${FUNCTION_NAME}] Error fetching fast searches count:`, fastSearchesError);
+  }
+
   // Step 1: Use the join table `supplier_match_profiles` to find suppliers for the brief.
   const { data: supplierMatches, error: matchError } = await supabaseAdmin
     .from('supplier_match_profiles')
@@ -194,7 +205,8 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     ...brief,
     solutions_count: solutionsCount || 0,
     suppliers_count: suppliersCount,
-    products_count: productsCount
+    products_count: productsCount,
+    fast_searches_used: fastSearchesUsed || 0
   };
 }
 
