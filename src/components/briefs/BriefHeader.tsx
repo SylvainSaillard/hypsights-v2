@@ -15,7 +15,6 @@ interface BriefHeaderData {
     solutions_count: number;
     suppliers_count: number;
     products_count: number;
-    fast_searches_count: number;
     geographies: string[];
     organization_types: string[];
     capabilities: string[];
@@ -120,8 +119,8 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
     const { t } = useI18n();
     const [detailsVisible, setDetailsVisible] = useState(false);
 
-  const { data, loading, error } = useEdgeFunction('brief-operations', 
-    { action: 'get_brief_header', brief_id: briefId }, 
+  const { data, loading, error } = useEdgeFunction('brief-header-data', 
+    { brief_id: briefId }, 
     { 
       method: 'POST',
       enabled: !!briefId, // Only run query if briefId is available
@@ -143,7 +142,7 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
 
     if (!headerData) return null;
 
-    const { title, description, created_at, solutions_count, suppliers_count, products_count, fast_searches_count, geographies, organization_types, capabilities, maturity, reference_companies } = headerData;
+    const { title, description, created_at, solutions_count, suppliers_count, products_count, geographies, organization_types, capabilities, maturity, reference_companies } = headerData;
 
     const filterCards = [
         { key: 'geographies', title: t('brief.header.filters.geographies', 'Geographies'), items: geographies, icon: <MapPin size={16} /> },
@@ -160,11 +159,10 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
             </div>
             <p className="text-slate-400 text-sm mb-6 ml-10">{new Date(created_at).toLocaleDateString()}</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <KpiCard title={t('brief.header.kpi.companies', 'Companies')} value={suppliers_count} icon={<Building2 size={20} className="text-blue-200" />} color="#2563eb40" />
                 <KpiCard title={t('brief.header.kpi.products', 'Products')} value={products_count} icon={<Package size={20} className="text-purple-200" />} color="#7c3aed40" />
                 <KpiCard title={t('brief.header.kpi.solutions', 'Solutions')} value={solutions_count} icon={<Lightbulb size={20} className="text-amber-200" />} color="#d9770640" />
-                <KpiCard title={t('brief.header.kpi.fast_searches', 'Fast Searches')} value={fast_searches_count} icon={<TrendingUp size={20} className="text-green-200" />} color="#10b98140" />
             </div>
 
             {reference_companies && reference_companies.length > 0 && (
