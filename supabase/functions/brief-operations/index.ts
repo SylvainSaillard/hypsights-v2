@@ -464,6 +464,107 @@ async function duplicateBrief(supabaseAdmin: SupabaseClient, briefId: string, us
   return { brief: { ...duplicatedBrief } };
 }
 
+async function getBriefHeaderData(supabaseAdmin: SupabaseClient, briefId: string, userId: string) {
+  console.log(`Fetching brief header data for ${briefId} for user ${userId}`);
+  
+  // Récupérer les données de base du brief
+  const { data: briefData, error: briefError } = await supabaseAdmin
+    .from('briefs')
+    .select(`
+      id,
+      title,
+      description,
+      created_at,
+      geographies,
+      organization_types,
+      capabilities,
+      maturity,
+      reference_companies,
+      goals,
+      timeline,
+      budget,
+      key_questions,
+      nda_required,
+      report_format
+    `)
+    .eq('id', briefId)
+    .eq('user_id', userId)
+    .single();
+    
+  if (briefError || !briefData) {
+    console.error('Error fetching brief:', briefError);
+    throw new HttpError('Brief not found', 404);
+  }
+
+  // Calculer le nombre de solutions
+  const { count: solutionsCount, error: solutionsError } = await supabaseAdmin
+    .from('solutions')
+    .select('*', { count: 'exact', head: true })
+    .eq('brief_id', briefId);
+    
+  if (solutionsError) {
+    console.error('Error counting solutions:', solutionsError);
+  }
+
+  // Calculer le nombre de fournisseurs via la vue supplier_matches
+  const { count: suppliersCount, error: suppliersError } = await supabaseAdmin
+    .from('supplier_matches')
+    .select('supplier_id', { count: 'exact', head: true })
+    .eq('brief_id', briefId);
+    
+  if (suppliersError) {
+    console.error('Error counting suppliers:', suppliersError);
+  }
+
+  // Calculer le nombre de produits via la vue supplier_matches
+  const { count: productsCount, error: productsError } = await supabaseAdmin
+    .from('supplier_matches')
+    .select('product_id', { count: 'exact', head: true })
+    .eq('brief_id', briefId);
+    
+  if (productsError) {
+    console.error('Error counting products:', productsError);
+  }
+
+  // Calculer le nombre de fast searches consommées
+  // Compter les solutions qui ont un fast_search_launched_at non null
+  const { count: fastSearchesCount, error: fastSearchesError } = await supabaseAdmin
+    .from('solutions')
+    .select('*', { count: 'exact', head: true })
+    .eq('brief_id', briefId)
+    .not('fast_search_launched_at', 'is', null);
+    
+  if (fastSearchesError) {
+    console.error('Error counting fast searches:', fastSearchesError);
+  }
+
+  // Formater les données pour le header
+  const headerData = {
+    title: briefData.title,
+    description: briefData.description,
+    created_at: briefData.created_at,
+    solutions_count: solutionsCount || 0,
+    suppliers_count: suppliersCount || 0,
+    products_count: productsCount || 0,
+    fast_searches_count: fastSearchesCount || 0,
+    geographies: briefData.geographies || [],
+    organization_types: briefData.organization_types || [],
+    capabilities: briefData.capabilities || [],
+    maturity: briefData.maturity || [],
+    reference_companies: briefData.reference_companies || [],
+    goals: briefData.goals,
+    timeline: briefData.timeline,
+    budget: briefData.budget,
+    key_questions: briefData.key_questions || [],
+    nda_required: briefData.nda_required,
+    report_format: briefData.report_format
+  };
+
+  console.log('Brief header data:', JSON.stringify(headerData, null, 2));
+  
+  return headerData;
+}
+
 
 serve(async (req) => {
   // Handle OPTIONS
@@ -534,6 +635,10 @@ serve(async (req) => {
         result = await duplicateBrief(supabaseAdmin, brief_id, user.id);
         break;
         
+      case 'get_brief_header':
+        if (!brief_id) throw new HttpError('Missing required parameter: brief_id', 400);
+        result = await getBriefHeaderData(supabaseAdmin, brief_id, user.id);
+        break;
 
       default:
         throw new HttpError(`Unsupported action: ${action}`, 400);
