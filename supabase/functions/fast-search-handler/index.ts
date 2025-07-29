@@ -390,7 +390,7 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
     
-    const webhookUrl = 'https://n8n.proxiwave.com/webhook/searchsupplier';
+    const webhookUrl = 'https://n8n.proxiwave.app/webhook/searchsupplier';
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
