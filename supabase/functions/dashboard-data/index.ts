@@ -269,6 +269,20 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
           userMetadata.completedSearches = searchesCount || 0;
           console.log(`[getUserMetrics] Found ${userMetadata.completedSearches} completed searches.`);
         }
+
+        // Calculate REAL fast searches used from solutions with fast_search_launched_at
+        const { count: realFastSearchesUsed, error: fastSearchError } = await supabaseAdmin
+          .from('solutions')
+          .select('id', { count: 'exact', head: true })
+          .in('brief_id', briefIds)
+          .not('fast_search_launched_at', 'is', null);
+
+        if (fastSearchError) {
+          console.error('[getUserMetrics] Error fetching real fast searches count:', fastSearchError);
+        } else {
+          userMetadata.fast_searches_used = realFastSearchesUsed || 0;
+          console.log(`[getUserMetrics] Found ${userMetadata.fast_searches_used} real fast searches used.`);
+        }
       }
     }
   } catch (error) {
