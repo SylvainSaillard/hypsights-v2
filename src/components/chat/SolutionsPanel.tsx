@@ -217,6 +217,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                         </div>
                       )}
                     </div>
+                    )}
                   </>
                 ) : solution.status === 'in_progress' ? (
                   <div className="flex items-center justify-center text-blue-600 text-sm font-medium py-2">
