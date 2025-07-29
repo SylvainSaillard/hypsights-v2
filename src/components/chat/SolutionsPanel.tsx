@@ -12,6 +12,7 @@ interface SolutionsPanelProps {
   startingSolutionId?: string | null;
   briefHasActiveSearch?: boolean;
   showFastSearchDirectly?: boolean;
+  fastSearchQuota?: { used: number; total: number };
 }
 
 /**
@@ -25,17 +26,39 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
   onValidate,
   onRefresh,
   onStartFastSearch,
-  startingSolutionId = null
+  startingSolutionId = null,
+  fastSearchQuota
 }) => {
   const { t } = useI18n();
+  
+  // Calcul du quota
+  const hasQuota = fastSearchQuota ? fastSearchQuota.used < fastSearchQuota.total : true;
+  const quotaRemaining = fastSearchQuota ? fastSearchQuota.total - fastSearchQuota.used : 0;
+  
   return (
     <div className="flex flex-col h-full">
       {/* Header avec design moderne */}
       <div className="p-6 bg-gradient-to-r from-purple-50 to-indigo-50 border-b border-purple-100">
         <div className="flex items-center justify-between">
-          <h2 className="font-bold text-xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
-            {t('solutions_panel.title', 'Suggested Solutions')}
-          </h2>
+          <div className="flex items-center gap-4">
+            <h2 className="font-bold text-xl bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              {t('solutions_panel.title', 'Suggested Solutions')}
+            </h2>
+            {fastSearchQuota && (
+              <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                hasQuota 
+                  ? quotaRemaining <= 1 
+                    ? 'bg-amber-100 text-amber-700 border border-amber-200' 
+                    : 'bg-green-100 text-green-700 border border-green-200'
+                  : 'bg-red-100 text-red-700 border border-red-200'
+              }`}>
+                {t('solutions_panel.quota.badge', 'Fast Search: {used}/{total}', { 
+                  used: fastSearchQuota.used, 
+                  total: fastSearchQuota.total 
+                })}
+              </div>
+            )}
+          </div>
           <button 
             onClick={onRefresh}
             disabled={isLoading}
@@ -162,15 +185,16 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                     </div>
                     
                     {onStartFastSearch && !['in_progress', 'finished'].includes(solution.status) && (
-                      <button
-                        onClick={() => onStartFastSearch(solution.id)}
-                        disabled={startingSolutionId === solution.id}
-                        className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
-                          startingSolutionId === solution.id
-                            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 shadow-md hover:shadow-lg transform hover:scale-105'
-                        }`}
-                      >
+                      <div className="relative group">
+                        <button
+                          onClick={() => onStartFastSearch(solution.id)}
+                          disabled={startingSolutionId === solution.id || !hasQuota}
+                          className={`w-full py-3 px-4 rounded-xl font-semibold transition-all duration-200 ${
+                            startingSolutionId === solution.id || !hasQuota
+                              ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                              : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 shadow-md hover:shadow-lg transform hover:scale-105'
+                          }`}
+                        >
                         {startingSolutionId === solution.id ? (
                           <span className="flex items-center justify-center gap-2">
                             <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
@@ -185,7 +209,14 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                           </span>
                         )}
                       </button>
-                    )}
+                      {/* Tooltip pour quota épuisé */}
+                      {!hasQuota && (
+                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-sm rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                          {t('solutions_panel.quota.exhausted', 'Fast search quota exhausted')}
+                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-800"></div>
+                        </div>
+                      )}
+                    </div>
                   </>
                 ) : solution.status === 'in_progress' ? (
                   <div className="flex items-center justify-center text-blue-600 text-sm font-medium py-2">
