@@ -2,7 +2,9 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
+import SupplierCarousel from '../../components/suppliers/SupplierCarousel';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
+import { useSupplierGroups } from '../../hooks/useSupplierGroups';
 import { useI18n } from '../../contexts/I18nContext';
 
 /**
@@ -22,6 +24,17 @@ const SimplifiedBriefPage: React.FC = () => {
     { action: 'get_brief', brief_id: briefId },
     { method: 'POST' }
   );
+
+  // Nouveau hook pour les fournisseurs groupés
+  const {
+    supplierGroups,
+    isLoading: suppliersLoading,
+    error: suppliersError
+  } = useSupplierGroups({
+    briefId: briefId || '',
+    enabled: !!briefId && !briefLoading,
+    maxResults: 10
+  });
 
   // Loading state
   if (briefLoading) {
@@ -127,6 +140,20 @@ const SimplifiedBriefPage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <SuppliersPanel briefId={briefId || 'unknown'} />
             </div>
+          </div>
+
+          {/* Nouveau bloc Suppliers Found */}
+          <div className="mt-8">
+            <SupplierCarousel
+              supplierGroups={supplierGroups}
+              isLoading={suppliersLoading}
+              error={suppliersError}
+              maxResults={10}
+              onViewDetails={(supplierId) => {
+                console.log('View details for supplier:', supplierId);
+                // TODO: Implémenter la navigation vers les détails du fournisseur
+              }}
+            />
           </div>
         </div>
       </div>
