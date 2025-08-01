@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import type { SupplierGroup } from '../types/supplierTypes';
-import { useEdgeFunction } from './useEdgeFunction';
+import useEdgeFunction from './useEdgeFunction';
 
 interface UseSupplierGroupsProps {
   briefId: string;

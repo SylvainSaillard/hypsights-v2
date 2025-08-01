@@ -142,18 +142,34 @@ const SimplifiedBriefPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Nouveau bloc Suppliers Found */}
-          <div className="mt-8">
-            <SupplierCarousel
-              supplierGroups={supplierGroups}
-              isLoading={suppliersLoading}
-              error={suppliersError}
-              maxResults={10}
-              onViewDetails={(supplierId) => {
-                console.log('View details for supplier:', supplierId);
-                // TODO: Implémenter la navigation vers les détails du fournisseur
-              }}
-            />
+          {/* Nouveau bloc Suppliers Found - Version Debug */}
+          <div className="mt-8 p-6 bg-green-50 border-2 border-green-200 rounded-xl">
+            <h2 className="text-2xl font-bold text-green-800 mb-4">🚀 Nouveau Bloc Suppliers Found</h2>
+            <div className="text-sm text-green-700 mb-4">
+              <p>Status: {suppliersLoading ? 'Loading...' : 'Loaded'}</p>
+              <p>Supplier Groups: {supplierGroups.length}</p>
+              <p>Error: {suppliersError || 'None'}</p>
+              <p>Brief ID: {briefId}</p>
+            </div>
+            
+            {supplierGroups.length > 0 ? (
+              <SupplierCarousel
+                supplierGroups={supplierGroups}
+                isLoading={suppliersLoading}
+                error={suppliersError}
+                maxResults={10}
+                onViewDetails={(supplierId) => {
+                  console.log('View details for supplier:', supplierId);
+                }}
+              />
+            ) : (
+              <div className="bg-yellow-100 p-4 rounded-lg">
+                <p className="text-yellow-800">Aucun groupe de fournisseurs trouvé. Données brief:</p>
+                <pre className="text-xs mt-2 overflow-auto max-h-40">
+                  {JSON.stringify(briefData?.brief?.solutions, null, 2)}
+                </pre>
+              </div>
+            )}
           </div>
         </div>
       </div>
