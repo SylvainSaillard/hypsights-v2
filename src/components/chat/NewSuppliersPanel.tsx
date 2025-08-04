@@ -66,27 +66,30 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-      {allSolutions.length > 1 && (
-        <div className="mb-6 max-w-sm">
-          <label htmlFor="solution-filter" className="block text-sm font-medium text-gray-700 mb-1">
-            Filter by Solution
-          </label>
-          <select
-            id="solution-filter"
-            name="solution-filter"
-            className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm"
-            value={selectedSolutionId}
-            onChange={(e) => setSelectedSolutionId(e.target.value)}
-          >
-            <option value="all">All Solutions ({supplierGroups.length} suppliers)</option>
-            {allSolutions.map(solution => (
-              <option key={solution.id} value={solution.id}>
-                Solution {solution.number}: {solution.name}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold text-gray-800">Suppliers Found</h2>
+        {allSolutions.length > 1 && (
+          <div className="relative">
+            <select
+              id="solution-filter"
+              name="solution-filter"
+              className="appearance-none block w-full bg-white border border-gray-300 text-gray-700 py-2 pl-3 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-indigo-500 shadow-sm transition duration-150 ease-in-out"
+              value={selectedSolutionId}
+              onChange={(e) => setSelectedSolutionId(e.target.value)}
+            >
+              <option value="all">All Solutions ({supplierGroups.length} suppliers)</option>
+              {allSolutions.map(solution => (
+                <option key={solution.id} value={solution.id}>
+                  Solution {solution.number}: {solution.name}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+              <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+            </div>
+          </div>
+        )}
+      </div>
       <SupplierCarousel supplierGroups={filteredSupplierGroups} />
     </div>
   );

@@ -5,7 +5,6 @@ import { createClient } from '@supabase/supabase-js';
 interface UseSupplierGroupsProps {
   briefId: string;
   enabled?: boolean;
-  maxResults?: number;
 }
 
 // Configuration Supabase
@@ -15,8 +14,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export const useSupplierGroups = ({ 
   briefId, 
-  enabled = true, 
-  maxResults = 10 
+  enabled = true
 }: UseSupplierGroupsProps) => {
   const [supplierGroups, setSupplierGroups] = useState<SupplierGroup[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -47,7 +45,7 @@ export const useSupplierGroups = ({
 
       // Grouper par fournisseur
       const groupedSuppliers = groupSuppliersBySupplier(supplierMatches);
-      setSupplierGroups(groupedSuppliers.slice(0, maxResults));
+      setSupplierGroups(groupedSuppliers);
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process supplier data');
@@ -58,14 +56,14 @@ export const useSupplierGroups = ({
 
   useEffect(() => {
     fetchSupplierGroups();
-  }, [briefId, enabled, maxResults]);
+  }, [briefId, enabled]);
 
   return {
     supplierGroups,
     isLoading,
     error,
     refresh: fetchSupplierGroups,
-    hasMore: supplierGroups.length >= maxResults
+    hasMore: false // On charge tout, donc pas de pagination pour l'instant
   };
 };
 
