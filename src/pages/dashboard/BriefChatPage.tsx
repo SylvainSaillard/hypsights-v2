@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
+import { NewSuppliersPanel } from '../../components/chat/NewSuppliersPanel';
 import PremiumDeepSearchCTA from '../../components/ctas/PremiumDeepSearchCTA';
 
 import BriefHeader from '../../components/briefs/BriefHeader';
@@ -208,6 +209,9 @@ const BriefChatPage = () => {
               </div>
               <SuppliersPanel briefId={brief.id} />
             </div>
+
+            {/* Panneau de test pour le nouveau design */}
+            <NewSuppliersPanel briefId={brief.id} />
           </div>
         ) : null}
       </div>

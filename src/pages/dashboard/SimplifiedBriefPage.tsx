@@ -2,8 +2,8 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
-import { NewSuppliersPanel } from '../../components/chat/NewSuppliersPanel';
-import { SuppliersFoundPanel } from '../../components/chat/SuppliersFoundPanel';
+
+
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
 
@@ -31,9 +31,7 @@ const SimplifiedBriefPage: React.FC = () => {
   if (briefLoading) {
     return (
       <div className="flex h-screen bg-gray-50">
-        <h1 style={{ position: 'fixed', top: 0, left: 0, right: 0, backgroundColor: 'lime', color: 'black', zIndex: 10000, textAlign: 'center', padding: '10px', fontSize: '2rem', fontWeight: 'bold' }}>
-          TEST DE DÉPLOIEMENT - VERSION {new Date().toLocaleTimeString()}
-        </h1>
+
         <div className="flex justify-center items-center min-h-screen bg-hypsights-background">
           <div className="text-center">
             <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -131,10 +129,7 @@ const SimplifiedBriefPage: React.FC = () => {
           />
           
           {/* Panneau de fournisseurs séparé */}
-          {/* BLOC DE TEST - DOIT APPARAITRE EN PREMIER */}
-          <div className="mt-8">
-            <NewSuppliersPanel briefId={briefId || 'unknown'} />
-          </div>
+
 
           <div className="mt-8">
             <h2 className="text-xl font-bold mb-4">{t('brief.simplified.suppliers', 'Suppliers')}</h2>

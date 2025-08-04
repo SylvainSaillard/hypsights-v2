@@ -5,26 +5,10 @@ interface SuppliersPanelProps {
 }
 
 export function NewSuppliersPanel({ briefId }: SuppliersPanelProps) {
-  console.log('NewSuppliersPanel rendering with briefId:', briefId);
-  
   return (
-    <div style={{
-      position: 'fixed',
-      top: '50px',
-      left: '50px',
-      zIndex: 9999,
-      backgroundColor: 'red',
-      color: 'white',
-      padding: '20px',
-      border: '5px solid yellow',
-      fontSize: '24px',
-      fontWeight: 'bold'
-    }}>
-      COMPOSANT DE TEST - VISIBLE ?
-      <br />
-      Brief ID: {briefId}
-      <br />
-      Si vous voyez ceci, ça marche !
+    <div className="p-4 my-4 bg-yellow-100 border-2 border-dashed border-yellow-500 rounded-lg">
+      <h3 className="font-bold text-yellow-800">Nouveau Panneau Fournisseurs (en construction)</h3>
+      <p className="text-sm text-yellow-700">Brief ID: {briefId}</p>
     </div>
   );
 }
