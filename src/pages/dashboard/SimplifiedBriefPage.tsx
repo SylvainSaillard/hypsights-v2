@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
 import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
+import { NewSuppliersPanel } from '../../components/chat/NewSuppliersPanel';
 import { SuppliersFoundPanel } from '../../components/chat/SuppliersFoundPanel';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
@@ -133,8 +134,9 @@ const SimplifiedBriefPage: React.FC = () => {
           </div>
 
           {/* Nouveau bloc Suppliers Found */}
+          {/* Bloc dupliqué pour le test */}
           <div className="mt-8">
-            <SuppliersFoundPanel briefId={briefId || 'unknown'} maxResults={10} />
+            <NewSuppliersPanel briefId={briefId || 'unknown'} />
           </div>
         </div>
       </div>
