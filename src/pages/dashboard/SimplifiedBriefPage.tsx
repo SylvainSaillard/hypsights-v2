@@ -30,10 +30,15 @@ const SimplifiedBriefPage: React.FC = () => {
   // Loading state
   if (briefLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen bg-hypsights-background">
-        <div className="text-center">
-          <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-lg text-gray-600">{t('brief.simplified.loading', 'Loading brief...')}</p>
+      <div className="flex h-screen bg-gray-50">
+        <h1 style={{ position: 'fixed', top: 0, left: 0, right: 0, backgroundColor: 'lime', color: 'black', zIndex: 10000, textAlign: 'center', padding: '10px', fontSize: '2rem', fontWeight: 'bold' }}>
+          TEST DE DÉPLOIEMENT - VERSION {new Date().toLocaleTimeString()}
+        </h1>
+        <div className="flex justify-center items-center min-h-screen bg-hypsights-background">
+          <div className="text-center">
+            <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-lg text-gray-600">{t('brief.simplified.loading', 'Loading brief...')}</p>
+          </div>
         </div>
       </div>
     );
