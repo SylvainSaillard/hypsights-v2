@@ -126,7 +126,12 @@ const SimplifiedBriefPage: React.FC = () => {
           />
           
           {/* Panneau de fournisseurs séparé */}
-          <div className="mt-6">
+          {/* BLOC DE TEST - DOIT APPARAITRE EN PREMIER */}
+          <div className="mt-8">
+            <NewSuppliersPanel briefId={briefId || 'unknown'} />
+          </div>
+
+          <div className="mt-8">
             <h2 className="text-xl font-bold mb-4">{t('brief.simplified.suppliers', 'Suppliers')}</h2>
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <SuppliersPanel briefId={briefId || 'unknown'} />
@@ -135,9 +140,9 @@ const SimplifiedBriefPage: React.FC = () => {
 
           {/* Nouveau bloc Suppliers Found */}
           {/* Bloc dupliqué pour le test */}
-          <div className="mt-8">
+          {/* <div className="mt-8">
             <NewSuppliersPanel briefId={briefId || 'unknown'} />
-          </div>
+          </div> */}
         </div>
       </div>
     </div>
