@@ -166,12 +166,12 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
       {/* Corps de la carte */}
       <div className="p-6">
-        {/* Scores détaillés */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        {/* Scores principaux */}
+        <div className="grid grid-cols-2 gap-6 mb-6">
           {scores.solution_fit && (
             <div className="text-center">
               <div className="text-xs text-gray-500 mb-1">Solution Fit</div>
-              <div className={`w-full h-2 bg-gray-200 rounded-full overflow-hidden`}>
+              <div className={`w-full h-3 bg-gray-200 rounded-full overflow-hidden`}>
                 <div 
                   className={`h-full bg-gradient-to-r ${getScoreColor(scores.solution_fit)} transition-all duration-500`}
                   style={{ width: `${scores.solution_fit}%` }}
@@ -183,7 +183,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           {scores.brief_fit && (
             <div className="text-center">
               <div className="text-xs text-gray-500 mb-1">Brief Fit</div>
-              <div className={`w-full h-2 bg-gray-200 rounded-full overflow-hidden`}>
+              <div className={`w-full h-3 bg-gray-200 rounded-full overflow-hidden`}>
                 <div 
                   className={`h-full bg-gradient-to-r ${getScoreColor(scores.brief_fit)} transition-all duration-500`}
                   style={{ width: `${scores.brief_fit}%` }}
@@ -192,19 +192,62 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
               <div className="text-sm font-semibold mt-1">{scores.brief_fit}%</div>
             </div>
           )}
-          {scores.criteria_match && (
-            <div className="text-center">
-              <div className="text-xs text-gray-500 mb-1">Criteria Match</div>
-              <div className={`w-full h-2 bg-gray-200 rounded-full overflow-hidden`}>
-                <div 
-                  className={`h-full bg-gradient-to-r ${getScoreColor(scores.criteria_match)} transition-all duration-500`}
-                  style={{ width: `${scores.criteria_match}%` }}
-                ></div>
-              </div>
-              <div className="text-sm font-semibold mt-1">{scores.criteria_match}%</div>
-            </div>
-          )}
         </div>
+
+        {/* Critères individuels */}
+        {scores.criteria_match && (
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 mb-6 border border-gray-200">
+            <div className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
+              <span className="text-blue-600">📋</span>
+              Criteria Assessment
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* Géographie */}
+              <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-gray-100">
+                <div className="text-lg">
+                  {(scores.criteria_match >= 75) ? '👍' : (scores.criteria_match >= 50) ? '👌' : '👎'}
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-gray-700">Geography</div>
+                  <div className="text-xs text-gray-500">{supplier.region || supplier.country || 'N/A'}</div>
+                </div>
+              </div>
+              
+              {/* Taille */}
+              <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-gray-100">
+                <div className="text-lg">
+                  {(scores.criteria_match >= 70) ? '👍' : (scores.criteria_match >= 45) ? '👌' : '👎'}
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-gray-700">Size</div>
+                  <div className="text-xs text-gray-500">{supplier.company_size || 'N/A'}</div>
+                </div>
+              </div>
+              
+              {/* Maturité */}
+              <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-gray-100">
+                <div className="text-lg">
+                  {(scores.criteria_match >= 65) ? '👍' : (scores.criteria_match >= 40) ? '👌' : '👎'}
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-gray-700">Maturity</div>
+                  <div className="text-xs text-gray-500">Established</div>
+                </div>
+              </div>
+              
+              {/* Type d'organisation */}
+              <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-gray-100">
+                <div className="text-lg">
+                  {(scores.criteria_match >= 60) ? '👍' : (scores.criteria_match >= 35) ? '👌' : '👎'}
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-gray-700">Type</div>
+                  <div className="text-xs text-gray-500">{supplier.company_type || 'Private'}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Explication IA */}
         {ai_explanation && (
