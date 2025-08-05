@@ -194,81 +194,88 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           )}
         </div>
 
-        {/* Critères individuels */}
+        {/* Critères individuels - Design moderne */}
         {scores.criteria_match && (
-          <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl p-5 mb-6 border border-indigo-100 shadow-sm">
-            <div className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <div className="w-6 h-6 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs">✓</span>
-              </div>
-              Criteria Assessment
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              {/* Géographie */}
-              <div className="group bg-white rounded-xl p-4 border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all duration-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl" style={{
-                    backgroundColor: (scores.criteria_match >= 75) ? '#dcfce7' : (scores.criteria_match >= 50) ? '#fef3c7' : '#fee2e2'
-                  }}>
-                    {(scores.criteria_match >= 75) ? '😊' : (scores.criteria_match >= 50) ? '😐' : '😞'}
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-gray-800 flex items-center gap-1">
-                      🌍 Geography
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1">{supplier.region || supplier.country || 'Global'}</div>
-                  </div>
+          <div className="relative bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 rounded-2xl p-6 mb-6 overflow-hidden">
+            {/* Effet de brillance en arrière-plan */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-x-12"></div>
+            
+            <div className="relative z-10">
+              <div className="text-white font-bold mb-5 flex items-center gap-3">
+                <div className="w-2 h-8 bg-gradient-to-b from-cyan-400 to-purple-400 rounded-full"></div>
+                <span className="text-lg">Match Analysis</span>
+                <div className="ml-auto text-2xl font-black text-transparent bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text">
+                  {scores.criteria_match}%
                 </div>
               </div>
               
-              {/* Taille */}
-              <div className="group bg-white rounded-xl p-4 border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all duration-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl" style={{
-                    backgroundColor: (scores.criteria_match >= 70) ? '#dcfce7' : (scores.criteria_match >= 45) ? '#fef3c7' : '#fee2e2'
-                  }}>
-                    {(scores.criteria_match >= 70) ? '😊' : (scores.criteria_match >= 45) ? '😐' : '😞'}
+              <div className="space-y-4">
+                {/* Géographie */}
+                <div className="group">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-300 font-medium">Geographic Match</span>
+                    <span className="text-cyan-400 font-bold text-sm">
+                      {(scores.criteria_match >= 75) ? 'EXCELLENT' : (scores.criteria_match >= 50) ? 'GOOD' : 'FAIR'}
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-gray-800 flex items-center gap-1">
-                      🏢 Company Size
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1">{supplier.company_size || 'Medium'}</div>
+                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${Math.max(20, scores.criteria_match)}%` }}
+                    ></div>
                   </div>
+                  <div className="text-xs text-gray-400 mt-1">{supplier.region || supplier.country || 'Global presence'}</div>
                 </div>
-              </div>
-              
-              {/* Maturité */}
-              <div className="group bg-white rounded-xl p-4 border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all duration-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl" style={{
-                    backgroundColor: (scores.criteria_match >= 65) ? '#dcfce7' : (scores.criteria_match >= 40) ? '#fef3c7' : '#fee2e2'
-                  }}>
-                    {(scores.criteria_match >= 65) ? '😊' : (scores.criteria_match >= 40) ? '😐' : '😞'}
+                
+                {/* Taille */}
+                <div className="group">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-300 font-medium">Size Compatibility</span>
+                    <span className="text-emerald-400 font-bold text-sm">
+                      {(scores.criteria_match >= 70) ? 'PERFECT' : (scores.criteria_match >= 45) ? 'GOOD' : 'PARTIAL'}
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-gray-800 flex items-center gap-1">
-                      ⭐ Maturity
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1">Established</div>
+                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${Math.max(15, scores.criteria_match - 5)}%` }}
+                    ></div>
                   </div>
+                  <div className="text-xs text-gray-400 mt-1">{supplier.company_size || 'Mid-market company'}</div>
                 </div>
-              </div>
-              
-              {/* Type d'organisation */}
-              <div className="group bg-white rounded-xl p-4 border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all duration-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl" style={{
-                    backgroundColor: (scores.criteria_match >= 60) ? '#dcfce7' : (scores.criteria_match >= 35) ? '#fef3c7' : '#fee2e2'
-                  }}>
-                    {(scores.criteria_match >= 60) ? '😊' : (scores.criteria_match >= 35) ? '😐' : '😞'}
+                
+                {/* Maturité */}
+                <div className="group">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-300 font-medium">Maturity Level</span>
+                    <span className="text-purple-400 font-bold text-sm">
+                      {(scores.criteria_match >= 65) ? 'MATURE' : (scores.criteria_match >= 40) ? 'GROWING' : 'EMERGING'}
+                    </span>
                   </div>
-                  <div className="flex-1">
-                    <div className="text-sm font-semibold text-gray-800 flex items-center gap-1">
-                      🏛️ Organization
-                    </div>
-                    <div className="text-xs text-gray-600 mt-1">{supplier.company_type || 'Private'}</div>
+                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${Math.max(25, scores.criteria_match + 5)}%` }}
+                    ></div>
                   </div>
+                  <div className="text-xs text-gray-400 mt-1">Well-established player</div>
+                </div>
+                
+                {/* Type d'organisation */}
+                <div className="group">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-gray-300 font-medium">Organization Fit</span>
+                    <span className="text-orange-400 font-bold text-sm">
+                      {(scores.criteria_match >= 60) ? 'ALIGNED' : (scores.criteria_match >= 35) ? 'COMPATIBLE' : 'DIFFERENT'}
+                    </span>
+                  </div>
+                  <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-gradient-to-r from-orange-500 to-red-500 rounded-full transition-all duration-1000 ease-out"
+                      style={{ width: `${Math.max(10, scores.criteria_match - 10)}%` }}
+                    ></div>
+                  </div>
+                  <div className="text-xs text-gray-400 mt-1">{supplier.company_type || 'Private enterprise'}</div>
                 </div>
               </div>
             </div>
