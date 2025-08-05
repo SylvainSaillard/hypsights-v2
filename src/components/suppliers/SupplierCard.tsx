@@ -153,6 +153,10 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
               <span>{getCompanySizeIcon(supplier.company_size)}</span>
               <span>{supplier.company_size || supplier.company_type || 'N/A'}</span>
             </div>
+            <div className="flex items-center gap-1 bg-white bg-opacity-20 rounded-full px-3 py-1">
+              <span>📋</span>
+              <span>{total_products} {total_products === 1 ? 'Product' : 'Products'}</span>
+            </div>
             {supplier.website && (
               <a 
                 href={supplier.website} 
