@@ -53,47 +53,47 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   // Fonction pour obtenir une couleur unique pour chaque solution
   const getSolutionBadgeColor = (solutionNumber?: number) => {
     const colors = [
-      'bg-blue-500',
-      'bg-green-500', 
-      'bg-purple-500',
-      'bg-orange-500',
-      'bg-pink-500',
-      'bg-indigo-500',
-      'bg-teal-500',
-      'bg-red-500',
-      'bg-yellow-500',
-      'bg-cyan-500'
+      { bg: 'bg-blue-600', border: 'border-blue-700', text: 'text-white' },
+      { bg: 'bg-green-600', border: 'border-green-700', text: 'text-white' },
+      { bg: 'bg-purple-600', border: 'border-purple-700', text: 'text-white' },
+      { bg: 'bg-orange-600', border: 'border-orange-700', text: 'text-white' },
+      { bg: 'bg-pink-600', border: 'border-pink-700', text: 'text-white' },
+      { bg: 'bg-indigo-600', border: 'border-indigo-700', text: 'text-white' },
+      { bg: 'bg-teal-600', border: 'border-teal-700', text: 'text-white' },
+      { bg: 'bg-red-600', border: 'border-red-700', text: 'text-white' },
+      { bg: 'bg-yellow-600', border: 'border-yellow-700', text: 'text-black' },
+      { bg: 'bg-cyan-600', border: 'border-cyan-700', text: 'text-white' }
     ];
     
-    if (!solutionNumber) return 'bg-gray-500';
-    return colors[(solutionNumber - 1) % colors.length] || 'bg-gray-500';
+    if (!solutionNumber) return { bg: 'bg-gray-600', border: 'border-gray-700', text: 'text-white' };
+    return colors[(solutionNumber - 1) % colors.length] || { bg: 'bg-gray-600', border: 'border-gray-700', text: 'text-white' };
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
-      {/* Badges des solutions associées */}
+      {/* Badges des solutions associées - Version très visible */}
       {solutions.length > 0 && (
-        <div className="px-6 pt-4 pb-2">
-          <div className="flex flex-wrap gap-3">
-            {solutions.map((solution) => (
-              <div 
-                key={solution.id}
-                className={`inline-flex flex-col px-4 py-2 rounded-xl text-white shadow-md border-l-4 border-white border-opacity-30 ${
-                  getSolutionBadgeColor(solution.solution_number)
-                } bg-gradient-to-r`}
-                style={{
-                  background: `linear-gradient(135deg, ${getSolutionBadgeColor(solution.solution_number).replace('bg-', '')} 0%, ${getSolutionBadgeColor(solution.solution_number).replace('bg-', '').replace('-500', '-600')} 100%)`
-                }}
-              >
-                <div className="flex items-center text-xs font-bold mb-1">
-                  <span className="mr-1">✓</span>
-                  Solution {solution.solution_number || '?'}
+        <div className="px-6 pt-6 pb-4">
+          <div className="flex flex-wrap gap-4">
+            {solutions.map((solution) => {
+              const colors = getSolutionBadgeColor(solution.solution_number);
+              return (
+                <div 
+                  key={solution.id}
+                  className={`inline-flex flex-col px-5 py-3 rounded-2xl shadow-lg border-2 transform hover:scale-105 transition-transform duration-200 ${
+                    colors.bg
+                  } ${colors.border} ${colors.text}`}
+                >
+                  <div className="flex items-center text-sm font-bold mb-1">
+                    <span className="mr-2 text-lg">✓</span>
+                    <span>Solution {solution.solution_number || '?'}</span>
+                  </div>
+                  <div className="text-sm font-semibold opacity-95 leading-tight max-w-[200px]">
+                    {solution.title}
+                  </div>
                 </div>
-                <div className="text-xs opacity-90 font-medium leading-tight">
-                  {solution.title}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
