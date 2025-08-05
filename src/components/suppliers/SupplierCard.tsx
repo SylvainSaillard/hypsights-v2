@@ -1,4 +1,5 @@
 import React from 'react';
+import { CheckCircle } from 'lucide-react';
 import type { SupplierGroup } from '../../types/supplierTypes';
 
 interface SupplierCardProps {
@@ -93,17 +94,20 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
         >
           <div className="flex items-center justify-between relative z-10">
             <div className="flex flex-wrap items-center gap-3">
-              {solutionColors.map((solution, index) => (
+                            {solutions.map((solution, index) => (
                 <div 
                   key={index}
-                  className="flex items-center gap-1.5 cursor-pointer rounded-full py-1 px-2 hover:bg-white/20 transition-all duration-200"
+                  className="bg-white/10 text-white px-3 py-1.5 rounded-full cursor-pointer hover:bg-white/20 transition-all duration-200"
                   title={`Filter by: ${solution.title}`}
-                  onClick={() => onSolutionSelect?.(solution.number)}
+                  onClick={() => solution.solution_number && onSolutionSelect?.(solution.solution_number)}
                 >
-                  <span className="text-sm">✓</span>
-                  <span className="text-sm font-semibold">
-                    Solution {solution.number}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle size={14} className="text-green-300 flex-shrink-0" />
+                    <span className="text-xs font-bold">Solution {solution.solution_number}</span>
+                  </div>
+                  <p className="text-white/70 text-[10px] pl-[20px] truncate max-w-[150px]">
+                    {solution.title}
+                  </p>
                 </div>
               ))}
             </div>
@@ -135,6 +139,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
           {/* Informations entreprise */}
           <div className="flex flex-wrap gap-3 text-sm">
+            
             <div className="flex items-center gap-1 bg-white bg-opacity-20 rounded-full px-3 py-1">
               <span>{getRegionFlag(supplier.region)}</span>
               <span>{supplier.country || supplier.region || 'N/A'}</span>
