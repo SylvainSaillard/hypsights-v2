@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { SupplierGroup } from '../../types/supplierTypes';
 
 interface SupplierCardProps {
@@ -10,7 +10,6 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   supplierGroup, 
   onViewDetails 
 }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
   const { supplier, solutions, scores, ai_explanation, total_products } = supplierGroup;
 
   const getScoreColor = (score: number) => {
@@ -74,17 +73,25 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
       {/* Badges des solutions associées */}
       {solutions.length > 0 && (
-        <div className="px-4 pt-4 pb-2">
-          <div className="flex flex-wrap gap-2">
+        <div className="px-6 pt-4 pb-2">
+          <div className="flex flex-wrap gap-3">
             {solutions.map((solution) => (
               <div 
                 key={solution.id}
-                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm ${
+                className={`inline-flex flex-col px-4 py-2 rounded-xl text-white shadow-md border-l-4 border-white border-opacity-30 ${
                   getSolutionBadgeColor(solution.solution_number)
-                }`}
+                } bg-gradient-to-r`}
+                style={{
+                  background: `linear-gradient(135deg, ${getSolutionBadgeColor(solution.solution_number).replace('bg-', '')} 0%, ${getSolutionBadgeColor(solution.solution_number).replace('bg-', '').replace('-500', '-600')} 100%)`
+                }}
               >
-                <span className="mr-1">✓</span>
-                Solution {solution.solution_number || '?'}
+                <div className="flex items-center text-xs font-bold mb-1">
+                  <span className="mr-1">✓</span>
+                  Solution {solution.solution_number || '?'}
+                </div>
+                <div className="text-xs opacity-90 font-medium leading-tight">
+                  {solution.title}
+                </div>
               </div>
             ))}
           </div>
@@ -193,55 +200,24 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           </div>
         )}
 
-        {/* Solutions et produits */}
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <h4 className="font-semibold text-gray-800">
-              Solutions & Products ({total_products} products)
-            </h4>
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1"
-            >
-              {isExpanded ? 'Show Less' : 'Show More'}
-              <svg 
-                className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
-
-          {/* Aperçu des solutions */}
-          <div className="space-y-2">
-            {solutions.slice(0, isExpanded ? solutions.length : 2).map((solution) => (
-              <div key={solution.id} className="bg-gray-50 rounded-lg p-3">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <div className="font-medium text-gray-800">
-                      {solution.solution_number ? `Solution #${solution.solution_number}` : solution.title}
-                    </div>
-                    {solution.solution_number && (
-                      <div className="text-sm text-gray-600 mt-1">{solution.title}</div>
-                    )}
-                    <div className="text-xs text-gray-500 mt-1">
-                      {solution.products.length} product{solution.products.length !== 1 ? 's' : ''}
-                    </div>
-                  </div>
+        {/* Résumé des produits */}
+        {total_products > 0 && (
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 mb-4 border border-gray-100">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-sm">📦</span>
+              </div>
+              <div>
+                <div className="text-sm font-semibold text-gray-800">
+                  {total_products} Product{total_products !== 1 ? 's' : ''} Available
                 </div>
+                <p className="text-xs text-gray-600">
+                  Across {solutions.length} solution{solutions.length !== 1 ? 's' : ''}
+                </p>
               </div>
-            ))}
-            
-            {!isExpanded && solutions.length > 2 && (
-              <div className="text-center text-sm text-gray-500 py-2">
-                +{solutions.length - 2} more solutions
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Actions */}
         <div className="flex gap-3 mt-6">
