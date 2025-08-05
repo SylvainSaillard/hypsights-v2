@@ -52,24 +52,22 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
   // Fonction pour obtenir les couleurs des solutions
   const getSolutionColors = () => {
-    const colorMap = {
-      1: '#3B82F6', // blue-500
-      2: '#10B981', // emerald-500  
-      3: '#8B5CF6', // violet-500
-      4: '#F59E0B', // amber-500
-      5: '#EF4444', // red-500
-      6: '#6366F1', // indigo-500
-      7: '#06B6D4', // cyan-500
-      8: '#84CC16', // lime-500
-      9: '#F97316', // orange-500
-      10: '#EC4899' // pink-500
-    };
-    
-    return solutions.map(solution => ({
-      number: solution.solution_number || 0,
-      title: solution.title,
-      color: colorMap[solution.solution_number as keyof typeof colorMap] || '#6B7280'
-    }));
+    const colors = [
+      '#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444',
+      '#6366F1', '#06B6D4', '#84CC16', '#F97316', '#EC4899'
+    ];
+
+    // Fonction de hash simple pour convertir un ID de solution en un index de couleur
+    const hashCode = (s: string) => s.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a }, 0);
+
+    return solutions.map(solution => {
+      const colorIndex = Math.abs(hashCode(solution.id)) % colors.length;
+      return {
+        number: solution.solution_number || 0,
+        title: solution.title,
+        color: colors[colorIndex] || '#6B7280'
+      };
+    });
   };
   
   const solutionColors = getSolutionColors();
@@ -85,9 +83,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
     return { background: `linear-gradient(90deg, ${gradientColors})` };
   };
   
-  // Debug: vérifier les couleurs
-  console.log('Solutions:', solutions.map(s => ({ num: s.solution_number, title: s.title })));
-  console.log('Solution colors:', solutionColors);
+
 
   return (
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
@@ -122,10 +118,17 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-4">
-            <div className="flex-1">
-              <h3 className="text-xl font-bold mb-2 leading-tight">
-                {supplier.name}
-              </h3>
+            <div className="relative z-10">
+              <a 
+                href={supplier.website || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                <h2 className="text-2xl font-bold mb-1 truncate" title={supplier.name}>
+                  {supplier.name}
+                </h2>
+              </a>
               <p className="text-blue-100 text-sm leading-relaxed">
                 {supplier.overview || supplier.description || 'No description available'}
               </p>
@@ -165,8 +168,11 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
       {/* Corps de la carte */}
       <div className="p-6">
-        {/* Scores détaillés */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        {/* Scores with AI Explanation Tooltip */}
+        <div 
+          className="grid grid-cols-3 gap-4 mb-6 relative group"
+          title={ai_explanation}
+        >
           {scores.solution_fit && (
             <div className="text-center">
               <div className="text-xs text-gray-500 mb-1">Solution Fit</div>
@@ -205,20 +211,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           )}
         </div>
 
-        {/* Explication IA */}
-        {ai_explanation && (
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 mb-4 border border-purple-100">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-sm">🧠</span>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-800 mb-1">AI Analysis</div>
-                <p className="text-sm text-gray-600 leading-relaxed">{ai_explanation}</p>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {/* Résumé des produits */}
         {total_products > 0 && (
