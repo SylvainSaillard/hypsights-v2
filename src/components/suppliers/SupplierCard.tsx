@@ -51,8 +51,45 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
     }
   };
 
+  // Fonction pour obtenir une couleur unique pour chaque solution
+  const getSolutionBadgeColor = (solutionNumber?: number) => {
+    const colors = [
+      'bg-blue-500',
+      'bg-green-500', 
+      'bg-purple-500',
+      'bg-orange-500',
+      'bg-pink-500',
+      'bg-indigo-500',
+      'bg-teal-500',
+      'bg-red-500',
+      'bg-yellow-500',
+      'bg-cyan-500'
+    ];
+    
+    if (!solutionNumber) return 'bg-gray-500';
+    return colors[(solutionNumber - 1) % colors.length] || 'bg-gray-500';
+  };
+
   return (
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
+      {/* Badges des solutions associées */}
+      {solutions.length > 0 && (
+        <div className="px-4 pt-4 pb-2">
+          <div className="flex flex-wrap gap-2">
+            {solutions.map((solution) => (
+              <div 
+                key={solution.id}
+                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold text-white shadow-sm ${
+                  getSolutionBadgeColor(solution.solution_number)
+                }`}
+              >
+                <span className="mr-1">✓</span>
+                Solution {solution.solution_number || '?'}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {/* Header avec gradient */}
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-6 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
