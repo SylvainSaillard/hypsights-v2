@@ -107,7 +107,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                     </span>
                   </div>
                   <span className="text-xs opacity-80 mt-0.5 leading-tight">
-                    {solution.title.length > 35 ? `${solution.title.substring(0, 35)}...` : solution.title}
+                    {solution.title && solution.title.length > 35 ? `${solution.title.substring(0, 35)}...` : (solution.title || 'No title')}
                   </span>
                 </div>
               ))}
