@@ -1,5 +1,4 @@
 import React from 'react';
-import { CheckCircle } from 'lucide-react';
 import type { SupplierGroup } from '../../types/supplierTypes';
 
 interface SupplierCardProps {
@@ -94,20 +93,22 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
         >
           <div className="flex items-center justify-between relative z-10">
             <div className="flex flex-wrap items-center gap-3">
-                            {solutions.map((solution, index) => (
+              {solutionColors.map((solution, index) => (
                 <div 
                   key={index}
-                  className="bg-white/10 text-white px-3 py-1.5 rounded-full cursor-pointer hover:bg-white/20 transition-all duration-200"
+                  className="flex flex-col cursor-pointer rounded-lg py-2 px-3 hover:bg-white/20 transition-all duration-200"
                   title={`Filter by: ${solution.title}`}
-                  onClick={() => solution.solution_number && onSolutionSelect?.(solution.solution_number)}
+                  onClick={() => onSolutionSelect?.(solution.number)}
                 >
                   <div className="flex items-center gap-1.5">
-                    <CheckCircle size={14} className="text-green-300 flex-shrink-0" />
-                    <span className="text-xs font-bold">Solution {solution.solution_number}</span>
+                    <span className="text-sm">✓</span>
+                    <span className="text-sm font-semibold">
+                      Solution {solution.number}
+                    </span>
                   </div>
-                  <p className="text-white/70 text-[10px] pl-[20px] truncate max-w-[150px]">
-                    {solution.title}
-                  </p>
+                  <span className="text-xs opacity-80 mt-0.5 leading-tight">
+                    {solution.title.length > 35 ? `${solution.title.substring(0, 35)}...` : solution.title}
+                  </span>
                 </div>
               ))}
             </div>
@@ -139,7 +140,6 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
           {/* Informations entreprise */}
           <div className="flex flex-wrap gap-3 text-sm">
-            
             <div className="flex items-center gap-1 bg-white bg-opacity-20 rounded-full px-3 py-1">
               <span>{getRegionFlag(supplier.region)}</span>
               <span>{supplier.country || supplier.region || 'N/A'}</span>
