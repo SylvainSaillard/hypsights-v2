@@ -71,26 +71,22 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
   return (
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
-      {/* Badges des solutions associées - Version très visible */}
+      {/* Badges des solutions associées - Version discrète */}
       {solutions.length > 0 && (
-        <div className="px-6 pt-6 pb-4">
-          <div className="flex flex-wrap gap-4">
+        <div className="px-6 pt-3 pb-2">
+          <div className="flex flex-wrap gap-2">
             {solutions.map((solution) => {
               const colors = getSolutionBadgeColor(solution.solution_number);
               return (
                 <div 
                   key={solution.id}
-                  className={`inline-flex flex-col px-5 py-3 rounded-2xl shadow-lg border-2 transform hover:scale-105 transition-transform duration-200 ${
+                  className={`inline-flex items-center px-3 py-1.5 rounded-lg shadow-sm border transform hover:scale-105 transition-all duration-200 ${
                     colors.bg
                   } ${colors.border} ${colors.text}`}
+                  title={solution.title} // Tooltip au survol pour voir le titre
                 >
-                  <div className="flex items-center text-sm font-bold mb-1">
-                    <span className="mr-2 text-lg">✓</span>
-                    <span>Solution {solution.solution_number || '?'}</span>
-                  </div>
-                  <div className="text-sm font-semibold opacity-95 leading-tight max-w-[200px]">
-                    {solution.title}
-                  </div>
+                  <span className="mr-1.5 text-xs">✓</span>
+                  <span className="text-xs font-semibold">Solution {solution.solution_number || '?'}</span>
                 </div>
               );
             })}
