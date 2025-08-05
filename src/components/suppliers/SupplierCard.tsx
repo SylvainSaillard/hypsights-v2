@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import type { SupplierGroup } from '../../types/supplierTypes';
 
 interface SupplierCardProps {
@@ -13,6 +14,16 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   onSolutionSelect
 }) => {
   const { supplier, solutions, scores, ai_explanation, total_products } = supplierGroup;
+  const navigate = useNavigate();
+  const { briefId } = useParams<{ briefId: string }>();
+
+  const handleViewDetails = () => {
+    if (briefId) {
+      navigate(`/dashboard/briefs/${briefId}/suppliers/${supplier.id}`);
+    } else if (onViewDetails) {
+      onViewDetails(supplier.id);
+    }
+  };
 
   const getCompanySizeIcon = (size?: string) => {
     switch (size?.toLowerCase()) {
@@ -349,7 +360,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
         {/* Actions */}
         <div className="flex gap-3 mt-6">
           <button
-            onClick={() => onViewDetails?.(supplier.id)}
+            onClick={handleViewDetails}
             className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-xl font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
           >
             View Details
