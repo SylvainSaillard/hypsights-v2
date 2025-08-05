@@ -7,6 +7,7 @@ interface SupplierCarouselProps {
   isLoading?: boolean;
   error?: string | null;
   onViewDetails?: (supplierId: string) => void;
+  onSolutionSelect?: (solutionNumber: number) => void;
   maxResults?: number;
 }
 
@@ -15,6 +16,7 @@ const SupplierCarousel: React.FC<SupplierCarouselProps> = ({
   isLoading = false,
   error = null,
   onViewDetails,
+  onSolutionSelect,
   maxResults = 10
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -178,6 +180,7 @@ const SupplierCarousel: React.FC<SupplierCarouselProps> = ({
               <SupplierCard
                 supplierGroup={supplierGroup}
                 onViewDetails={onViewDetails}
+                onSolutionSelect={onSolutionSelect}
               />
             </div>
           ))}

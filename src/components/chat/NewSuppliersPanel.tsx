@@ -11,7 +11,7 @@ interface NewSuppliersPanelProps {
 
 export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
   const { supplierGroups, isLoading, error } = useSupplierGroups({ briefId });
-  const [selectedSolutionId, setSelectedSolutionId] = useState<string>('all');
+  const [selectedSolutionNumber, setSelectedSolutionNumber] = useState<number | 'all'>('all');
 
   // Créer une liste unique de toutes les solutions pour le filtre
   const allSolutions = useMemo(() => {
@@ -32,13 +32,13 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
 
   // Filtrer les fournisseurs en fonction de la solution sélectionnée
   const filteredSupplierGroups = useMemo(() => {
-    if (selectedSolutionId === 'all') {
+    if (selectedSolutionNumber === 'all') {
       return supplierGroups;
     }
     return supplierGroups.filter(group => 
-      group.solutions.some(solution => solution.id === selectedSolutionId)
+      group.solutions.some(solution => solution.solution_number === selectedSolutionNumber)
     );
-  }, [supplierGroups, selectedSolutionId]);
+  }, [supplierGroups, selectedSolutionNumber]);
 
   if (isLoading) {
     return (
@@ -77,12 +77,15 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
                 id="solution-filter"
                 name="solution-filter"
                 className="appearance-none bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-gray-700 py-3 pl-4 pr-10 rounded-xl leading-tight focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-200 shadow-sm transition duration-200 ease-in-out min-w-[280px]"
-                value={selectedSolutionId}
-                onChange={(e) => setSelectedSolutionId(e.target.value)}
+                value={selectedSolutionNumber}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setSelectedSolutionNumber(value === 'all' ? 'all' : Number(value));
+                }}
               >
                 <option value="all">🔍 All Solutions ({supplierGroups.length} suppliers)</option>
                 {allSolutions.map(solution => (
-                  <option key={solution.id} value={solution.id}>
+                  <option key={solution.id} value={solution.number}>
                     ✓ Solution {solution.number}: {solution.name}
                   </option>
                 ))}
@@ -96,7 +99,7 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
           </div>
         </div>
       )}
-      <SupplierCarousel supplierGroups={filteredSupplierGroups} />
+      <SupplierCarousel supplierGroups={filteredSupplierGroups} onSolutionSelect={setSelectedSolutionNumber} />
     </div>
   );
 }

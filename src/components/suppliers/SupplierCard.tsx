@@ -4,11 +4,13 @@ import type { SupplierGroup } from '../../types/supplierTypes';
 interface SupplierCardProps {
   supplierGroup: SupplierGroup;
   onViewDetails?: (supplierId: string) => void;
+  onSolutionSelect?: (solutionNumber: number) => void;
 }
 
 const SupplierCard: React.FC<SupplierCardProps> = ({ 
   supplierGroup, 
-  onViewDetails 
+  onViewDetails,
+  onSolutionSelect
 }) => {
   const { supplier, solutions, scores, ai_explanation, total_products } = supplierGroup;
 
@@ -68,7 +70,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
     return solutions.map(solution => ({
       number: solution.solution_number || 0,
       title: solution.title,
-      color: colorMap[solution.solution_number as keyof typeof colorMap] || '#6B7280'
+      color: colorMap[(((solution.solution_number || 1) - 1) % 10 + 1) as keyof typeof colorMap] || '#6B7280'
     }));
   };
   
@@ -85,9 +87,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
     return { background: `linear-gradient(90deg, ${gradientColors})` };
   };
   
-  // Debug: vérifier les couleurs
-  console.log('Solutions:', solutions.map(s => ({ num: s.solution_number, title: s.title })));
-  console.log('Solution colors:', solutionColors);
+
 
   return (
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
@@ -102,8 +102,9 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
               {solutionColors.map((solution, index) => (
                 <div 
                   key={index}
-                  className="flex items-center gap-1.5"
-                  title={solution.title}
+                  className="flex items-center gap-1.5 cursor-pointer rounded-full py-1 px-2 hover:bg-white/20 transition-all duration-200"
+                  title={`Filter by: ${solution.title}`}
+                  onClick={() => onSolutionSelect?.(solution.number)}
                 >
                   <span className="text-sm">✓</span>
                   <span className="text-sm font-semibold">
