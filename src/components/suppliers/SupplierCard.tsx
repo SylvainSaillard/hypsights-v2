@@ -196,53 +196,79 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
         {/* Critères individuels */}
         {scores.criteria_match && (
-          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 mb-6 border border-gray-200">
-            <div className="text-sm font-semibold text-gray-800 mb-3 flex items-center gap-2">
-              <span className="text-blue-600">📋</span>
+          <div className="bg-gradient-to-br from-indigo-50 via-white to-purple-50 rounded-2xl p-5 mb-6 border border-indigo-100 shadow-sm">
+            <div className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <div className="w-6 h-6 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-xs">✓</span>
+              </div>
               Criteria Assessment
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               {/* Géographie */}
-              <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-gray-100">
-                <div className="text-lg">
-                  {(scores.criteria_match >= 75) ? '👍' : (scores.criteria_match >= 50) ? '👌' : '👎'}
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-gray-700">Geography</div>
-                  <div className="text-xs text-gray-500">{supplier.region || supplier.country || 'N/A'}</div>
+              <div className="group bg-white rounded-xl p-4 border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl" style={{
+                    backgroundColor: (scores.criteria_match >= 75) ? '#dcfce7' : (scores.criteria_match >= 50) ? '#fef3c7' : '#fee2e2'
+                  }}>
+                    {(scores.criteria_match >= 75) ? '😊' : (scores.criteria_match >= 50) ? '😐' : '😞'}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                      🌍 Geography
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">{supplier.region || supplier.country || 'Global'}</div>
+                  </div>
                 </div>
               </div>
               
               {/* Taille */}
-              <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-gray-100">
-                <div className="text-lg">
-                  {(scores.criteria_match >= 70) ? '👍' : (scores.criteria_match >= 45) ? '👌' : '👎'}
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-gray-700">Size</div>
-                  <div className="text-xs text-gray-500">{supplier.company_size || 'N/A'}</div>
+              <div className="group bg-white rounded-xl p-4 border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl" style={{
+                    backgroundColor: (scores.criteria_match >= 70) ? '#dcfce7' : (scores.criteria_match >= 45) ? '#fef3c7' : '#fee2e2'
+                  }}>
+                    {(scores.criteria_match >= 70) ? '😊' : (scores.criteria_match >= 45) ? '😐' : '😞'}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                      🏢 Company Size
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">{supplier.company_size || 'Medium'}</div>
+                  </div>
                 </div>
               </div>
               
               {/* Maturité */}
-              <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-gray-100">
-                <div className="text-lg">
-                  {(scores.criteria_match >= 65) ? '👍' : (scores.criteria_match >= 40) ? '👌' : '👎'}
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-gray-700">Maturity</div>
-                  <div className="text-xs text-gray-500">Established</div>
+              <div className="group bg-white rounded-xl p-4 border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl" style={{
+                    backgroundColor: (scores.criteria_match >= 65) ? '#dcfce7' : (scores.criteria_match >= 40) ? '#fef3c7' : '#fee2e2'
+                  }}>
+                    {(scores.criteria_match >= 65) ? '😊' : (scores.criteria_match >= 40) ? '😐' : '😞'}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                      ⭐ Maturity
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">Established</div>
+                  </div>
                 </div>
               </div>
               
               {/* Type d'organisation */}
-              <div className="flex items-center gap-2 bg-white rounded-lg p-3 border border-gray-100">
-                <div className="text-lg">
-                  {(scores.criteria_match >= 60) ? '👍' : (scores.criteria_match >= 35) ? '👌' : '👎'}
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-gray-700">Type</div>
-                  <div className="text-xs text-gray-500">{supplier.company_type || 'Private'}</div>
+              <div className="group bg-white rounded-xl p-4 border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all duration-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center text-2xl" style={{
+                    backgroundColor: (scores.criteria_match >= 60) ? '#dcfce7' : (scores.criteria_match >= 35) ? '#fef3c7' : '#fee2e2'
+                  }}>
+                    {(scores.criteria_match >= 60) ? '😊' : (scores.criteria_match >= 35) ? '😐' : '😞'}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                      🏛️ Organization
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">{supplier.company_type || 'Private'}</div>
+                  </div>
                 </div>
               </div>
             </div>
