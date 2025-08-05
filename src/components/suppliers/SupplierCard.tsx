@@ -84,7 +84,12 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
+    <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-indigo-500/20 transition-all duration-300 transform hover:-translate-y-2 border-2 border-gray-200 hover:border-indigo-300 overflow-hidden relative group">
+      {/* Bordure colorée en haut */}
+      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 group-hover:h-1.5 transition-all duration-300"></div>
+      
+      {/* Effet de brillance sur toute la carte */}
+      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-x-12 translate-x-full group-hover:translate-x-[-100%] transition-transform duration-1000 ease-out pointer-events-none"></div>
       {/* Barre de solution intégrée avec couleurs distinctes */}
       {solutions.length > 0 && (
         <div 
