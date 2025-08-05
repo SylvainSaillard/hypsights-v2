@@ -50,47 +50,67 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
     }
   };
 
-  // Fonction pour obtenir une couleur unique pour chaque solution
-  const getSolutionBadgeColor = (solutionNumber?: number) => {
-    const colors = [
-      { bg: 'bg-blue-600', border: 'border-blue-700', text: 'text-white' },
-      { bg: 'bg-green-600', border: 'border-green-700', text: 'text-white' },
-      { bg: 'bg-purple-600', border: 'border-purple-700', text: 'text-white' },
-      { bg: 'bg-orange-600', border: 'border-orange-700', text: 'text-white' },
-      { bg: 'bg-pink-600', border: 'border-pink-700', text: 'text-white' },
-      { bg: 'bg-indigo-600', border: 'border-indigo-700', text: 'text-white' },
-      { bg: 'bg-teal-600', border: 'border-teal-700', text: 'text-white' },
-      { bg: 'bg-red-600', border: 'border-red-700', text: 'text-white' },
-      { bg: 'bg-yellow-600', border: 'border-yellow-700', text: 'text-black' },
-      { bg: 'bg-cyan-600', border: 'border-cyan-700', text: 'text-white' }
-    ];
+  // Fonction pour obtenir les couleurs des solutions
+  const getSolutionColors = () => {
+    const colorMap = {
+      1: '#3B82F6', // blue-500
+      2: '#10B981', // emerald-500  
+      3: '#8B5CF6', // violet-500
+      4: '#F59E0B', // amber-500
+      5: '#EF4444', // red-500
+      6: '#6366F1', // indigo-500
+      7: '#06B6D4', // cyan-500
+      8: '#84CC16', // lime-500
+      9: '#F97316', // orange-500
+      10: '#EC4899' // pink-500
+    };
     
-    if (!solutionNumber) return { bg: 'bg-gray-600', border: 'border-gray-700', text: 'text-white' };
-    return colors[(solutionNumber - 1) % colors.length] || { bg: 'bg-gray-600', border: 'border-gray-700', text: 'text-white' };
+    return solutions.map(solution => ({
+      number: solution.solution_number || 0,
+      title: solution.title,
+      color: colorMap[solution.solution_number as keyof typeof colorMap] || '#6B7280'
+    }));
+  };
+  
+  const solutionColors = getSolutionColors();
+  
+  // Créer le style de background pour la barre du haut
+  const getHeaderStyle = () => {
+    if (solutionColors.length === 0) return { backgroundColor: '#6B7280' };
+    if (solutionColors.length === 1) {
+      return { backgroundColor: solutionColors[0].color };
+    }
+    // Gradient pour plusieurs solutions
+    const gradientColors = solutionColors.map(s => s.color).join(', ');
+    return { background: `linear-gradient(90deg, ${gradientColors})` };
   };
 
   return (
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
-      {/* Badges des solutions associées - Version discrète */}
+      {/* Barre de solution intégrée */}
       {solutions.length > 0 && (
-        <div className="px-6 pt-3 pb-2">
-          <div className="flex flex-wrap gap-2">
-            {solutions.map((solution) => {
-              const colors = getSolutionBadgeColor(solution.solution_number);
-              return (
+        <div 
+          className="w-full py-3 px-6 text-white relative overflow-hidden"
+          style={getHeaderStyle()}
+        >
+          <div className="flex items-center justify-between relative z-10">
+            <div className="flex flex-wrap items-center gap-3">
+              {solutionColors.map((solution, index) => (
                 <div 
-                  key={solution.id}
-                  className={`inline-flex items-center px-3 py-1.5 rounded-lg shadow-sm border transform hover:scale-105 transition-all duration-200 ${
-                    colors.bg
-                  } ${colors.border} ${colors.text}`}
-                  title={solution.title} // Tooltip au survol pour voir le titre
+                  key={index}
+                  className="flex items-center gap-1.5"
+                  title={solution.title}
                 >
-                  <span className="mr-1.5 text-xs">✓</span>
-                  <span className="text-xs font-semibold">Solution {solution.solution_number || '?'}</span>
+                  <span className="text-sm">✓</span>
+                  <span className="text-sm font-semibold">
+                    Solution {solution.number}
+                  </span>
                 </div>
-              );
-            })}
+              ))}
+            </div>
           </div>
+          {/* Effet de brillance subtil */}
+          <div className="absolute top-0 right-0 w-32 h-full bg-white opacity-10 transform skew-x-12"></div>
         </div>
       )}
       {/* Header avec gradient */}
