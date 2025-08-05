@@ -14,12 +14,6 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 }) => {
   const { supplier, solutions, scores, ai_explanation, total_products } = supplierGroup;
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'from-green-500 to-emerald-600';
-    if (score >= 60) return 'from-yellow-500 to-orange-500';
-    return 'from-red-500 to-pink-600';
-  };
-
   const getCompanySizeIcon = (size?: string) => {
     switch (size?.toLowerCase()) {
       case 'startup':
@@ -167,7 +161,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
       {/* Corps de la carte */}
       <div className="p-6">
         {/* Scores principaux avec design moderne */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 gap-4 mb-6">
           {scores.solution_fit && (
             <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-5 overflow-hidden">
               {/* Effet de brillance */}
