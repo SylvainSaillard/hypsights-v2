@@ -84,10 +84,14 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
     const gradientColors = solutionColors.map(s => s.color).join(', ');
     return { background: `linear-gradient(90deg, ${gradientColors})` };
   };
+  
+  // Debug: vérifier les couleurs
+  console.log('Solutions:', solutions.map(s => ({ num: s.solution_number, title: s.title })));
+  console.log('Solution colors:', solutionColors);
 
   return (
     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 overflow-hidden">
-      {/* Barre de solution intégrée */}
+      {/* Barre de solution intégrée avec couleurs distinctes */}
       {solutions.length > 0 && (
         <div 
           className="w-full py-3 px-6 text-white relative overflow-hidden"
@@ -109,7 +113,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
               ))}
             </div>
           </div>
-          {/* Effet de brillance subtil */}
+          {/* Effet de brillance subtil - gardé car très sympa */}
           <div className="absolute top-0 right-0 w-32 h-full bg-white opacity-10 transform skew-x-12"></div>
         </div>
       )}
