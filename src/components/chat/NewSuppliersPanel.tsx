@@ -65,7 +65,7 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
+    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 pt-8">
       {allSolutions.length > 1 && (
         <div className="mb-6 flex justify-end">
           <div className="relative">
