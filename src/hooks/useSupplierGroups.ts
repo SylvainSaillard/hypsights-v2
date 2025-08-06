@@ -27,10 +27,14 @@ export const useSupplierGroups = ({
     setError(null);
 
     try {
-      // Récupérer les données de supplier_matches
+      // Récupérer les données avec jointure pour avoir l'URL
       const { data: supplierMatches, error: fetchError } = await supabase
-        .from('supplier_matches')
-        .select('*')
+        .from('supplier_match_profiles')
+        .select(`
+          *,
+          suppliers!inner(id, name, description, url, country, company_overview, logo_url, available_products, key_features, region, company_type, company_size),
+          solutions!left(id, title, solution_number)
+        `)
         .eq('brief_id', briefId)
         .order('overall_match_score', { ascending: false });
 
@@ -67,26 +71,28 @@ export const useSupplierGroups = ({
   };
 };
 
-// Fonction pour grouper les supplier_matches par fournisseur
+// Fonction pour grouper les supplier_match_profiles par fournisseur
 function groupSuppliersBySupplier(supplierMatches: any[]): SupplierGroup[] {
   const supplierMap = new Map<string, SupplierGroup>();
 
   supplierMatches.forEach((match: any) => {
     const supplierId = match.supplier_id;
+    const supplier = match.suppliers; // Données du fournisseur depuis la jointure
     
     if (!supplierMap.has(supplierId)) {
       // Créer un nouveau groupe fournisseur
       supplierMap.set(supplierId, {
         supplier: {
-          id: match.supplier_id,
-          name: match.supplier_name,
-          description: match.description || 'No description available',
-          overview: match.company_overview || match.description || 'No overview available',
-          country: match.country || 'N/A',
-          region: getRegionFromCountry(match.country),
-          company_size: 'N/A', // À enrichir plus tard
-          company_type: 'N/A', // À enrichir plus tard
-          website: match.website,
+          id: supplier.id,
+          name: supplier.name,
+          description: supplier.description || 'No description available',
+          overview: supplier.company_overview || supplier.description || 'No overview available',
+          country: supplier.country || 'N/A',
+          region: supplier.region || getRegionFromCountry(supplier.country),
+          company_size: supplier.company_size || 'N/A',
+          company_type: supplier.company_type || 'N/A',
+          website: supplier.url, // Pour compatibilité
+          url: supplier.url,
           created_at: new Date().toISOString(),
           brief_id: match.brief_id
         },
@@ -106,14 +112,14 @@ function groupSuppliersBySupplier(supplierMatches: any[]): SupplierGroup[] {
     
     // Ajouter la solution si elle n'existe pas déjà
     const existingSolution = supplierGroup.solutions.find(s => s.id === match.solution_id);
-    if (!existingSolution) {
-      const products = match.available_products ? 
-        (Array.isArray(match.available_products) ? match.available_products : [match.available_products]) : [];
+    if (!existingSolution && match.solutions) {
+      const products = supplier.available_products ? 
+        (Array.isArray(supplier.available_products) ? supplier.available_products : [supplier.available_products]) : [];
       
       supplierGroup.solutions.push({
         id: match.solution_id,
-        title: match.solution_name,
-        solution_number: match.solution_number,
+        title: match.solutions.title,
+        solution_number: match.solutions.solution_number,
         products: products.map((product: any, index: number) => ({
           id: `${match.supplier_id}-product-${index}`,
           name: typeof product === 'string' ? product : product.name || 'Unknown Product',
