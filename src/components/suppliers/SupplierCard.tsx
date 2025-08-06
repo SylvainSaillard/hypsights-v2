@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { SupplierGroup } from '../../types/supplierTypes';
+import { useSupplierProducts } from '../../hooks/useSupplierProducts';
 
 interface SupplierCardProps {
   supplierGroup: SupplierGroup;
@@ -13,9 +14,16 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   onViewDetails,
   onSolutionSelect
 }) => {
-  const { supplier, solutions, scores, ai_explanation, total_products } = supplierGroup;
+  const { supplier, solutions, scores, ai_explanation } = supplierGroup;
   const navigate = useNavigate();
   const { briefId } = useParams<{ briefId: string }>();
+  
+  // Récupérer le vrai nombre de produits depuis la table products
+  const { products } = useSupplierProducts({
+    supplierId: supplier.id,
+    briefId: briefId,
+    enabled: true
+  });
 
   const handleViewDetails = () => {
     if (briefId) {
@@ -166,7 +174,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
             </div>
             <div className="flex items-center gap-1 bg-white bg-opacity-20 rounded-full px-3 py-1">
               <span>📋</span>
-              <span>{total_products} {total_products === 1 ? 'Product' : 'Products'}</span>
+              <span>{products.length} {products.length === 1 ? 'Product' : 'Products'}</span>
             </div>
             {supplier.url && (
               <a 
@@ -342,7 +350,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
         )}
 
         {/* Résumé des produits */}
-        {total_products > 0 && (
+        {products.length > 0 && (
           <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 mb-4 border border-gray-100">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -350,7 +358,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
               </div>
               <div>
                 <div className="text-sm font-semibold text-gray-800">
-                  {total_products} Product{total_products !== 1 ? 's' : ''} Available
+                  {products.length} Product{products.length !== 1 ? 's' : ''} Available
                 </div>
                 <p className="text-xs text-gray-600">
                   Across {solutions.length} solution{solutions.length !== 1 ? 's' : ''}
