@@ -3,12 +3,20 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, Globe, Building2, Users, Package, Star, TrendingUp } from 'lucide-react';
 import type { SupplierGroup } from '../../types/supplierTypes';
 import { useSupplierGroups } from '../../hooks/useSupplierGroups';
+import { useSupplierProducts } from '../../hooks/useSupplierProducts';
 
 const SupplierDetailPage: React.FC = () => {
   const { supplierId, briefId } = useParams<{ supplierId: string; briefId: string }>();
   const navigate = useNavigate();
   const { supplierGroups, isLoading } = useSupplierGroups({ briefId: briefId || '' });
   const [supplier, setSupplier] = useState<SupplierGroup | null>(null);
+  
+  // Récupérer les vrais produits depuis la table products
+  const { products, isLoading: productsLoading } = useSupplierProducts({
+    supplierId: supplierId || '',
+    briefId: briefId,
+    enabled: !!supplierId
+  });
 
   useEffect(() => {
     if (supplierGroups.length > 0 && supplierId) {
@@ -317,67 +325,83 @@ const SupplierDetailPage: React.FC = () => {
             <div className="w-2 h-8 bg-gradient-to-b from-blue-500 to-indigo-500 rounded-full"></div>
             <h3 className="text-2xl font-bold text-gray-800">Products & Solutions</h3>
             <div className="ml-auto bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
-              {supplier.total_products} Products Found
+              {productsLoading ? 'Loading...' : `${products.length} Products Found`}
             </div>
           </div>
 
-          {supplier.solutions.length > 0 ? (
-            <div className="space-y-6">
-              {supplier.solutions.map((solution, solutionIndex) => (
-                <div key={solution.id} className="border border-gray-200 rounded-xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-lg flex items-center justify-center text-white font-bold text-sm">
-                      {solution.solution_number || solutionIndex + 1}
-                    </div>
-                    <h4 className="text-xl font-bold text-gray-800">{solution.title}</h4>
+          {productsLoading ? (
+            <div className="text-center py-12">
+              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-500">Loading products...</p>
+            </div>
+          ) : products.length > 0 ? (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {products.map((product) => (
+                <div key={product.id} className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+                  <div className="flex items-start justify-between mb-4">
+                    <h5 className="font-bold text-gray-800 text-lg leading-tight">{product.name}</h5>
+                    {product.price_range && (
+                      <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium ml-3">
+                        {typeof product.price_range === 'object' ? 'Pricing Available' : product.price_range}
+                      </div>
+                    )}
                   </div>
-
-                  {solution.products.length > 0 ? (
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                      {solution.products.map((product) => (
-                        <div key={product.id} className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-4 border border-gray-200">
-                          <h5 className="font-semibold text-gray-800 mb-2">{product.name}</h5>
-                          <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                            {product.description || 'No description available'}
-                          </p>
-                          
-                          {/* Encarts IA pour chaque produit */}
-                          <div className="space-y-3">
-                            <div className="bg-blue-900 rounded-lg p-3">
-                              <div className="flex items-start gap-2">
-                                <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
-                                  <span className="text-black text-xs font-bold">AI</span>
-                                </div>
-                                <div>
-                                  <div className="text-blue-200 text-xs font-medium mb-1">Solution Fit Analysis</div>
-                                  <p className="text-blue-100 text-xs leading-relaxed">
-                                    This product directly addresses your solution requirements with innovative features and proven market success.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="bg-emerald-900 rounded-lg p-3">
-                              <div className="flex items-start gap-2">
-                                <div className="w-5 h-5 bg-emerald-400 rounded-full flex items-center justify-center flex-shrink-0">
-                                  <span className="text-black text-xs font-bold">AI</span>
-                                </div>
-                                <div>
-                                  <div className="text-emerald-200 text-xs font-medium mb-1">Brief Fit Analysis</div>
-                                  <p className="text-emerald-100 text-xs leading-relaxed">
-                                    Excellent alignment with your brief specifications and project timeline requirements.
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                  
+                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                    {product.description || 'No description available'}
+                  </p>
+                  
+                  {/* Features si disponibles */}
+                  {product.features && (
+                    <div className="mb-4">
+                      <h6 className="font-semibold text-gray-700 text-sm mb-2">Key Features:</h6>
+                      <div className="text-xs text-gray-600">
+                        {typeof product.features === 'object' ? (
+                          <pre className="whitespace-pre-wrap">{JSON.stringify(product.features, null, 2)}</pre>
+                        ) : (
+                          <p>{product.features}</p>
+                        )}
+                      </div>
                     </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      <Package className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-                      <p>No products available for this solution</p>
+                  )}
+                  
+                  {/* Encarts IA pour chaque produit */}
+                  <div className="space-y-3">
+                    <div className="bg-blue-900 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-black text-xs font-bold">AI</span>
+                        </div>
+                        <div>
+                          <div className="text-blue-200 text-xs font-medium mb-1">Solution Fit Analysis</div>
+                          <p className="text-blue-100 text-xs leading-relaxed">
+                            This product directly addresses your solution requirements with innovative features and proven market success.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-emerald-900 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <div className="w-5 h-5 bg-emerald-400 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-black text-xs font-bold">AI</span>
+                        </div>
+                        <div>
+                          <div className="text-emerald-200 text-xs font-medium mb-1">Brief Fit Analysis</div>
+                          <p className="text-emerald-100 text-xs leading-relaxed">
+                            Excellent alignment with your brief specifications and project timeline requirements.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Metadata si disponible */}
+                  {product.metadata && (
+                    <div className="mt-4 pt-3 border-t border-gray-200">
+                      <p className="text-xs text-gray-500">
+                        Created: {new Date(product.created_at).toLocaleDateString()}
+                      </p>
                     </div>
                   )}
                 </div>
