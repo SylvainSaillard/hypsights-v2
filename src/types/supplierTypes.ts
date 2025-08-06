@@ -9,6 +9,7 @@ export interface EnrichedSupplier {
   company_size?: string;
   company_type?: string;
   website?: string;
+  url?: string;
   created_at: string;
   brief_id: string;
 }

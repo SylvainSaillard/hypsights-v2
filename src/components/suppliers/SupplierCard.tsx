@@ -168,9 +168,9 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
               <span>📋</span>
               <span>{total_products} {total_products === 1 ? 'Product' : 'Products'}</span>
             </div>
-            {supplier.website && (
+            {supplier.url && (
               <a 
-                href={supplier.website} 
+                href={supplier.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-300/30 rounded-full px-4 py-1.5 hover:from-blue-500/30 hover:to-indigo-500/30 hover:border-blue-300/50 transition-all duration-200 shadow-sm hover:shadow-md"
