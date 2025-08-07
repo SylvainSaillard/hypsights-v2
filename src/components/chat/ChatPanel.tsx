@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import type { ChatMessage } from './ChatInterface';
 import { useI18n } from '../../contexts/I18nContext';
 
@@ -28,14 +28,13 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
   onRefresh
 }) => {
   const { t } = useI18n();
-  // Références pour faire défiler vers le bas automatiquement - DÉSACTIVÉ TEMPORAIREMENT
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const messagesContainerRef = useRef<HTMLDivElement>(null);
-  
-  // Auto-scrolling désactivé pour tester si c'est la cause du problème d'affichage
-  // useEffect(() => {
-  //   // Code d'auto-scrolling désactivé
-  // }, [messages]);
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
   
   return (
     <div className="flex flex-col h-full">
@@ -65,7 +64,7 @@ const ChatPanel: React.FC<ChatPanelProps> = ({
       </div>
       
       {/* Messages - flex-1 to take remaining space */}
-      <div ref={messagesContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && !isLoading && (
           <div className="text-center text-gray-500 py-8">
             {t('chat_panel.no_messages', 'No messages. Start the conversation!')}

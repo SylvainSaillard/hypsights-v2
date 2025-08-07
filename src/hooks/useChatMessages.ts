@@ -91,7 +91,7 @@ export function useChatMessages(briefId: string) {
       console.log('useChatMessages - Cleaning up subscription');
       api.supabase.removeChannel(chatChannel);
     };
-  }, [briefId, loadMessages]);
+  }, [briefId]);
   
   return {
     messages,
