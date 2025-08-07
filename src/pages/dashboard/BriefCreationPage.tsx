@@ -76,7 +76,7 @@ const BriefCreationPage: React.FC = () => {
               };
 
               console.log('Calling N8N brief_initialisation webhook with payload:', n8nPayload);
-              const n8nResponse = await fetch('https://n8n.proxiwave.com/webhook/brief_initialisation', {
+              const n8nResponse = await fetch('https://n8n.proxiwave.app/webhook/brief_initialisation', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(n8nPayload),
