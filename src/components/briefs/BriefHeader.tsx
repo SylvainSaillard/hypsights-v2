@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
+import { useBriefKPIs } from '../../hooks/useBriefKPIs';
 import { useI18n } from '../../contexts/I18nContext';
 import { AlertTriangle, BarChart2, Building2, CheckSquare, ChevronDown, FileText, Lightbulb, MapPin, Package, Star, TrendingUp, Users, Wrench } from 'lucide-react';
+import AnimatedKpiCard from './AnimatedKpiCard';
 
 // --- TYPE INTERFACES ---
 interface BriefHeaderProps {
@@ -31,19 +33,7 @@ interface BriefHeaderData {
 
 // --- UI COMPONENTS ---
 
-const KpiCard: React.FC<{ title: string; value: number; icon: React.ReactNode; color: string }> = ({ title, value, icon, color }) => (
-    <div className={`bg-slate-800 p-4 rounded-lg border border-slate-700 flex justify-between items-center`}>
-        <div>
-            <div className="flex items-baseline space-x-2">
-                <span className="text-4xl font-bold text-white">{value}</span>
-            </div>
-            <p className="text-slate-400 text-sm">{title}</p>
-        </div>
-        <div className={`p-3 rounded-lg`} style={{ backgroundColor: color }}>
-            {icon}
-        </div>
-    </div>
-);
+
 
 const FilterGroup: React.FC<{ title: string; items: string[]; icon: React.ReactNode }> = ({ title, items, icon }) => (
     <div className="mb-8">
@@ -119,17 +109,20 @@ const DetailItem: React.FC<{ icon?: React.ReactNode; label: string; value?: stri
 const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
     const { t } = useI18n();
     const [detailsVisible, setDetailsVisible] = useState(false);
-
-  const { data, loading, error } = useEdgeFunction('brief-header-data', 
-    { brief_id: briefId }, 
-    { 
-      method: 'POST',
-      enabled: !!briefId, // Only run query if briefId is available
-    }
-  );
-
-    if (loading) return <BriefHeaderSkeleton />;
     
+    // Hook principal pour les données du brief
+    const { data, loading, error } = useEdgeFunction(
+        'brief-header-data',
+        { action: 'get_brief_header_data', brief_id: briefId }
+    );
+    
+    // Hook spécialisé pour les KPIs avec temps réel et animations
+    const { kpiData, isLoading: kpiLoading } = useBriefKPIs(briefId);
+
+    if (loading || kpiLoading) {
+        return <BriefHeaderSkeleton />;
+    }
+
     if (error) return (
         <div className="bg-red-900/20 border border-red-500/30 text-red-400 p-4 rounded-lg mb-6" role="alert">
             <div className="flex items-center">
@@ -141,9 +134,36 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
 
     const headerData = data?.data as BriefHeaderData | undefined;
 
-    if (!headerData) return null;
+    if (!headerData) {
+        return <BriefHeaderSkeleton />;
+    }
 
-    const { title, description, created_at, solutions_count, suppliers_count, products_count, fast_searches_used, geographies, organization_types, capabilities, maturity, reference_companies } = headerData;
+    const {
+        title,
+        description,
+        created_at,
+        geographies,
+        organization_types,
+        capabilities,
+        maturity,
+        reference_companies
+    } = headerData;
+    
+    // Utiliser les KPIs du hook spécialisé pour les animations
+    const {
+        solutions_count,
+        suppliers_count,
+        products_count,
+        fast_searches_used,
+        solutions_count_prev,
+        suppliers_count_prev,
+        products_count_prev,
+        fast_searches_used_prev,
+        solutions_count_changed,
+        suppliers_count_changed,
+        products_count_changed,
+        fast_searches_used_changed
+    } = kpiData;
 
     const filterCards = [
         { key: 'geographies', title: t('brief.header.filters.geographies', 'Geographies'), items: geographies, icon: <MapPin size={16} /> },
@@ -161,10 +181,38 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
             <p className="text-slate-400 text-sm mb-6 ml-10">{new Date(created_at).toLocaleDateString()}</p>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                <KpiCard title={t('brief.header.kpi.companies', 'Companies')} value={suppliers_count} icon={<Building2 size={20} className="text-blue-200" />} color="#2563eb40" />
-                <KpiCard title={t('brief.header.kpi.products', 'Products')} value={products_count} icon={<Package size={20} className="text-purple-200" />} color="#7c3aed40" />
-                <KpiCard title={t('brief.header.kpi.solutions', 'Solutions')} value={solutions_count} icon={<Lightbulb size={20} className="text-amber-200" />} color="#d9770640" />
-                <KpiCard title={t('brief.header.kpi.fast_searches', 'Fast Searches')} value={fast_searches_used ?? 0} icon={<BarChart2 size={20} className="text-green-200" />} color="#16a34a40" />
+                <AnimatedKpiCard 
+                    title={t('brief.header.kpi.companies', 'Companies')} 
+                    value={suppliers_count} 
+                    previousValue={suppliers_count_prev}
+                    hasChanged={suppliers_count_changed}
+                    icon={<Building2 size={20} className="text-blue-200" />} 
+                    color="#2563eb40" 
+                />
+                <AnimatedKpiCard 
+                    title={t('brief.header.kpi.products', 'Products')} 
+                    value={products_count} 
+                    previousValue={products_count_prev}
+                    hasChanged={products_count_changed}
+                    icon={<Package size={20} className="text-purple-200" />} 
+                    color="#7c3aed40" 
+                />
+                <AnimatedKpiCard 
+                    title={t('brief.header.kpi.solutions', 'Solutions')} 
+                    value={solutions_count} 
+                    previousValue={solutions_count_prev}
+                    hasChanged={solutions_count_changed}
+                    icon={<Lightbulb size={20} className="text-amber-200" />} 
+                    color="#d9770640" 
+                />
+                <AnimatedKpiCard 
+                    title={t('brief.header.kpi.fast_searches', 'Fast Searches')} 
+                    value={fast_searches_used} 
+                    previousValue={fast_searches_used_prev}
+                    hasChanged={fast_searches_used_changed}
+                    icon={<BarChart2 size={20} className="text-green-200" />} 
+                    color="#16a34a40" 
+                />
             </div>
 
             {reference_companies && reference_companies.length > 0 && (
