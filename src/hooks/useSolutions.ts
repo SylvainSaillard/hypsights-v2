@@ -83,9 +83,16 @@ export function useSolutions(briefId: string, onSolutionValidated?: (solutionId:
         filter: `brief_id=eq.${briefId}`
       }, (payload) => {
         console.log('useSolutions - Solution change detected:', payload);
-        
-        // Rafraîchir toutes les solutions pour avoir l'état le plus récent
-        loadSolutions();
+
+        if (payload.eventType === 'INSERT') {
+          setSolutions(prev => [...prev, payload.new as Solution]);
+        } else if (payload.eventType === 'UPDATE') {
+          setSolutions(prev => 
+            prev.map(s => s.id === (payload.new as Solution).id ? (payload.new as Solution) : s)
+          );
+        } else if (payload.eventType === 'DELETE') {
+          setSolutions(prev => prev.filter(s => s.id !== (payload.old as Solution).id));
+        }
       })
       .subscribe((status) => {
         console.log('useSolutions - Solutions subscription status:', status);
@@ -99,7 +106,7 @@ export function useSolutions(briefId: string, onSolutionValidated?: (solutionId:
       console.log('useSolutions - Cleaning up subscription');
       api.supabase.removeChannel(solutionsChannel);
     };
-  }, [briefId, loadSolutions]);
+  }, [briefId]);
   
   return {
     solutions,
