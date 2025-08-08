@@ -79,17 +79,19 @@ const AnimatedKpiCard: React.FC<AnimatedKpiCardProps> = ({
     <div className="relative group">
       <div className={`
         relative overflow-hidden
-        bg-gradient-to-br from-slate-800 via-slate-800 to-slate-900
-        border border-slate-700/50
-        rounded-xl
-        p-6
+        bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900
+        border-2 border-blue-500/30
+        rounded-2xl
+        p-8
+        shadow-2xl shadow-slate-900/50
         transition-all duration-500 ease-out
-        hover:border-slate-600/70
-        hover:shadow-2xl hover:shadow-slate-900/50
-        hover:-translate-y-1
+        hover:border-blue-400/50
+        hover:shadow-2xl hover:shadow-blue-500/20
+        hover:-translate-y-2
+        hover:scale-105
         ${
           isAnimating 
-            ? 'ring-2 ring-blue-500/30 shadow-2xl shadow-blue-500/20 scale-[1.02] border-blue-500/50' 
+            ? 'ring-4 ring-blue-500/50 shadow-2xl shadow-blue-500/30 scale-110 border-blue-400/70' 
             : ''
         }
       `}>
