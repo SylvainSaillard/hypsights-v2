@@ -1,6 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
+// Styles CSS pour les animations personnalisées
+const customStyles = `
+  @keyframes gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+`;
+
+// Injecter les styles dans le document
+if (typeof document !== 'undefined' && !document.getElementById('kpi-animations')) {
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'kpi-animations';
+  styleSheet.textContent = customStyles;
+  document.head.appendChild(styleSheet);
+}
+
 interface AnimatedKpiCardProps {
   title: string;
   value: number;
@@ -58,48 +74,131 @@ const AnimatedKpiCard: React.FC<AnimatedKpiCardProps> = ({
   
   // Calculer la tendance
   const trend = hasChanged ? (value > previousValue ? 'up' : value < previousValue ? 'down' : 'stable') : 'stable';
-  const trendColor = trend === 'up' ? 'text-green-400' : trend === 'down' ? 'text-red-400' : 'text-gray-400';
   
   return (
-    <div className={`bg-slate-800 p-4 rounded-lg border border-slate-700 flex justify-between items-center transition-all duration-300 ${
-      isAnimating ? 'ring-2 ring-blue-500 ring-opacity-50 shadow-lg scale-105' : ''
-    }`}>
-      <div>
-        <div className="flex items-baseline space-x-2">
-          <span className={`text-4xl font-bold text-white transition-all duration-500 ${
-            isAnimating ? 'text-blue-400' : ''
-          }`}>
-            {displayValue}
-          </span>
-          {hasChanged && trend !== 'stable' && (
-            <div className={`flex items-center space-x-1 ${trendColor} transition-opacity duration-300 ${
-              isAnimating ? 'opacity-100' : 'opacity-0'
-            }`}>
-              {trend === 'up' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-              <span className="text-xs font-medium">
-                {trend === 'up' ? '+' : ''}{value - previousValue}
+    <div className="relative group">
+      <div className={`
+        relative overflow-hidden
+        bg-gradient-to-br from-slate-800 via-slate-800 to-slate-900
+        border border-slate-700/50
+        rounded-xl
+        p-6
+        transition-all duration-500 ease-out
+        hover:border-slate-600/70
+        hover:shadow-2xl hover:shadow-slate-900/50
+        hover:-translate-y-1
+        ${
+          isAnimating 
+            ? 'ring-2 ring-blue-500/30 shadow-2xl shadow-blue-500/20 scale-[1.02] border-blue-500/50' 
+            : ''
+        }
+      `}>
+        {/* Gradient overlay pour plus de profondeur */}
+        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none" />
+        
+        {/* Effet de brillance au hover */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.03] to-transparent 
+                       translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-out" />
+        
+        <div className="relative flex justify-between items-start">
+          <div className="flex-1">
+            <div className="flex items-baseline space-x-3 mb-2">
+              <span className={`
+                text-5xl font-bold bg-gradient-to-br from-white to-slate-300 bg-clip-text text-transparent
+                transition-all duration-500
+                ${
+                  isAnimating 
+                    ? 'from-blue-400 to-blue-200 drop-shadow-lg' 
+                    : ''
+                }
+              `}>
+                {displayValue}
               </span>
+              
+              {hasChanged && trend !== 'stable' && (
+                <div className={`
+                  flex items-center space-x-1.5 px-2 py-1 rounded-full
+                  backdrop-blur-sm border
+                  transition-all duration-300
+                  ${
+                    trend === 'up' 
+                      ? 'bg-green-500/10 border-green-500/30 text-green-400' 
+                      : 'bg-red-500/10 border-red-500/30 text-red-400'
+                  }
+                  ${
+                    isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                  }
+                `}>
+                  {trend === 'up' ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
+                  <span className="text-xs font-semibold">
+                    {trend === 'up' ? '+' : ''}{value - previousValue}
+                  </span>
+                </div>
+              )}
             </div>
-          )}
+            
+            <p className="text-slate-400 text-sm font-medium tracking-wide">{title}</p>
+          </div>
+          
+          <div className="relative">
+            <div 
+              className={`
+                p-4 rounded-xl
+                backdrop-blur-sm
+                border border-white/10
+                transition-all duration-500
+                ${
+                  isAnimating 
+                    ? 'scale-110 shadow-2xl rotate-3' 
+                    : 'group-hover:scale-105 group-hover:rotate-1'
+                }
+              `}
+              style={{ 
+                background: `linear-gradient(135deg, ${color}, ${color}80)`,
+                boxShadow: isAnimating 
+                  ? `0 20px 40px ${color}40, 0 0 20px ${color}30` 
+                  : `0 8px 16px ${color}20`
+              }}
+            >
+              <div className={`transition-all duration-300 ${
+                isAnimating ? 'drop-shadow-lg' : ''
+              }`}>
+                {icon}
+              </div>
+            </div>
+            
+            {/* Effet de halo pour l'icône */}
+            {isAnimating && (
+              <div 
+                className="absolute inset-0 rounded-xl animate-ping opacity-30"
+                style={{ backgroundColor: color }}
+              />
+            )}
+          </div>
         </div>
-        <p className="text-slate-400 text-sm">{title}</p>
-      </div>
-      <div 
-        className={`p-3 rounded-lg transition-all duration-300 ${
-          isAnimating ? 'scale-110 shadow-lg' : ''
-        }`} 
-        style={{ backgroundColor: color }}
-      >
-        {icon}
+        
+        {/* Effet de pulsation globale pour les changements */}
+        {isAnimating && (
+          <div 
+            className="absolute inset-0 rounded-xl animate-pulse opacity-10 pointer-events-none"
+            style={{ 
+              background: `linear-gradient(45deg, ${color}, transparent, ${color})`,
+              backgroundSize: '200% 200%',
+              animation: 'gradient-shift 2s ease-in-out'
+            }}
+          />
+        )}
       </div>
       
-      {/* Effet de pulsation pour les changements */}
-      {isAnimating && (
-        <div 
-          className="absolute inset-0 rounded-lg animate-pulse opacity-20"
-          style={{ backgroundColor: color }}
-        />
-      )}
+      {/* Ombre portée améliorée */}
+      <div className={`
+        absolute inset-0 rounded-xl transition-all duration-500
+        bg-gradient-to-br from-slate-900/20 to-slate-900/40
+        blur-xl -z-10 opacity-0 group-hover:opacity-100
+        ${
+          isAnimating ? 'opacity-100 scale-110' : ''
+        }
+      `} />
     </div>
   );
 };
