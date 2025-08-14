@@ -2,15 +2,23 @@
 export interface EnrichedSupplier {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   overview?: string;
-  country?: string;
-  region?: string;
-  company_size?: string;
-  company_type?: string;
   website?: string;
   url?: string;
+  country?: string;
+  region?: string;
+  industry?: string;
+  company_size?: string;
+  company_type?: string;
+  maturity?: string;
+  founded_year?: number;
+  contact_info?: any;
+  logo_url?: string;
+  key_features?: any;
+  available_products?: any;
   created_at: string;
+  metadata?: any;
   brief_id: string;
 }
 

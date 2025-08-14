@@ -260,7 +260,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                     scores.maturity_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}></div>
                 </div>
-                <div className="text-xs text-gray-600">Established</div>
+                <div className="text-xs text-gray-600">{supplier.maturity || 'N/A'}</div>
               </div>
               
               {/* Type d'organisation */}
