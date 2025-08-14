@@ -197,80 +197,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
       {/* Corps de la carte */}
       <div className="p-6">
-        {/* Scores principaux avec design moderne */}
-        <div className="grid grid-cols-1 gap-4 mb-6">
-          {scores.solution_fit && (
-            <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-5 overflow-hidden">
-              {/* Effet de brillance */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-x-12"></div>
-              
-              <div className="relative z-10">
-                <div className="text-white font-bold mb-4 flex items-center gap-3">
-                  <div className="w-2 h-6 bg-gradient-to-b from-blue-400 to-cyan-400 rounded-full"></div>
-                  <span className="text-base">Solution Fit</span>
-                  <div className="ml-auto text-xl font-black text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">
-                    {scores.solution_fit}%
-                  </div>
-                </div>
-                
-                <div className="h-2 bg-gray-800 rounded-full overflow-hidden mb-3">
-                  <div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full transition-all duration-1000 ease-out"
-                    style={{ width: `${scores.solution_fit}%` }}
-                  ></div>
-                </div>
-                
-                {/* Encart explication IA */}
-                <div className="bg-black/20 rounded-lg p-3 border border-blue-500/20">
-                  <div className="flex items-start gap-2">
-                    <div className="w-4 h-4 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-black text-xs font-bold">AI</span>
-                    </div>
-                    <p className="text-xs text-gray-300 leading-relaxed">
-                      Strong alignment with your solution requirements. The supplier's capabilities directly address your core needs with proven expertise in this domain.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {scores.brief_fit && (
-            <div className="relative bg-gradient-to-r from-slate-900 via-emerald-900 to-slate-900 rounded-2xl p-5 overflow-hidden">
-              {/* Effet de brillance */}
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-x-12"></div>
-              
-              <div className="relative z-10">
-                <div className="text-white font-bold mb-4 flex items-center gap-3">
-                  <div className="w-2 h-6 bg-gradient-to-b from-emerald-400 to-green-400 rounded-full"></div>
-                  <span className="text-base">Brief Fit</span>
-                  <div className="ml-auto text-xl font-black text-transparent bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text">
-                    {scores.brief_fit}%
-                  </div>
-                </div>
-                
-                <div className="h-2 bg-gray-800 rounded-full overflow-hidden mb-3">
-                  <div 
-                    className="h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full transition-all duration-1000 ease-out"
-                    style={{ width: `${scores.brief_fit}%` }}
-                  ></div>
-                </div>
-                
-                {/* Encart explication IA */}
-                <div className="bg-black/20 rounded-lg p-3 border border-emerald-500/20">
-                  <div className="flex items-start gap-2">
-                    <div className="w-4 h-4 bg-emerald-400 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <span className="text-black text-xs font-bold">AI</span>
-                    </div>
-                    <p className="text-xs text-gray-300 leading-relaxed">
-                      Excellent match with your original brief specifications. The supplier meets your stated requirements and project scope effectively.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+
 
         {/* AI Fit Scores */}
         <div className="space-y-4 mb-6">
@@ -287,6 +214,69 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
             color="green"
           />
         </div>
+
+        {/* Critères individuels - Design épuré */}
+        {scores.criteria_match && (
+          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-5 mb-6 border border-gray-200">
+            <div className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <div className="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+              <span>Criteria Assessment</span>
+              <div className="ml-auto text-lg font-black text-indigo-600">
+                {scores.criteria_match}%
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              {/* Géographie */}
+              <div className="bg-white rounded-lg p-3 border border-gray-100">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Geography</span>
+                  <div className={`w-3 h-3 rounded-full ${
+                    (scores.criteria_match >= 75) ? 'bg-green-500' : 
+                    (scores.criteria_match >= 50) ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
+                </div>
+                <div className="text-xs text-gray-600">{supplier.region || supplier.country || 'Global'}</div>
+              </div>
+              
+              {/* Taille */}
+              <div className="bg-white rounded-lg p-3 border border-gray-100">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Company Size</span>
+                  <div className={`w-3 h-3 rounded-full ${
+                    (scores.criteria_match >= 70) ? 'bg-green-500' : 
+                    (scores.criteria_match >= 45) ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
+                </div>
+                <div className="text-xs text-gray-600">{supplier.company_size || 'Medium'}</div>
+              </div>
+              
+              {/* Maturité */}
+              <div className="bg-white rounded-lg p-3 border border-gray-100">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Maturity</span>
+                  <div className={`w-3 h-3 rounded-full ${
+                    (scores.criteria_match >= 65) ? 'bg-green-500' : 
+                    (scores.criteria_match >= 40) ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
+                </div>
+                <div className="text-xs text-gray-600">Established</div>
+              </div>
+              
+              {/* Type d'organisation */}
+              <div className="bg-white rounded-lg p-3 border border-gray-100">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Organization</span>
+                  <div className={`w-3 h-3 rounded-full ${
+                    (scores.criteria_match >= 60) ? 'bg-green-500' : 
+                    (scores.criteria_match >= 35) ? 'bg-yellow-500' : 'bg-red-500'
+                  }`}></div>
+                </div>
+                <div className="text-xs text-gray-600">{supplier.company_type || 'Private'}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Explication IA */}
         {ai_explanation && (
