@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { SupplierGroup } from '../../types/supplierTypes';
 import { useSupplierProducts } from '../../hooks/useSupplierProducts';
+import { FitScoreBlock } from './FitScoreBlock';
 
 interface SupplierCardProps {
   supplierGroup: SupplierGroup;
@@ -271,68 +272,21 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           )}
         </div>
 
-        {/* Critères individuels - Design épuré */}
-        {scores.criteria_match && (
-          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-5 mb-6 border border-gray-200">
-            <div className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <div className="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
-              <span>Criteria Assessment</span>
-              <div className="ml-auto text-lg font-black text-indigo-600">
-                {scores.criteria_match}%
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              {/* Géographie */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Geography</span>
-                  <div className={`w-3 h-3 rounded-full ${
-                    (scores.criteria_match >= 75) ? 'bg-green-500' : 
-                    (scores.criteria_match >= 50) ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <div className="text-xs text-gray-600">{supplier.region || supplier.country || 'Global'}</div>
-              </div>
-              
-              {/* Taille */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Company Size</span>
-                  <div className={`w-3 h-3 rounded-full ${
-                    (scores.criteria_match >= 70) ? 'bg-green-500' : 
-                    (scores.criteria_match >= 45) ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <div className="text-xs text-gray-600">{supplier.company_size || 'Medium'}</div>
-              </div>
-              
-              {/* Maturité */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Maturity</span>
-                  <div className={`w-3 h-3 rounded-full ${
-                    (scores.criteria_match >= 65) ? 'bg-green-500' : 
-                    (scores.criteria_match >= 40) ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <div className="text-xs text-gray-600">Established</div>
-              </div>
-              
-              {/* Type d'organisation */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Organization</span>
-                  <div className={`w-3 h-3 rounded-full ${
-                    (scores.criteria_match >= 60) ? 'bg-green-500' : 
-                    (scores.criteria_match >= 35) ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <div className="text-xs text-gray-600">{supplier.company_type || 'Private'}</div>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* AI Fit Scores */}
+        <div className="space-y-4 mb-6">
+          <FitScoreBlock 
+            title="Solution Fit"
+            score={scores.solution_fit}
+            explanation={scores.solution_fit_explanation}
+            color="blue"
+          />
+          <FitScoreBlock 
+            title="Brief Fit"
+            score={scores.brief_fit}
+            explanation={scores.brief_fit_explanation}
+            color="green"
+          />
+        </div>
 
         {/* Explication IA */}
         {ai_explanation && (

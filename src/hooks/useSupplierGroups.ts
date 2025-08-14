@@ -98,10 +98,12 @@ function groupSuppliersBySupplier(supplierMatches: any[]): SupplierGroup[] {
         },
         solutions: [],
         scores: {
-          solution_fit: 75, // Placeholder, technical_fit_score was removed
-          brief_fit: 85, // Placeholder, market_relevance_score might be removed
-          criteria_match: 80, // Placeholder, delivery_capacity_score was removed
-          overall: match.overall_match_score || 78
+          solution_fit: match.solution_fit_score || 0,
+          solution_fit_explanation: match.solution_fit_explanation || '',
+          brief_fit: match.brief_fit_score || 0,
+          brief_fit_explanation: match.brief_fit_explanation || '',
+          criteria_match: 80, // Placeholder, to be updated later
+          overall: match.overall_match_score || 0
         },
         ai_explanation: match.match_explanation || 'This supplier matches your requirements based on our analysis.',
         total_products: 0

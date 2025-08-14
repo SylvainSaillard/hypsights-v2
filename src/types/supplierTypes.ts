@@ -39,7 +39,14 @@ export interface SupplierProduct {
 export interface SupplierGroup {
   supplier: EnrichedSupplier;
   solutions: SupplierSolution[];
-  scores: SupplierScores;
+  scores: {
+    solution_fit: number;
+    solution_fit_explanation: string;
+    brief_fit: number;
+    brief_fit_explanation: string;
+    criteria_match: number;
+    overall: number;
+  };
   ai_explanation?: string;
   total_products: number;
 }
