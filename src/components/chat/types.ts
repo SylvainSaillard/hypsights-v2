@@ -4,7 +4,7 @@
 export interface Product {
   id: string;
   name: string;
-  description: string;
+  product_description: string;
   created_at: string;
   supplier_id: string;
   metadata?: any;

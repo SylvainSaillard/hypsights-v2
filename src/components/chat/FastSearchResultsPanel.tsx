@@ -123,7 +123,7 @@ const FastSearchResultsPanel: React.FC<FastSearchResultsPanelProps> = ({
                       {supplier.products.map(product => (
                         <div key={product.id} className="bg-gray-50 p-2 rounded text-sm">
                           <div className="font-medium">{product.name}</div>
-                          <div className="text-xs text-gray-600">{product.description}</div>
+                          <div className="text-xs text-gray-600">{product.product_description}</div>
                         </div>
                       ))}
                     </div>

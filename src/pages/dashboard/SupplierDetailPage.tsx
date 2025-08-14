@@ -384,7 +384,7 @@ const SupplierDetailPage: React.FC = () => {
                   )}
                   
                   <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                    {product.description || 'No description available'}
+                    {product.product_description || 'No description available'}
                   </p>
                   
                   {/* Features enrichies du scraping */}

@@ -130,7 +130,7 @@ function groupSuppliersBySupplier(supplierMatches: any[]): SupplierGroup[] {
         products: products.map((product: any, index: number) => ({
           id: `${match.supplier_id}-product-${index}`,
           name: typeof product === 'string' ? product : product.name || 'Unknown Product',
-          description: typeof product === 'object' ? product.description || '' : '',
+          description: typeof product === 'object' ? product.product_description || '' : '',
           created_at: new Date().toISOString(),
           metadata: product
         }))

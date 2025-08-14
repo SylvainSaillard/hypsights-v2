@@ -173,9 +173,15 @@ function transformToSupplierGroups(_suppliers: any[], solutionGroups: any[]): Su
           solutions: [],
           scores: {
             solution_fit: 75, // Placeholder
+            solution_fit_explanation: '',
             brief_fit: 85, // Placeholder
+            brief_fit_explanation: '',
             criteria_match: 80, // Placeholder
-            overall: supplier.overall_match_score || supplier.match_score || 78
+            overall: supplier.overall_match_score || supplier.match_score || 78,
+            geography_score: 1,
+            company_size_score: 1,
+            maturity_score: 1,
+            organization_score: 1
           },
           ai_explanation: supplier.match_explanation || `${supplier.name} matches your requirements based on technical capabilities, market positioning, and delivery capacity.`,
           total_products: 0
@@ -196,7 +202,7 @@ function transformToSupplierGroups(_suppliers: any[], solutionGroups: any[]): Su
           products: products.map((product: any, index: number) => ({
             id: product.id || `${supplier.id}-product-${index}`,
             name: product.name || 'Unknown Product',
-            description: product.description || '',
+            description: product.product_description || '',
             created_at: product.created_at || new Date().toISOString(),
             metadata: product
           }))

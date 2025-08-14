@@ -3,14 +3,14 @@ import { createClient } from '@supabase/supabase-js';
 
 interface Product {
   id: string;
-  supplier_id: string;
   name: string;
-  description?: string;
+  supplier_id: string;
+  brief_id?: string;
+  solution_id?: string;
+  product_description?: string;
   price_range?: any;
   features?: any;
   metadata?: any;
-  solution_id?: string;
-  brief_id?: string;
   created_at: string;
   updated_at: string;
   // Nouveaux champs enrichis
