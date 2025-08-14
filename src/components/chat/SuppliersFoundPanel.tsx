@@ -172,10 +172,10 @@ function transformToSupplierGroups(_suppliers: any[], solutionGroups: any[]): Su
           },
           solutions: [],
           scores: {
-            solution_fit: supplier.technical_fit_score || Math.floor(Math.random() * 20) + 70,
-            brief_fit: supplier.market_relevance_score || Math.floor(Math.random() * 20) + 70,
-            criteria_match: supplier.delivery_capacity_score || Math.floor(Math.random() * 20) + 70,
-            overall: supplier.overall_match_score || supplier.match_score || Math.floor(Math.random() * 20) + 70
+            solution_fit: 75, // Placeholder
+            brief_fit: 85, // Placeholder
+            criteria_match: 80, // Placeholder
+            overall: supplier.overall_match_score || supplier.match_score || 78
           },
           ai_explanation: supplier.match_explanation || `${supplier.name} matches your requirements based on technical capabilities, market positioning, and delivery capacity.`,
           total_products: 0

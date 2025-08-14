@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, TrendingUp, CheckCircle, Share2, Briefcase, MapPin, Globe, Info, Key, ExternalLink, Truck } from 'react-feather';
+import { Star, CheckCircle, Share2, Briefcase, MapPin, Globe, Info, Key, ExternalLink } from 'react-feather';
 
 // Updated data structure for the supplier match
 export interface SupplierMatch {
@@ -17,10 +17,6 @@ export interface SupplierMatch {
   solution_name?: string;
   solution_number?: number;
   overall_match_score: number;
-  technical_fit_score: number;
-  market_relevance_score: number;
-  delivery_capacity_score: number;
-  sustainability_score: number;
   match_explanation?: string;
   match_insights?: { strong: string[]; moderate: string[]; weak: string[]; };
   is_top_match?: boolean;
@@ -29,37 +25,7 @@ export interface SupplierMatch {
 
 interface SupplierMatchCardProps { match: SupplierMatch; }
 
-// --- HELPER COMPONENTS --- //
 
-const CriteriaTag: React.FC<{ label: string; score: number }> = ({ label, score }) => (
-  <div className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">
-    {label} <span className="font-bold text-gray-900">{score}</span>
-  </div>
-);
-
-const MatchScoreBar: React.FC<{ icon: React.ReactNode; label: string; score: number; }> = ({ icon, label, score }) => {
-  const getScoreStyle = (s: number) => {
-    if (s >= 85) return { bar: 'bg-green-500', text: 'text-green-300', desc: 'Excellent match' };
-    if (s >= 70) return { bar: 'bg-yellow-500', text: 'text-yellow-300', desc: 'Good match' };
-    return { bar: 'bg-orange-500', text: 'text-orange-300', desc: 'Moderate match' };
-  };
-  const style = getScoreStyle(score);
-  return (
-    <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
-      <div className="flex items-center mb-2">
-        <div className="text-gray-400 mr-3">{icon}</div>
-        <h4 className="font-semibold text-white">{label}</h4>
-      </div>
-      <div className="flex items-end justify-between">
-        <div className={`text-4xl font-bold ${style.text}`}>{score}%</div>
-        <div className="text-sm text-gray-400 ml-3 pb-1 leading-tight">{style.desc}</div>
-      </div>
-      <div className="w-full bg-gray-700 rounded-full h-1.5 mt-3">
-        <div className={`${style.bar} h-1.5 rounded-full`} style={{ width: `${score}%` }}></div>
-      </div>
-    </div>
-  );
-};
 
 // --- MAIN COMPONENT --- //
 
@@ -186,10 +152,7 @@ const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
         <div className="mb-4">
           <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3">Matching Criteria</h3>
           <div className="flex flex-wrap gap-3">
-            <CriteriaTag label="Technical Fit" score={match.technical_fit_score} />
-            <CriteriaTag label="Market Relevance" score={match.market_relevance_score} />
-            <CriteriaTag label="Delivery Capacity" score={match.delivery_capacity_score} />
-            <CriteriaTag label="Sustainability" score={match.sustainability_score} />
+            {/* Criteria tags removed as data is no longer available */}
           </div>
         </div>
         <div>
@@ -197,10 +160,7 @@ const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
             Match Profile
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <MatchScoreBar icon={<TrendingUp size={24} />} label="Technical Fit" score={match.technical_fit_score} />
-            <MatchScoreBar icon={<TrendingUp size={24} />} label="Market Relevance" score={match.market_relevance_score} />
-            <MatchScoreBar icon={<Truck size={24} />} label="Delivery Capacity" score={match.delivery_capacity_score} />
-            <MatchScoreBar icon={<Globe size={24} />} label="Sustainability" score={match.sustainability_score} />
+            {/* Score bars removed as data is no longer available */}
           </div>
         </div>
       </div>
