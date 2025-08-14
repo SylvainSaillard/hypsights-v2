@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabaseClient';
 import EnhancedChatView from '../../components/chat/EnhancedChatView';
-import { SuppliersPanel } from '../../components/chat/SuppliersPanel';
 import { NewSuppliersPanel } from '../../components/chat/NewSuppliersPanel';
 import PremiumDeepSearchCTA from '../../components/ctas/PremiumDeepSearchCTA';
 
@@ -205,13 +204,7 @@ const BriefChatPage = () => {
             {/* Nouveau panneau de fournisseurs avec design moderne */}
             <NewSuppliersPanel briefId={brief.id} />
 
-            {/* Panneau de fournisseurs classique */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="p-4 border-b border-gray-200">
-                <h2 className="text-xl font-bold">{t('brief.chat.suppliers', 'Suppliers')}</h2>
-              </div>
-              <SuppliersPanel briefId={brief.id} />
-            </div>
+
           </div>
         ) : null}
       </div>
