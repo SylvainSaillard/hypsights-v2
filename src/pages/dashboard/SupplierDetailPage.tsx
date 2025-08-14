@@ -337,9 +337,29 @@ const SupplierDetailPage: React.FC = () => {
           ) : products.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {products.map((product) => (
-                <div key={product.id} className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-lg p-6 border border-gray-200 hover:shadow-lg transition-shadow">
+                <div key={product.id} className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+                  {/* En-tête du produit avec catégorie et URL */}
                   <div className="flex items-start justify-between mb-4">
-                    <h5 className="font-bold text-gray-800 text-lg leading-tight">{product.name}</h5>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h5 className="font-bold text-gray-800 text-lg leading-tight">{product.name}</h5>
+                        {product.url && (
+                          <a 
+                            href={product.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
+                      </div>
+                      {product.category && (
+                        <div className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium inline-block">
+                          {product.category}
+                        </div>
+                      )}
+                    </div>
                     {product.price_range && (
                       <div className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium ml-3">
                         {typeof product.price_range === 'object' ? 'Pricing Available' : product.price_range}
@@ -347,17 +367,46 @@ const SupplierDetailPage: React.FC = () => {
                     )}
                   </div>
                   
+                  {/* Tags si disponibles */}
+                  {product.tags && product.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {product.tags.slice(0, 4).map((tag, index) => (
+                        <span key={index} className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
+                          #{tag}
+                        </span>
+                      ))}
+                      {product.tags.length > 4 && (
+                        <span className="bg-gray-200 text-gray-700 px-2 py-1 rounded-full text-xs">
+                          +{product.tags.length - 4} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  
                   <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                     {product.description || 'No description available'}
                   </p>
                   
-                  {/* Features si disponibles */}
+                  {/* Features enrichies du scraping */}
                   {product.features && (
                     <div className="mb-4">
-                      <h6 className="font-semibold text-gray-700 text-sm mb-2">Key Features:</h6>
+                      <h6 className="font-semibold text-gray-700 text-sm mb-2 flex items-center gap-2">
+                        <span>🔧</span> Key Features
+                      </h6>
                       <div className="text-xs text-gray-600">
-                        {typeof product.features === 'object' ? (
-                          <pre className="whitespace-pre-wrap">{JSON.stringify(product.features, null, 2)}</pre>
+                        {Array.isArray(product.features) ? (
+                          <ul className="list-disc list-inside space-y-1">
+                            {product.features.slice(0, 3).map((feature, index) => (
+                              <li key={index} className="leading-relaxed">{feature}</li>
+                            ))}
+                            {product.features.length > 3 && (
+                              <li className="text-gray-500 italic">+{product.features.length - 3} more features</li>
+                            )}
+                          </ul>
+                        ) : typeof product.features === 'object' ? (
+                          <pre className="whitespace-pre-wrap text-xs bg-gray-100 p-2 rounded">
+                            {JSON.stringify(product.features, null, 2)}
+                          </pre>
                         ) : (
                           <p>{product.features}</p>
                         )}
@@ -365,17 +414,25 @@ const SupplierDetailPage: React.FC = () => {
                     </div>
                   )}
                   
-                  {/* Encarts IA pour chaque produit */}
+                  {/* Encarts IA avec scores réels */}
                   <div className="space-y-3">
                     <div className="bg-blue-900 rounded-lg p-3">
                       <div className="flex items-start gap-2">
                         <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
                           <span className="text-black text-xs font-bold">AI</span>
                         </div>
-                        <div>
-                          <div className="text-blue-200 text-xs font-medium mb-1">Solution Fit Analysis</div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="text-blue-200 text-xs font-medium">Solution Fit Analysis</div>
+                            {product.ai_solution_fit_score && (
+                              <div className="bg-blue-400 text-blue-900 px-2 py-0.5 rounded text-xs font-bold">
+                                {product.ai_solution_fit_score}%
+                              </div>
+                            )}
+                          </div>
                           <p className="text-blue-100 text-xs leading-relaxed">
-                            This product directly addresses your solution requirements with innovative features and proven market success.
+                            {product.ai_solution_fit_explanation || 
+                             'This product directly addresses your solution requirements with innovative features and proven market success.'}
                           </p>
                         </div>
                       </div>
@@ -386,24 +443,49 @@ const SupplierDetailPage: React.FC = () => {
                         <div className="w-5 h-5 bg-emerald-400 rounded-full flex items-center justify-center flex-shrink-0">
                           <span className="text-black text-xs font-bold">AI</span>
                         </div>
-                        <div>
-                          <div className="text-emerald-200 text-xs font-medium mb-1">Brief Fit Analysis</div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="text-emerald-200 text-xs font-medium">Brief Fit Analysis</div>
+                            {product.ai_brief_fit_score && (
+                              <div className="bg-emerald-400 text-emerald-900 px-2 py-0.5 rounded text-xs font-bold">
+                                {product.ai_brief_fit_score}%
+                              </div>
+                            )}
+                          </div>
                           <p className="text-emerald-100 text-xs leading-relaxed">
-                            Excellent alignment with your brief specifications and project timeline requirements.
+                            {product.ai_brief_fit_explanation || 
+                             'Excellent alignment with your brief specifications and project timeline requirements.'}
                           </p>
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  {/* Metadata si disponible */}
-                  {product.metadata && (
+                  {/* Données de scraping enrichies */}
+                  {product.scraping_data && Object.keys(product.scraping_data).length > 0 && (
                     <div className="mt-4 pt-3 border-t border-gray-200">
-                      <p className="text-xs text-gray-500">
-                        Created: {new Date(product.created_at).toLocaleDateString()}
-                      </p>
+                      <h6 className="font-semibold text-gray-700 text-xs mb-2 flex items-center gap-1">
+                        <span>📊</span> Additional Data
+                      </h6>
+                      <div className="text-xs text-gray-600 bg-gray-100 p-2 rounded max-h-20 overflow-y-auto">
+                        <pre className="whitespace-pre-wrap">
+                          {JSON.stringify(product.scraping_data, null, 2)}
+                        </pre>
+                      </div>
                     </div>
                   )}
+                  
+                  {/* Footer avec metadata */}
+                  <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between">
+                    <p className="text-xs text-gray-500">
+                      Created: {new Date(product.created_at).toLocaleDateString()}
+                    </p>
+                    {product.visual_assets && Object.keys(product.visual_assets).length > 0 && (
+                      <div className="text-xs text-blue-600 flex items-center gap-1">
+                        <span>🖼️</span> Visual assets available
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

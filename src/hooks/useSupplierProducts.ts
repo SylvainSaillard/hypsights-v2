@@ -13,6 +13,16 @@ interface Product {
   brief_id?: string;
   created_at: string;
   updated_at: string;
+  // Nouveaux champs enrichis
+  url?: string;
+  category?: string;
+  tags?: string[];
+  ai_solution_fit_score?: number;
+  ai_solution_fit_explanation?: string;
+  ai_brief_fit_score?: number;
+  ai_brief_fit_explanation?: string;
+  scraping_data?: any;
+  visual_assets?: any;
 }
 
 interface UseSupplierProductsProps {
