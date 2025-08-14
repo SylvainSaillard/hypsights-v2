@@ -46,6 +46,11 @@ export interface SupplierGroup {
     brief_fit_explanation: string;
     criteria_match: number;
     overall: number;
+    // Nouveaux scores individuels des critères (0=Rouge, 1=Jaune, 2=Vert)
+    geography_score: number;
+    company_size_score: number;
+    maturity_score: number;
+    organization_score: number;
   };
   ai_explanation?: string;
   total_products: number;

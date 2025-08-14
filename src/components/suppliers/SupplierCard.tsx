@@ -232,8 +232,8 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Geography</span>
                   <div className={`w-3 h-3 rounded-full ${
-                    (scores.criteria_match >= 75) ? 'bg-green-500' : 
-                    (scores.criteria_match >= 50) ? 'bg-yellow-500' : 'bg-red-500'
+                    scores.geography_score === 2 ? 'bg-green-500' : 
+                    scores.geography_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}></div>
                 </div>
                 <div className="text-xs text-gray-600">{supplier.region || supplier.country || 'Global'}</div>
@@ -244,8 +244,8 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Company Size</span>
                   <div className={`w-3 h-3 rounded-full ${
-                    (scores.criteria_match >= 70) ? 'bg-green-500' : 
-                    (scores.criteria_match >= 45) ? 'bg-yellow-500' : 'bg-red-500'
+                    scores.company_size_score === 2 ? 'bg-green-500' : 
+                    scores.company_size_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}></div>
                 </div>
                 <div className="text-xs text-gray-600">{supplier.company_size || 'Medium'}</div>
@@ -256,8 +256,8 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Maturity</span>
                   <div className={`w-3 h-3 rounded-full ${
-                    (scores.criteria_match >= 65) ? 'bg-green-500' : 
-                    (scores.criteria_match >= 40) ? 'bg-yellow-500' : 'bg-red-500'
+                    scores.maturity_score === 2 ? 'bg-green-500' : 
+                    scores.maturity_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}></div>
                 </div>
                 <div className="text-xs text-gray-600">Established</div>
@@ -268,8 +268,8 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">Organization</span>
                   <div className={`w-3 h-3 rounded-full ${
-                    (scores.criteria_match >= 60) ? 'bg-green-500' : 
-                    (scores.criteria_match >= 35) ? 'bg-yellow-500' : 'bg-red-500'
+                    scores.organization_score === 2 ? 'bg-green-500' : 
+                    scores.organization_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}></div>
                 </div>
                 <div className="text-xs text-gray-600">{supplier.company_type || 'Private'}</div>
