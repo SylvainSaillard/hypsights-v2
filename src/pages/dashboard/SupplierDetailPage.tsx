@@ -204,25 +204,22 @@ const SupplierDetailPage: React.FC = () => {
                     </div>
                   </div>
                   
-                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                    {solution.description || 'No description available'}
-                  </p>
-                  
-                  {/* Contexte du match */}
-                  <div className="bg-white/70 rounded-lg p-4 border border-purple-200">
-                    <div className="flex items-start gap-3">
-                      <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                        <span className="text-white text-xs font-bold">🎯</span>
-                      </div>
-                      <div>
-                        <div className="text-sm font-semibold text-gray-800 mb-1">Why this supplier matches</div>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          This supplier was identified as a potential match for this solution based on their capabilities, 
-                          market positioning, and alignment with your specific requirements.
-                        </p>
+                  {/* Description de la solution */}
+                  {solution.description && (
+                    <div className="bg-white/70 rounded-lg p-4 border border-purple-200">
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                          <span className="text-white text-xs font-bold">📝</span>
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-gray-800 mb-2">Solution Description</div>
+                          <p className="text-sm text-gray-600 leading-relaxed">
+                            {solution.description}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
