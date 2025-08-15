@@ -32,6 +32,8 @@ export interface SupplierScores {
 export interface SupplierSolution {
   id: string;
   title: string;
+  description?: string;
+  status?: string;
   solution_number?: number;
   products: SupplierProduct[];
 }

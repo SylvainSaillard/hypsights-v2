@@ -167,6 +167,68 @@ const SupplierDetailPage: React.FC = () => {
           </div>
         </div>
 
+        {/* Bloc Solution Associée */}
+        {supplier.solutions && supplier.solutions.length > 0 && (
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-2 h-8 bg-gradient-to-b from-purple-500 to-indigo-500 rounded-full"></div>
+              <h3 className="text-2xl font-bold text-gray-800">Found for Solution</h3>
+            </div>
+            
+            <div className="space-y-4">
+              {supplier.solutions.map((solution, index) => (
+                <div key={solution.id} className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl p-5 border border-purple-100">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                        {solution.solution_number || index + 1}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-gray-800 text-lg">
+                          Solution {solution.solution_number || index + 1}: {solution.title}
+                        </h4>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            solution.status === 'validated' 
+                              ? 'bg-green-100 text-green-700 border border-green-200'
+                              : solution.status === 'proposed'
+                              ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                              : 'bg-gray-100 text-gray-700 border border-gray-200'
+                          }`}>
+                            {solution.status === 'validated' ? '✓ Validated' : 
+                             solution.status === 'proposed' ? '💡 Proposed' : 
+                             solution.status}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <p className="text-gray-600 text-sm leading-relaxed mb-4">
+                    {solution.description || 'No description available'}
+                  </p>
+                  
+                  {/* Contexte du match */}
+                  <div className="bg-white/70 rounded-lg p-4 border border-purple-200">
+                    <div className="flex items-start gap-3">
+                      <div className="w-6 h-6 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-white text-xs font-bold">🎯</span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-gray-800 mb-1">Why this supplier matches</div>
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          This supplier was identified as a potential match for this solution based on their capabilities, 
+                          market positioning, and alignment with your specific requirements.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Scores détaillés */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
           {/* Solution Fit */}

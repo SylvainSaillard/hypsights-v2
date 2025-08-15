@@ -370,11 +370,34 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
   
   console.log('Fin de récupération, solutionData:', solutionData);
   
+  // Récupération de la langue préférée de l'utilisateur
+  let userLocale = 'en'; // Valeur par défaut
+  try {
+    console.log('Récupération de la langue utilisateur depuis users_metadata...');
+    const { data: userMetadata, error: localeError } = await supabase
+      .from('users_metadata')
+      .select('preferred_locale')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (localeError) {
+      console.error('Erreur lors de la récupération de la langue utilisateur:', localeError);
+    } else if (userMetadata?.preferred_locale) {
+      userLocale = userMetadata.preferred_locale;
+      console.log('Langue utilisateur récupérée:', userLocale);
+    } else {
+      console.log('Aucune langue préférée trouvée, utilisation de la valeur par défaut:', userLocale);
+    }
+  } catch (error) {
+    console.error('Exception lors de la récupération de la langue utilisateur:', error);
+  }
+  
   // Données pour le webhook, enrichies avec les informations de la solution
   const webhookData = {
     search_id: searchId,
     brief_id,  // Important: Ce brief_id doit être utilisé par le webhook pour associer les fournisseurs
     user_id: user.id,
+    user_locale: userLocale, // Ajout de la langue utilisateur
     solution_id,
     solution_title: solutionData?.title || 'Titre non disponible',
     solution_description: solutionData?.description || 'Description non disponible',
