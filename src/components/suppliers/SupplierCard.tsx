@@ -147,8 +147,8 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-4">
-            <div className="flex-1">
-              <h3 className="text-xl font-bold mb-2 leading-tight">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-xl font-bold mb-2 leading-tight truncate" title={supplier.name}>
                 {supplier.name}
               </h3>
               <p className="text-blue-100 text-sm leading-relaxed">

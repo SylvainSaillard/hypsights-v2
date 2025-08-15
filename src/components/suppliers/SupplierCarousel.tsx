@@ -176,7 +176,7 @@ const SupplierCarousel: React.FC<SupplierCarouselProps> = ({
           }}
         >
           {limitedGroups.map((supplierGroup) => (
-            <div key={supplierGroup.supplier.id} className="flex-shrink-0 w-96">
+            <div key={supplierGroup.supplier.id} className="flex-shrink-0 w-[420px]">
               <SupplierCard
                 supplierGroup={supplierGroup}
                 onViewDetails={onViewDetails}
