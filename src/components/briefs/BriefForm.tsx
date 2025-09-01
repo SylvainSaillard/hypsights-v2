@@ -71,11 +71,24 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
   // Maturity options
   const maturityOptions = [
-    { id: 'commercial', label: t('brief.maturity.commercial', 'Commercial') },
-    { id: 'off_the_shelf', label: t('brief.maturity.off_the_shelf', 'Commercial / Off-the-shelf to adapt') },
-    { id: 'poc', label: t('brief.maturity.poc', 'Proof of Concept (Feasibility)') },
-    { id: 'prototype', label: t('brief.maturity.prototype', 'Prototype') },
-    { id: 'research', label: t('brief.maturity.research', 'Research') },
+    { 
+      id: 'commercial', 
+      label: t('brief.maturity.commercial', 'Commercial'),
+      icon: '🏪',
+      description: t('brief.maturity.commercial_desc', 'Ready-to-market solutions')
+    },
+    { 
+      id: 'prototype', 
+      label: t('brief.maturity.prototype', 'Prototype'),
+      icon: '🔧',
+      description: t('brief.maturity.prototype_desc', 'Working prototypes and demos')
+    },
+    { 
+      id: 'research', 
+      label: t('brief.maturity.research', 'Research'),
+      icon: '🔬',
+      description: t('brief.maturity.research_desc', 'Early-stage research and concepts')
+    },
   ];
 
   // Geography options
@@ -178,13 +191,24 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
         {/* Required Maturity */}
         <div>
-          <label className="form-label mb-3 text-gray-700 font-medium">
+          <label className="form-label mb-4 text-gray-700 font-medium">
             {t('brief.form.required_maturity', 'Required Maturity')}
           </label>
+          <p className="text-sm text-gray-500 mb-4">
+            {t('brief.form.required_maturity_help', 'Sélectionnez le niveau de maturité des solutions recherchées')}
+          </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-slate-50 p-6 rounded-lg">
             {maturityOptions.map(option => (
-              <label key={option.id} htmlFor={`maturity-${option.id}`} className="flex items-center p-3 rounded-lg hover:bg-slate-100 transition-colors duration-200 cursor-pointer">
+              <label 
+                key={option.id} 
+                htmlFor={`maturity-${option.id}`} 
+                className={`relative p-6 rounded-xl border-2 transition-all duration-200 cursor-pointer hover:shadow-md ${
+                  formData.maturity.includes(option.id)
+                    ? 'border-blue-500 bg-blue-50 shadow-lg'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
                 <input
                   type="checkbox"
                   id={`maturity-${option.id}`}
@@ -192,11 +216,26 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                   value={option.id}
                   checked={formData.maturity.includes(option.id)}
                   onChange={handleCheckboxChange}
-                  className="custom-checkbox"
+                  className="absolute top-4 right-4 custom-checkbox"
                 />
-                <span className="ml-3 text-sm text-slate-700 font-medium">
-                  {option.label}
-                </span>
+                
+                <div className="text-center">
+                  <div className="text-4xl mb-3">{option.icon}</div>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                    {option.label}
+                  </h4>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {option.description}
+                  </p>
+                </div>
+                
+                {formData.maturity.includes(option.id) && (
+                  <div className="absolute top-4 left-4 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
               </label>
             ))}
           </div>
