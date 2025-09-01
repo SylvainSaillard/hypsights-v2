@@ -25,7 +25,7 @@ interface Brief {
   timeline?: string;
   locale?: string;
   metadata?: any;
-  reference_companies?: string[];
+  reference_companies?: Array<{name: string; url: string}>;
 }
 
 const BriefChatPage = () => {

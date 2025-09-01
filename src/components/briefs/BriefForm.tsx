@@ -9,15 +9,20 @@ interface BriefFormProps {
   isSubmitting: boolean;
 }
 
+interface ReferenceCompany {
+  name: string;
+  url: string;
+}
+
 interface BriefData {
   title: string;
   description: string;
-  reference_companies: string[];
+  reference_companies: ReferenceCompany[];
   maturity: string[];
   capabilities: string[];
   organization_types: string[];
   geographies: string[];
-  [key: string]: string | string[];
+  [key: string]: string | string[] | ReferenceCompany[];
 }
 
 const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitting }) => {
@@ -33,6 +38,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
   });
 
   const [companyInput, setCompanyInput] = useState('');
+  const [companyUrlInput, setCompanyUrlInput] = useState('');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -55,12 +61,16 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
 
   const handleAddCompany = () => {
-    if (companyInput.trim()) {
+    if (companyInput.trim() && companyUrlInput.trim()) {
       setFormData(prev => ({
         ...prev,
-        reference_companies: [...prev.reference_companies, companyInput.trim()]
+        reference_companies: [...prev.reference_companies, {
+          name: companyInput.trim(),
+          url: companyUrlInput.trim()
+        }]
       }));
       setCompanyInput('');
+      setCompanyUrlInput('');
     }
   };
 
@@ -149,28 +159,50 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
             {t('brief.form.reference_companies_help', 'Add companies that you consider as references for this brief')}
           </p>
           
-          <div className="flex gap-2 mb-2">
-            <input
-              type="text"
-              value={companyInput}
-              onChange={(e) => setCompanyInput(e.target.value)}
-              placeholder={t('brief.form.company_placeholder', 'Enter company name')}
-              className="form-input flex-1 focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-20"
-            />
+          <div className="space-y-3 mb-4 p-4 bg-slate-50 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <input
+                type="text"
+                value={companyInput}
+                onChange={(e) => setCompanyInput(e.target.value)}
+                placeholder={t('brief.form.company_name_placeholder', 'Company name')}
+                className="form-input focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-20"
+              />
+              <input
+                type="url"
+                value={companyUrlInput}
+                onChange={(e) => setCompanyUrlInput(e.target.value)}
+                placeholder={t('brief.form.company_url_placeholder', 'Company website URL')}
+                className="form-input focus:border-primary focus:ring focus:ring-primary focus:ring-opacity-20"
+              />
+            </div>
             <button
               type="button"
               onClick={handleAddCompany}
-              className="btn btn-secondary hover:bg-gray-50 border-gray-300"
+              disabled={!companyInput.trim() || !companyUrlInput.trim()}
+              className="btn btn-secondary hover:bg-gray-50 border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {t('brief.form.add', 'Add')}
+              {t('brief.form.add_company', 'Add Company')}
             </button>
           </div>
           
           {formData.reference_companies.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-3">
+            <div className="space-y-2 mt-3">
               {formData.reference_companies.map((company, index) => (
-                <div key={index} className="flex items-center px-3 py-1.5 rounded-full text-sm bg-primary bg-opacity-10 text-primary border border-primary border-opacity-20">
-                  <span>{company}</span>
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-white border border-gray-200 hover:border-gray-300 transition-colors">
+                  <div className="flex-1">
+                    <div className="font-medium text-gray-900">{company.name}</div>
+                    <div className="text-sm text-gray-500 truncate">
+                      <a 
+                        href={company.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:text-blue-800 hover:underline"
+                      >
+                        {company.url}
+                      </a>
+                    </div>
+                  </div>
                   <button
                     type="button"
                     onClick={() => {
@@ -179,7 +211,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
                         reference_companies: prev.reference_companies.filter((_, i) => i !== index)
                       }));
                     }}
-                    className="ml-2 text-gray-500 hover:text-gray-700"
+                    className="ml-3 text-gray-400 hover:text-red-500 text-lg font-bold"
                   >
                     &times;
                   </button>
