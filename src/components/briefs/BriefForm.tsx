@@ -53,15 +53,6 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
     });
   };
 
-  const handleCapabilityChange = (capabilityId: string) => {
-    setFormData(prev => {
-      const currentCapabilities = prev.capabilities || [];
-      const newCapabilities = currentCapabilities.includes(capabilityId)
-        ? currentCapabilities.filter(c => c !== capabilityId)
-        : [...currentCapabilities, capabilityId];
-      return { ...prev, capabilities: newCapabilities };
-    });
-  };
 
   const handleAddCompany = () => {
     if (companyInput.trim()) {
@@ -78,18 +69,6 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
     onSubmit(formData);
   };
 
-  // Capability options
-  const capabilityOptions = [
-    { id: 'consulting', label: t('brief.capabilities.consulting', 'Consulting or expertise') },
-    { id: 'manufacturing', label: t('brief.capabilities.manufacturing', 'Manufacturing capabilities') },
-    { id: 'technology', label: t('brief.capabilities.technology', 'New Technology') },
-    { id: 'outsourcing', label: t('brief.capabilities.outsourcing', 'Outsourced capability') },
-    { id: 'process', label: t('brief.capabilities.process', 'Process') },
-    { id: 'product', label: t('brief.capabilities.product', 'Product') },
-    { id: 'prototyping', label: t('brief.capabilities.prototyping', 'Prototyping capabilities') },
-    { id: 'supplier', label: t('brief.capabilities.supplier', 'Supplier') },
-  ];
-
   // Maturity options
   const maturityOptions = [
     { id: 'commercial', label: t('brief.maturity.commercial', 'Commercial') },
@@ -97,19 +76,6 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
     { id: 'poc', label: t('brief.maturity.poc', 'Proof of Concept (Feasibility)') },
     { id: 'prototype', label: t('brief.maturity.prototype', 'Prototype') },
     { id: 'research', label: t('brief.maturity.research', 'Research') },
-  ];
-
-  // Organization types
-  const organizationTypes = [
-    { id: 'consulting', label: t('brief.org_type.consulting', 'Consulting') },
-    { id: 'cro', label: t('brief.org_type.cro', 'CRO') },
-    { id: 'encyclopedia', label: t('brief.org_type.encyclopedia', 'Encyclopedia') },
-    { id: 'large_company', label: t('brief.org_type.large_company', 'Large Company') },
-    { id: 'marketplace', label: t('brief.org_type.marketplace', 'Marketplace') },
-    { id: 'not_specified', label: t('brief.org_type.not_specified', 'Not Specified') },
-    { id: 'research_institute', label: t('brief.org_type.research_institute', 'Research Institute') },
-    { id: 'sme', label: t('brief.org_type.sme', 'SME') },
-    { id: 'startup', label: t('brief.org_type.startup', 'Startup') },
   ];
 
   // Geography options
@@ -236,52 +202,185 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
           </div>
         </div>
 
-        {/* Required Capabilities */}
+        {/* Types d'Organisation et Capacités */}
         <div>
-          <label className="form-label mb-3 text-gray-700 font-medium">
-            {t('brief.form.required_capabilities', 'Required Capabilities')}
+          <label className="form-label mb-4 text-gray-700 font-medium">
+            {t('brief.form.organization_capabilities', 'Types d\'Organisation et Capacités Recherchées')}
           </label>
-          <div className="flex flex-wrap gap-3 bg-slate-50 p-4 rounded-lg">
-            {capabilityOptions.map(option => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => handleCapabilityChange(option.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${
-                  formData.capabilities.includes(option.id)
-                    ? 'bg-emerald-500 text-white border-emerald-500 shadow-md'
-                    : 'bg-white text-slate-700 border-slate-300 hover:bg-slate-100 hover:border-slate-400'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Preferred Type(s) of Organisation */}
-        <div>
-          <label className="form-label mb-3 text-gray-700 font-medium">
-            {t('brief.form.preferred_organization_types', 'Preferred Type(s) of Organisation')}
-          </label>
+          <p className="text-sm text-gray-500 mb-4">
+            {t('brief.form.organization_capabilities_help', 'Sélectionnez les types d\'organisations et capacités qui correspondent à vos besoins')}
+          </p>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
-            {organizationTypes.map(option => (
-              <label key={option.id} htmlFor={`org-${option.id}`} className="flex items-center p-3 rounded-lg hover:bg-slate-100 transition-colors duration-200 cursor-pointer">
-                <input
-                  type="checkbox"
-                  id={`org-${option.id}`}
-                  name="organization_types"
-                  value={option.id}
-                  checked={formData.organization_types.includes(option.id)}
-                  onChange={handleCheckboxChange}
-                  className="custom-checkbox"
-                />
-                <span className="ml-3 text-sm text-slate-700 font-medium">
-                  {option.label}
-                </span>
-              </label>
-            ))}
+          <div className="space-y-6 bg-slate-50 p-6 rounded-lg">
+            {/* Produits Commerciaux */}
+            <div className="bg-white rounded-lg p-4 border border-slate-200">
+              <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                <span className="w-3 h-3 bg-blue-500 rounded-full mr-2"></span>
+                {t('brief.form.commercial_products', 'Produits Commerciaux')}
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label className="flex items-center p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="organization_types"
+                    value="large_company"
+                    checked={formData.organization_types.includes('large_company')}
+                    onChange={handleCheckboxChange}
+                    className="custom-checkbox"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 font-medium">
+                    {t('brief.org_type.large_company', 'Large Company')}
+                  </span>
+                </label>
+                <label className="flex items-center p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="organization_types"
+                    value="sme"
+                    checked={formData.organization_types.includes('sme')}
+                    onChange={handleCheckboxChange}
+                    className="custom-checkbox"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 font-medium">
+                    {t('brief.org_type.sme', 'SME')}
+                  </span>
+                </label>
+                <label className="flex items-center p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="organization_types"
+                    value="startup"
+                    checked={formData.organization_types.includes('startup')}
+                    onChange={handleCheckboxChange}
+                    className="custom-checkbox"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 font-medium">
+                    {t('brief.org_type.startup', 'Startup')}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Capacités Externalisées */}
+            <div className="bg-white rounded-lg p-4 border border-slate-200">
+              <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                {t('brief.form.outsourced_capabilities', 'Capacités Externalisées')}
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label className="flex items-center p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="organization_types"
+                    value="cro"
+                    checked={formData.organization_types.includes('cro')}
+                    onChange={handleCheckboxChange}
+                    className="custom-checkbox"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 font-medium">
+                    {t('brief.org_type.cro', 'CRO (Contract Research Organization)')}
+                  </span>
+                </label>
+                <label className="flex items-center p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="organization_types"
+                    value="cmo"
+                    checked={formData.organization_types.includes('cmo')}
+                    onChange={handleCheckboxChange}
+                    className="custom-checkbox"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 font-medium">
+                    {t('brief.org_type.cmo', 'CMO (Contract Manufacturing Organization)')}
+                  </span>
+                </label>
+                <label className="flex items-center p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="organization_types"
+                    value="cdmo"
+                    checked={formData.organization_types.includes('cdmo')}
+                    onChange={handleCheckboxChange}
+                    className="custom-checkbox"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 font-medium">
+                    {t('brief.org_type.cdmo', 'CDMO (Contract Development & Manufacturing Organization)')}
+                  </span>
+                </label>
+                <label className="flex items-center p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="organization_types"
+                    value="cpo"
+                    checked={formData.organization_types.includes('cpo')}
+                    onChange={handleCheckboxChange}
+                    className="custom-checkbox"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 font-medium">
+                    {t('brief.org_type.cpo', 'CPO (Contract Production Organization)')}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Recherche & Développement */}
+            <div className="bg-white rounded-lg p-4 border border-slate-200">
+              <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                <span className="w-3 h-3 bg-purple-500 rounded-full mr-2"></span>
+                {t('brief.form.research_development', 'Recherche & Développement')}
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <label className="flex items-center p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="organization_types"
+                    value="research_institute"
+                    checked={formData.organization_types.includes('research_institute')}
+                    onChange={handleCheckboxChange}
+                    className="custom-checkbox"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 font-medium">
+                    {t('brief.org_type.research_institute', 'Research Institute')}
+                  </span>
+                </label>
+                <label className="flex items-center p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="organization_types"
+                    value="universities"
+                    checked={formData.organization_types.includes('universities')}
+                    onChange={handleCheckboxChange}
+                    className="custom-checkbox"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 font-medium">
+                    {t('brief.org_type.universities', 'Universities')}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* Conseil */}
+            <div className="bg-white rounded-lg p-4 border border-slate-200">
+              <h4 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                <span className="w-3 h-3 bg-orange-500 rounded-full mr-2"></span>
+                {t('brief.form.consulting', 'Conseil')}
+              </h4>
+              <div className="grid grid-cols-1 gap-3">
+                <label className="flex items-center p-3 rounded-lg hover:bg-slate-50 transition-colors duration-200 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    name="organization_types"
+                    value="consulting"
+                    checked={formData.organization_types.includes('consulting')}
+                    onChange={handleCheckboxChange}
+                    className="custom-checkbox"
+                  />
+                  <span className="ml-3 text-sm text-slate-700 font-medium">
+                    {t('brief.org_type.consulting', 'Consulting Organizations')}
+                  </span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 
