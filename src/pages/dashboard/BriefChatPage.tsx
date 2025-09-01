@@ -14,6 +14,18 @@ interface Brief {
   status: string;
   created_at: string;
   user_id: string;
+  maturity?: string[];
+  organization_types?: string[];
+  capabilities?: string[];
+  geographies?: string[];
+  description?: string;
+  industry?: string;
+  requirements?: any;
+  budget_range?: any;
+  timeline?: string;
+  locale?: string;
+  metadata?: any;
+  reference_companies?: string[];
 }
 
 const BriefChatPage = () => {
@@ -97,7 +109,25 @@ const BriefChatPage = () => {
           const webhookPayload = {
             brief_id: brief.id,
             user_id: brief.user_id,
-            brief: brief,
+            brief: {
+              ...brief,
+              // Ensure new fields are properly included
+              maturity: brief.maturity || [],
+              organization_types: brief.organization_types || [],
+              capabilities: brief.capabilities || [],
+              geographies: brief.geographies || [],
+              // Add metadata about the new structure
+              structure_version: '2.0',
+              updated_fields: {
+                maturity_options: ['commercial', 'prototype', 'research'],
+                organization_categories: {
+                  commercial_products: ['large_company', 'sme', 'startup'],
+                  outsourced_capabilities: ['cro', 'cmo', 'cdmo', 'cpo'],
+                  research_development: ['research_institute', 'universities'],
+                  consulting: ['consulting']
+                }
+              }
+            },
             timestamp: new Date().toISOString(),
             request_id: crypto.randomUUID()
           };

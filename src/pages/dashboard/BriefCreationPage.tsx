@@ -70,7 +70,25 @@ const BriefCreationPage: React.FC = () => {
               const n8nPayload = {
                 brief_id: briefIdForWebhook,
                 user_id: createdOrUpdatedBrief.user_id,
-                brief: createdOrUpdatedBrief,
+                brief: {
+                  ...createdOrUpdatedBrief,
+                  // Ensure new fields are properly included
+                  maturity: createdOrUpdatedBrief.maturity || [],
+                  organization_types: createdOrUpdatedBrief.organization_types || [],
+                  capabilities: createdOrUpdatedBrief.capabilities || [],
+                  geographies: createdOrUpdatedBrief.geographies || [],
+                  // Add metadata about the new structure
+                  structure_version: '2.0',
+                  updated_fields: {
+                    maturity_options: ['commercial', 'prototype', 'research'],
+                    organization_categories: {
+                      commercial_products: ['large_company', 'sme', 'startup'],
+                      outsourced_capabilities: ['cro', 'cmo', 'cdmo', 'cpo'],
+                      research_development: ['research_institute', 'universities'],
+                      consulting: ['consulting']
+                    }
+                  }
+                },
                 timestamp: new Date().toISOString(),
                 request_id: self.crypto.randomUUID(),
               };
