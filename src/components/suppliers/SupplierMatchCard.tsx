@@ -69,7 +69,9 @@ const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
           <h3 className="text-sm font-semibold mb-3 flex items-center text-gray-600"><CheckCircle size={14} className="mr-2 text-green-600"/>Available Products</h3>
           <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
-            {match.available_products?.map((product, i) => <li key={i}>{product}</li>) ?? <li>Not specified</li>}
+            {match.available_products?.map((product, i) => (
+              <li key={i}>{typeof product === 'string' ? product : (product as any)?.name || 'Unknown Product'}</li>
+            )) ?? <li>Not specified</li>}
           </ul>
         </div>
 
@@ -78,7 +80,9 @@ const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
             <h3 className="text-sm font-semibold mb-3 flex items-center text-gray-600"><Key size={14} className="mr-2 text-yellow-600"/>Key Features</h3>
             <div className="flex flex-wrap gap-2">
               {match.key_features?.map((feature, i) => (
-                <span key={i} className="bg-gray-200 text-gray-800 text-xs font-medium px-2.5 py-1 rounded-full">{feature}</span>
+                <span key={i} className="bg-gray-200 text-gray-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                  {typeof feature === 'string' ? feature : (feature as any)?.name || 'Unknown Feature'}
+                </span>
               )) ?? <span className="text-xs text-gray-500">Not specified</span>}
             </div>
           </div>
