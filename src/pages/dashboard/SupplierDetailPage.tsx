@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, Globe, Building2, Users, Package, Star, TrendingUp } from 'lucide-react';
+import { ArrowLeft, ExternalLink, MapPin, Users, Package, Star } from 'lucide-react';
 import type { SupplierGroup } from '../../types/supplierTypes';
 import { useSupplierGroups } from '../../hooks/useSupplierGroups';
 import { useSupplierProducts } from '../../hooks/useSupplierProducts';
@@ -314,12 +314,12 @@ const SupplierDetailPage: React.FC = () => {
               </div>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Geography */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
+              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Globe className="w-5 h-5 text-blue-600" />
+                    <MapPin className="w-5 h-5 text-blue-600" />
                     <span className="font-semibold text-gray-800">Geography</span>
                   </div>
                   <div className={`w-4 h-4 rounded-full ${
@@ -328,36 +328,6 @@ const SupplierDetailPage: React.FC = () => {
                   }`}></div>
                 </div>
                 <p className="text-sm text-gray-600">{supplier.supplier.region || supplier.supplier.country || 'Global presence'}</p>
-              </div>
-
-              {/* Company Size */}
-              <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-4 border border-emerald-100">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-emerald-600" />
-                    <span className="font-semibold text-gray-800">Company Size</span>
-                  </div>
-                  <div className={`w-4 h-4 rounded-full ${
-                    (supplier.scores.criteria_match >= 70) ? 'bg-green-500' : 
-                    (supplier.scores.criteria_match >= 45) ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <p className="text-sm text-gray-600">{supplier.supplier.company_size || 'Mid-market'}</p>
-              </div>
-
-              {/* Maturity */}
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-purple-600" />
-                    <span className="font-semibold text-gray-800">Maturity</span>
-                  </div>
-                  <div className={`w-4 h-4 rounded-full ${
-                    (supplier.scores.criteria_match >= 65) ? 'bg-green-500' : 
-                    (supplier.scores.criteria_match >= 40) ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <p className="text-sm text-gray-600">Well-established</p>
               </div>
 
               {/* Organization */}

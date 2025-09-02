@@ -239,30 +239,6 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                 <div className="text-xs text-gray-600">{supplier.region || supplier.country || 'Global'}</div>
               </div>
               
-              {/* Taille */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Company Size</span>
-                  <div className={`w-3 h-3 rounded-full ${
-                    scores.company_size_score === 2 ? 'bg-green-500' : 
-                    scores.company_size_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <div className="text-xs text-gray-600">{supplier.company_size || 'Medium'}</div>
-              </div>
-              
-              {/* Maturité */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Maturity</span>
-                  <div className={`w-3 h-3 rounded-full ${
-                    scores.maturity_score === 2 ? 'bg-green-500' : 
-                    scores.maturity_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <div className="text-xs text-gray-600">{supplier.maturity || 'N/A'}</div>
-              </div>
-              
               {/* Type d'organisation */}
               <div className="bg-white rounded-lg p-3 border border-gray-100">
                 <div className="flex items-center justify-between mb-2">
