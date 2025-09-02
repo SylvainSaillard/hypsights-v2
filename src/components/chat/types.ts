@@ -5,9 +5,18 @@ export interface Product {
   id: string;
   name: string;
   product_description: string;
-  created_at: string;
-  supplier_id: string;
-  metadata?: any;
+  category?: string;
+  price_range?: string | object;
+  tags?: string[];
+  features?: string[] | object | string;
+  metadata?: object;
+  url?: string;
+  maturity?: string[];
+  ai_solution_fit_score?: number;
+  ai_solution_fit_explanation?: string;
+  ai_brief_fit_score?: number;
+  ai_brief_fit_explanation?: string;
+  created_at?: string;
 }
 
 // Interface pour les fournisseurs

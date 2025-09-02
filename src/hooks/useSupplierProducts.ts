@@ -5,23 +5,19 @@ interface Product {
   id: string;
   name: string;
   supplier_id: string;
-  brief_id?: string;
-  solution_id?: string;
-  product_description?: string;
-  price_range?: any;
-  features?: any;
-  metadata?: any;
-  created_at: string;
-  updated_at: string;
-  // Nouveaux champs enrichis
-  url?: string;
+  product_description: string;
   category?: string;
+  price_range?: string | object;
   tags?: string[];
+  features?: string[] | object | string;
+  metadata?: object;
+  url?: string;
+  maturity?: string[];
   ai_solution_fit_score?: number;
   ai_solution_fit_explanation?: string;
   ai_brief_fit_score?: number;
   ai_brief_fit_explanation?: string;
-  scraping_data?: any;
+  created_at?: string;
   visual_assets?: any;
 }
 

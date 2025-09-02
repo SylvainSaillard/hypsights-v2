@@ -443,6 +443,100 @@ const SupplierDetailPage: React.FC = () => {
                     </div>
                   )}
                   
+                  {/* Maturité Produit */}
+                  {product.maturity && (
+                    <div className="mb-4">
+                      <h6 className="font-semibold text-gray-700 text-sm mb-3 flex items-center gap-2">
+                        <span>📊</span> Product Maturity
+                      </h6>
+                      <div className="flex gap-2">
+                        {/* Commercial */}
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
+                          product.maturity.includes('commercial')
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 bg-gray-50'
+                        }`}>
+                          <span className="text-lg">🏪</span>
+                          <div className="text-xs">
+                            <div className={`font-medium ${
+                              product.maturity.includes('commercial') ? 'text-blue-800' : 'text-gray-600'
+                            }`}>
+                              Commercial
+                            </div>
+                            <div className={`text-xs ${
+                              product.maturity.includes('commercial') ? 'text-blue-600' : 'text-gray-500'
+                            }`}>
+                              Ready-to-market
+                            </div>
+                          </div>
+                          {product.maturity.includes('commercial') && (
+                            <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Prototype */}
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
+                          product.maturity.includes('prototype')
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 bg-gray-50'
+                        }`}>
+                          <span className="text-lg">🔧</span>
+                          <div className="text-xs">
+                            <div className={`font-medium ${
+                              product.maturity.includes('prototype') ? 'text-blue-800' : 'text-gray-600'
+                            }`}>
+                              Prototype
+                            </div>
+                            <div className={`text-xs ${
+                              product.maturity.includes('prototype') ? 'text-blue-600' : 'text-gray-500'
+                            }`}>
+                              Working demos
+                            </div>
+                          </div>
+                          {product.maturity.includes('prototype') && (
+                            <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Research */}
+                        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all ${
+                          product.maturity.includes('research')
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-gray-200 bg-gray-50'
+                        }`}>
+                          <span className="text-lg">🔬</span>
+                          <div className="text-xs">
+                            <div className={`font-medium ${
+                              product.maturity.includes('research') ? 'text-blue-800' : 'text-gray-600'
+                            }`}>
+                              Research
+                            </div>
+                            <div className={`text-xs ${
+                              product.maturity.includes('research') ? 'text-blue-600' : 'text-gray-500'
+                            }`}>
+                              Early-stage
+                            </div>
+                          </div>
+                          {product.maturity.includes('research') && (
+                            <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                              <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                              </svg>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
                   {/* Encarts IA avec scores réels */}
                   <div className="space-y-3">
                     <div className="bg-blue-900 rounded-lg p-3">
