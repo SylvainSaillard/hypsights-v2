@@ -22,7 +22,7 @@ interface BriefHeaderData {
     organization_types: string[];
     capabilities: string[];
     maturity: string[];
-    reference_companies?: string[];
+    reference_companies?: Array<{name: string; url: string}> | string[];
     goals?: string;
     timeline?: string;
     budget?: string;
@@ -146,8 +146,15 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
         organization_types,
         capabilities,
         maturity,
-        reference_companies
+        reference_companies: rawReferenceCompanies
     } = headerData;
+    
+    // Normaliser reference_companies pour gérer les deux formats possibles
+    const reference_companies = rawReferenceCompanies ? 
+        (Array.isArray(rawReferenceCompanies) && rawReferenceCompanies.length > 0 && typeof rawReferenceCompanies[0] === 'object' && 'name' in rawReferenceCompanies[0]
+            ? (rawReferenceCompanies as Array<{name: string; url: string}>).map(company => company.name)
+            : rawReferenceCompanies as string[]
+        ) : [];
     
     // Utiliser les KPIs du hook spécialisé pour les animations
     const {
