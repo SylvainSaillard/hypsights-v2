@@ -117,9 +117,9 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
     );
     
     // Hook spécialisé pour les KPIs avec temps réel et animations
-    const { kpiData, isLoading: kpiLoading } = useBriefKPIs(briefId);
+    const { kpiData } = useBriefKPIs(briefId);
 
-    if (loading || kpiLoading) {
+    if (loading) {
         return <BriefHeaderSkeleton />;
     }
 
