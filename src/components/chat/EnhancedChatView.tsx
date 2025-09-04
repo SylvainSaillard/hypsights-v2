@@ -92,6 +92,12 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     
     await sendMessage(messageText);
     
+    // Déclencher un refresh des solutions après l'envoi du message
+    // car l'IA pourrait avoir créé de nouvelles solutions
+    setTimeout(() => {
+      loadSolutions();
+    }, 2000); // Délai pour laisser le temps à l'IA de traiter
+    
     // Notifier le parent que le message a été envoyé
     if (onMessageSent) {
       onMessageSent();

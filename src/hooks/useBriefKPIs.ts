@@ -117,7 +117,7 @@ export function useBriefKPIs(briefId: string) {
     }
   }, [briefId]);
 
-  // Effet pour configurer l'abonnement real-time
+  // Effet pour configurer l'abonnement real-time avec polling de secours
   useEffect(() => {
     if (!briefId) return;
     
@@ -134,7 +134,8 @@ export function useBriefKPIs(briefId: string) {
         filter: `brief_id=eq.${briefId}`
       }, () => {
         console.log('useBriefKPIs - Solutions change detected, refreshing KPIs');
-        loadKPIs();
+        // Délai pour s'assurer que la transaction est commitée
+        setTimeout(() => loadKPIs(), 500);
       })
       // Supplier matches (pour suppliers_count et products_count)
       .on('postgres_changes', {
@@ -144,7 +145,7 @@ export function useBriefKPIs(briefId: string) {
         filter: `brief_id=eq.${briefId}`
       }, () => {
         console.log('useBriefKPIs - Supplier matches change detected, refreshing KPIs');
-        loadKPIs();
+        setTimeout(() => loadKPIs(), 500);
       })
       .subscribe((status: string) => {
         console.log('useBriefKPIs - Subscription status:', status);
@@ -153,12 +154,18 @@ export function useBriefKPIs(briefId: string) {
     // Charger les KPIs au montage
     loadKPIs();
     
-    // Nettoyage de l'abonnement
+    // Polling de secours toutes les 10 secondes pour s'assurer que les KPIs sont à jour
+    const pollingInterval = setInterval(() => {
+      loadKPIs();
+    }, 10000);
+    
+    // Nettoyage de l'abonnement et du polling
     return () => {
-      console.log('useBriefKPIs - Cleaning up subscription');
+      console.log('useBriefKPIs - Cleaning up subscription and polling');
       supabase.removeChannel(kpiChannel);
+      clearInterval(pollingInterval);
     };
-  }, [briefId]);
+  }, [briefId, loadKPIs]);
 
   return {
     kpiData,
