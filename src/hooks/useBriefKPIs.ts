@@ -45,10 +45,12 @@ export function useBriefKPIs(briefId: string) {
   const [error, setError] = useState<string | null>(null);
 
   // Fonction pour charger les KPIs
-  const loadKPIs = useCallback(async () => {
+  const loadKPIs = useCallback(async (showLoading = true) => {
     if (!briefId) return;
     
-    setIsLoading(true);
+    if (showLoading) {
+      setIsLoading(true);
+    }
     setError(null);
     
     try {
@@ -113,7 +115,9 @@ export function useBriefKPIs(briefId: string) {
       console.error('Exception while fetching KPIs:', error);
       setError((error as Error).message);
     } finally {
-      setIsLoading(false);
+      if (showLoading) {
+        setIsLoading(false);
+      }
     }
   }, [briefId]);
 
@@ -135,7 +139,7 @@ export function useBriefKPIs(briefId: string) {
       }, () => {
         console.log('useBriefKPIs - Solutions change detected, refreshing KPIs');
         // Délai pour s'assurer que la transaction est commitée
-        setTimeout(() => loadKPIs(), 500);
+        setTimeout(() => loadKPIs(false), 500);
       })
       // Supplier matches (pour suppliers_count et products_count)
       .on('postgres_changes', {
@@ -145,7 +149,7 @@ export function useBriefKPIs(briefId: string) {
         filter: `brief_id=eq.${briefId}`
       }, () => {
         console.log('useBriefKPIs - Supplier matches change detected, refreshing KPIs');
-        setTimeout(() => loadKPIs(), 500);
+        setTimeout(() => loadKPIs(false), 500);
       })
       .subscribe((status: string) => {
         console.log('useBriefKPIs - Subscription status:', status);
@@ -156,7 +160,7 @@ export function useBriefKPIs(briefId: string) {
     
     // Polling de secours toutes les 10 secondes pour s'assurer que les KPIs sont à jour
     const pollingInterval = setInterval(() => {
-      loadKPIs();
+      loadKPIs(false); // Pas d'animation de chargement pour le polling
     }, 10000);
     
     // Nettoyage de l'abonnement et du polling
