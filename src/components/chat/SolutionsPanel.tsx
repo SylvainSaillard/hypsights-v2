@@ -35,6 +35,9 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
   const hasQuota = fastSearchQuota ? fastSearchQuota.used < fastSearchQuota.total : true;
   const quotaRemaining = fastSearchQuota ? fastSearchQuota.total - fastSearchQuota.used : 0;
   
+  // Tri des solutions par % de confiance (du plus grand au plus petit)
+  const sortedSolutions = [...solutions].sort((a, b) => b.ai_confidence - a.ai_confidence);
+  
   return (
     <div className="flex flex-col h-full">
       {/* Header avec design moderne */}
@@ -59,16 +62,18 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
               </div>
             )}
           </div>
-          <button 
-            onClick={onRefresh}
-            disabled={isLoading}
-            className="px-4 py-2 bg-white shadow-md border border-purple-200 text-purple-700 text-sm rounded-lg hover:bg-purple-50 hover:shadow-lg disabled:opacity-50 transition-all duration-200 flex items-center gap-2"
-          >
-            <svg className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            {isLoading ? t('solutions_panel.button.refresh_loading', 'Loading...') : t('solutions_panel.button.refresh', 'Refresh')}
-          </button>
+          <div className="ml-6">
+            <button 
+              onClick={onRefresh}
+              disabled={isLoading}
+              className="px-4 py-2 bg-white shadow-md border border-purple-200 text-purple-700 text-sm rounded-lg hover:bg-purple-50 hover:shadow-lg disabled:opacity-50 transition-all duration-200 flex items-center gap-2"
+            >
+              <svg className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {isLoading ? t('solutions_panel.button.refresh_loading', 'Loading...') : t('solutions_panel.button.refresh', 'Refresh')}
+            </button>
+          </div>
         </div>
         
         {error && (
@@ -93,7 +98,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
       
       {/* Liste des solutions avec scroll amélioré */}
       <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
-        {solutions.length === 0 && !isLoading && (
+        {sortedSolutions.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-purple-100 to-indigo-100 rounded-full flex items-center justify-center">
               <svg className="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -109,7 +114,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
           </div>
         )}
         
-        {isLoading && solutions.length === 0 && (
+        {isLoading && sortedSolutions.length === 0 && (
           <div className="text-center py-12">
             <div className="relative w-16 h-16 mx-auto mb-4">
               <div className="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
@@ -121,7 +126,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
           </div>
         )}
         
-        {solutions.map(solution => (
+        {sortedSolutions.map(solution => (
           <div 
             key={solution.id} 
             className={`bg-white rounded-xl shadow-md border-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
