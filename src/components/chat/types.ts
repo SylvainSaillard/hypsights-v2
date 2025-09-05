@@ -11,7 +11,7 @@ export interface Product {
   features?: string[] | object | string;
   metadata?: object;
   url?: string;
-  maturity?: string[];
+  maturity?: string;
   ai_solution_fit_score?: number;
   ai_solution_fit_explanation?: string;
   ai_brief_fit_score?: number;
