@@ -36,6 +36,7 @@ export const useSupplierGroups = ({
           solutions!left(id, title, solution_number)
         `)
         .eq('brief_id', briefId)
+        .gte('overall_match_score', 70)
         .order('overall_match_score', { ascending: false });
 
       if (fetchError) {
