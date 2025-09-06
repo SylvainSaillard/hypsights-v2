@@ -61,6 +61,32 @@ export const useSupplierGroups = ({
 
   useEffect(() => {
     fetchSupplierGroups();
+    
+    // Abonnement realtime pour les mises à jour automatiques
+    if (!enabled || !briefId) return;
+    
+    const channel = supabase
+      .channel(`supplier_match_profiles_${briefId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'supplier_match_profiles',
+          filter: `brief_id=eq.${briefId}`
+        },
+        (payload) => {
+          console.log('Realtime update on supplier_match_profiles:', payload);
+          // Refetch les données quand il y a un changement
+          fetchSupplierGroups();
+        }
+      )
+      .subscribe();
+
+    // Cleanup function
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [briefId, enabled]);
 
   return {
