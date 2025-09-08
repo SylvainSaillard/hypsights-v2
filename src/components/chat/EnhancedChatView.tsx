@@ -15,7 +15,8 @@ import { supabase } from '../../lib/supabaseClient';
 const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   briefId,
   onMessageSent,
-  onSolutionValidated
+  onSolutionValidated,
+  onSolutionsChange
 }) => {
   // États locaux
   const [inputValue, setInputValue] = useState('');
@@ -39,6 +40,13 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     loadSolutions,
     validateSolution
   } = useSolutions(briefId, onSolutionValidated);
+
+  // Notifier le parent des changements de solutions
+  useEffect(() => {
+    if (onSolutionsChange) {
+      onSolutionsChange(solutions);
+    }
+  }, [solutions, onSolutionsChange]);
   
   // Charger le quota de Fast Search
   useEffect(() => {

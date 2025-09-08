@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useSolutions } from '../../hooks/useSolutions';
 import DeepSearchRequestModal from '../modals/DeepSearchRequestModal';
 
 interface PremiumDeepSearchCTAProps {
   briefId: string;
   autoShowModal?: boolean;
+  solutions?: Array<{id: string; status: string}>;
 }
 
-const PremiumDeepSearchCTA: React.FC<PremiumDeepSearchCTAProps> = ({ briefId, autoShowModal = false }) => {
+const PremiumDeepSearchCTA: React.FC<PremiumDeepSearchCTAProps> = ({ briefId, autoShowModal = false, solutions = [] }) => {
   const [isModalOpen, setModalOpen] = useState(false);
-  const { solutions } = useSolutions(briefId);
 
   // Auto-show modal when all solutions are finished
   useEffect(() => {

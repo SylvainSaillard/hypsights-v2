@@ -54,6 +54,7 @@ export interface EnhancedChatViewProps {
   briefId: string;
   onMessageSent?: () => void;
   onSolutionValidated?: (solutionId: string) => void;
+  onSolutionsChange?: (solutions: Solution[]) => void;
 }
 
 // Constantes pour les noms des channels real-time

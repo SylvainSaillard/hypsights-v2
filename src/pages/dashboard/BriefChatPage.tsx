@@ -154,10 +154,18 @@ const BriefChatPage = () => {
     }
   };
   
+  // État pour les solutions
+  const [solutions, setSolutions] = useState<Array<{id: string; status: string}>>([]);
+
   // Gérer l'envoi d'un message
   const handleMessageSent = () => {
     console.log('DEBUG BriefChatPage - Message sent');
     // Aucune action supplémentaire nécessaire pour le moment
+  };
+
+  // Gérer les changements de solutions
+  const handleSolutionsChange = (newSolutions: Array<{id: string; status: string}>) => {
+    setSolutions(newSolutions);
   };
   
   return (
@@ -226,10 +234,11 @@ const BriefChatPage = () => {
                 briefId={brief.id}
                 onSolutionValidated={handleSolutionValidated}
                 onMessageSent={handleMessageSent}
+                onSolutionsChange={handleSolutionsChange}
               />
             </div>
 
-            <PremiumDeepSearchCTA briefId={brief.id} autoShowModal={true} />
+            <PremiumDeepSearchCTA briefId={brief.id} autoShowModal={true} solutions={solutions} />
             
             {/* Nouveau panneau de fournisseurs avec design moderne */}
             <NewSuppliersPanel briefId={brief.id} />
