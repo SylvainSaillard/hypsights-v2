@@ -29,25 +29,25 @@ const BriefValidationOverlay: React.FC<BriefValidationOverlayProps> = ({ isLoadi
       id: 'analyzing',
       label: t('brief.validation.step.analyzing', 'Analyzing your brief requirements'),
       icon: '🔍',
-      duration: 12
+      duration: 15
     },
     {
       id: 'matching',
       label: t('brief.validation.step.matching', 'Finding matching solutions'),
       icon: '🎯',
-      duration: 15
+      duration: 18
     },
     {
       id: 'researching',
       label: t('brief.validation.step.researching', 'Researching reference companies'),
       icon: '🏢',
-      duration: 18
+      duration: 20
     },
     {
       id: 'finalizing',
       label: t('brief.validation.step.finalizing', 'Finalizing recommendations'),
       icon: '✨',
-      duration: 10
+      duration: 7
     }
   ], [t]);
 
@@ -59,13 +59,16 @@ const BriefValidationOverlay: React.FC<BriefValidationOverlayProps> = ({ isLoadi
       return;
     }
 
+    // Animation autonome de 60 secondes
+    const TOTAL_ANIMATION_DURATION = 60; // 60 secondes
+    const UPDATE_INTERVAL = 200; // Mise à jour toutes les 200ms pour fluidité
+    
     let totalElapsed = 0;
-    const totalDuration = processingSteps.reduce((sum, step) => sum + step.duration, 0);
     
     const interval = setInterval(() => {
-      totalElapsed += 0.5;
+      totalElapsed += UPDATE_INTERVAL / 1000; // Convertir ms en secondes
       
-      // Calculate which step we're in
+      // Calculer l'étape actuelle basée sur la durée totale des étapes (60s)
       let stepElapsed = 0;
       let newCurrentStep = 0;
       
@@ -78,29 +81,32 @@ const BriefValidationOverlay: React.FC<BriefValidationOverlayProps> = ({ isLoadi
         newCurrentStep = i + 1;
       }
       
-      setCurrentStep(Math.min(newCurrentStep, processingSteps.length - 1));
+      // S'assurer qu'on ne dépasse pas la dernière étape
+      const currentStepIndex = Math.min(newCurrentStep, processingSteps.length - 1);
+      setCurrentStep(currentStepIndex);
       
-      // Calculate step progress
+      // Calculer la progression de l'étape actuelle
       const currentStepElapsed = totalElapsed - stepElapsed;
-      const currentStepDuration = processingSteps[Math.min(newCurrentStep, processingSteps.length - 1)]?.duration || 1;
-      setStepProgress(Math.min((currentStepElapsed / currentStepDuration) * 100, 100));
+      const currentStepDuration = processingSteps[currentStepIndex]?.duration || 1;
+      const currentStepProgress = Math.min((currentStepElapsed / currentStepDuration) * 100, 100);
+      setStepProgress(currentStepProgress);
       
-      // Calculate overall progress
-      const overallProgress = Math.min((totalElapsed / totalDuration) * 100, 95);
+      // Progression globale basée sur 60 secondes, plafonnée à 95%
+      const overallProgress = Math.min((totalElapsed / TOTAL_ANIMATION_DURATION) * 95, 95);
       setProgress(overallProgress);
       
-      console.log('Animation Debug:', {
-        totalElapsed,
-        totalDuration,
-        overallProgress,
-        currentStep: newCurrentStep,
-        stepProgress: (currentStepElapsed / currentStepDuration) * 100
-      });
+      // Arrêter l'animation après 60 secondes
+      if (totalElapsed >= TOTAL_ANIMATION_DURATION) {
+        setProgress(95);
+        setStepProgress(100);
+        setCurrentStep(processingSteps.length - 1);
+        clearInterval(interval);
+      }
       
-    }, 500);
+    }, UPDATE_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [isLoading]); // Removed processingSteps dependency to avoid recreation
+  }, [isLoading, processingSteps]);
   
   if (!isLoading) return null;
   
