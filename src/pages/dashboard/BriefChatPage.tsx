@@ -229,7 +229,7 @@ const BriefChatPage = () => {
               />
             </div>
 
-            <PremiumDeepSearchCTA briefId={brief.id} />
+            <PremiumDeepSearchCTA briefId={brief.id} autoShowModal={true} />
             
             {/* Nouveau panneau de fournisseurs avec design moderne */}
             <NewSuppliersPanel briefId={brief.id} />

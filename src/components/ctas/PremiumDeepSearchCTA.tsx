@@ -1,12 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSolutions } from '../../hooks/useSolutions';
 import DeepSearchRequestModal from '../modals/DeepSearchRequestModal';
 
 interface PremiumDeepSearchCTAProps {
   briefId: string;
+  autoShowModal?: boolean;
 }
 
-const PremiumDeepSearchCTA: React.FC<PremiumDeepSearchCTAProps> = ({ briefId }) => {
+const PremiumDeepSearchCTA: React.FC<PremiumDeepSearchCTAProps> = ({ briefId, autoShowModal = false }) => {
   const [isModalOpen, setModalOpen] = useState(false);
+  const { solutions } = useSolutions(briefId);
+
+  // Auto-show modal when all solutions are finished
+  useEffect(() => {
+    if (autoShowModal && solutions.length > 0) {
+      const allSolutionsFinished = solutions.every(solution => 
+        solution.status === 'finished' || solution.status === 'rejected'
+      );
+      
+      if (allSolutionsFinished) {
+        setModalOpen(true);
+      }
+    }
+  }, [autoShowModal, solutions]);
 
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
