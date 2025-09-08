@@ -13,11 +13,16 @@ const PremiumDeepSearchCTA: React.FC<PremiumDeepSearchCTAProps> = ({ briefId, au
   // Auto-show modal when all solutions are finished
   useEffect(() => {
     if (autoShowModal && solutions.length > 0) {
+      console.log('PremiumDeepSearchCTA - Checking solutions for auto-popup:', solutions);
+      
       const allSolutionsFinished = solutions.every(solution => 
         solution.status === 'finished' || solution.status === 'rejected'
       );
       
+      console.log('PremiumDeepSearchCTA - All solutions finished?', allSolutionsFinished);
+      
       if (allSolutionsFinished) {
+        console.log('PremiumDeepSearchCTA - Opening modal automatically');
         setModalOpen(true);
       }
     }

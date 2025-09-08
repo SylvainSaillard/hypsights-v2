@@ -165,6 +165,7 @@ const BriefChatPage = () => {
 
   // Gérer les changements de solutions
   const handleSolutionsChange = (newSolutions: Array<{id: string; status: string}>) => {
+    console.log('BriefChatPage - Solutions changed:', newSolutions);
     setSolutions(newSolutions);
   };
   
