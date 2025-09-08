@@ -23,7 +23,8 @@ const BriefValidationOverlay: React.FC<BriefValidationOverlayProps> = ({ isLoadi
   const [progress, setProgress] = useState(0);
   const [stepProgress, setStepProgress] = useState(0);
   
-  const processingSteps: ProcessingStep[] = [
+  // Define steps outside of component to avoid recreation on every render
+  const processingSteps: ProcessingStep[] = React.useMemo(() => [
     {
       id: 'analyzing',
       label: t('brief.validation.step.analyzing', 'Analyzing your brief requirements'),
@@ -48,7 +49,7 @@ const BriefValidationOverlay: React.FC<BriefValidationOverlayProps> = ({ isLoadi
       icon: '✨',
       duration: 10
     }
-  ];
+  ], [t]);
 
   useEffect(() => {
     if (!isLoading) {
@@ -85,12 +86,21 @@ const BriefValidationOverlay: React.FC<BriefValidationOverlayProps> = ({ isLoadi
       setStepProgress(Math.min((currentStepElapsed / currentStepDuration) * 100, 100));
       
       // Calculate overall progress
-      setProgress(Math.min((totalElapsed / totalDuration) * 100, 95)); // Cap at 95% until actual completion
+      const overallProgress = Math.min((totalElapsed / totalDuration) * 100, 95);
+      setProgress(overallProgress);
+      
+      console.log('Animation Debug:', {
+        totalElapsed,
+        totalDuration,
+        overallProgress,
+        currentStep: newCurrentStep,
+        stepProgress: (currentStepElapsed / currentStepDuration) * 100
+      });
       
     }, 500);
 
     return () => clearInterval(interval);
-  }, [isLoading, processingSteps]);
+  }, [isLoading]); // Removed processingSteps dependency to avoid recreation
   
   if (!isLoading) return null;
   
