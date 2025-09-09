@@ -162,7 +162,7 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
             .from('solutions')
             .select('id', { count: 'exact', head: true })
             .eq('brief_id', brief.id)
-            .in('status', ['proposed', 'validated', 'in_progress'])
+            .eq('status', 'in_progress')
         ]);
 
         if (solutionsError) console.error(`[getBriefsWithStats] Error getting solutions count for brief ${brief.id}:`, solutionsError);
