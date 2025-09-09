@@ -14,6 +14,8 @@ type Brief = {
   products_count: number;
   suppliers_count: number;
   fast_searches_used: number;
+  has_active_solutions?: boolean;
+  active_solutions_count?: number;
 };
 
 /**
@@ -187,10 +189,19 @@ const BriefManagementGrid: React.FC = () => {
             {filteredBriefs.map((brief: Brief) => {
               const totalResults = (brief.products_count || 0) + (brief.suppliers_count || 0) + (brief.solutions_count || 0);
               const hasResults = totalResults > 0;
+              const hasActiveProcessing = brief.has_active_solutions || false;
               
-              const cardClasses = hasResults 
-                ? 'bg-gradient-to-br from-white to-gray-50 border-2 border-green-300 shadow-xl hover:shadow-2xl'
-                : 'bg-white border-2 border-gray-200 shadow-lg hover:shadow-xl';
+              let cardClasses;
+              if (hasActiveProcessing) {
+                // Briefs with active Fast Search processing
+                cardClasses = 'bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-400 shadow-xl hover:shadow-2xl ring-2 ring-blue-200 ring-opacity-50';
+              } else if (hasResults) {
+                // Briefs with completed results
+                cardClasses = 'bg-gradient-to-br from-white to-gray-50 border-2 border-green-300 shadow-xl hover:shadow-2xl';
+              } else {
+                // Default state
+                cardClasses = 'bg-white border-2 border-gray-200 shadow-lg hover:shadow-xl';
+              }
 
               return (
                 <div 
@@ -200,6 +211,20 @@ const BriefManagementGrid: React.FC = () => {
                 >
                   {/* Animated background gradient */}
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-green-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  {/* Processing indicator for active briefs */}
+                  {hasActiveProcessing && (
+                    <div className="absolute top-4 right-4 z-10">
+                      <div className="flex items-center space-x-2 bg-blue-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-lg">
+                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                        <span>Processing</span>
+                        <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="relative p-6 flex flex-col h-full">
                     {/* Title and Description */}
@@ -228,11 +253,21 @@ const BriefManagementGrid: React.FC = () => {
 
                       {/* Results summary */}
                       <div className="flex items-center text-sm">
-                        <div className="flex items-center space-x-1">
-                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                          <span className="font-semibold text-green-600">{totalResults}</span>
-                          <span className="text-gray-600">total results found</span>
-                        </div>
+                        {hasActiveProcessing ? (
+                          <div className="flex items-center space-x-1">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                            <span className="font-semibold text-blue-600">
+                              {brief.active_solutions_count || 0} solutions processing
+                            </span>
+                            <span className="text-gray-600">• {totalResults} results found</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center space-x-1">
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                            <span className="font-semibold text-green-600">{totalResults}</span>
+                            <span className="text-gray-600">total results found</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -272,7 +307,9 @@ const BriefManagementGrid: React.FC = () => {
 
                     {/* Gamified Action Button */}
                     <button className={`relative w-full py-4 px-6 rounded-xl font-bold text-center transition-all duration-300 transform hover:scale-105 overflow-hidden ${
-                      hasResults 
+                      hasActiveProcessing
+                        ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-xl hover:shadow-2xl animate-pulse'
+                        : hasResults 
                         ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-xl hover:shadow-2xl' 
                         : 'bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg hover:shadow-xl'
                     }`}>
@@ -280,7 +317,14 @@ const BriefManagementGrid: React.FC = () => {
                       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
                       
                       <div className="relative flex items-center justify-center">
-                        {hasResults ? (
+                        {hasActiveProcessing ? (
+                          <>
+                            <svg className="w-5 h-5 mr-2 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <span>🔄 Fast Search in Progress...</span>
+                          </>
+                        ) : hasResults ? (
                           <>
                             <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
