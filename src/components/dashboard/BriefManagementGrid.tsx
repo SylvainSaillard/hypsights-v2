@@ -212,15 +212,6 @@ const BriefManagementGrid: React.FC = () => {
                   {/* Animated background gradient */}
                   <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 via-purple-400/10 to-green-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                   
-                  {/* Processing indicator for active briefs */}
-                  {hasActiveProcessing && (
-                    <div className="absolute top-4 right-12 z-10">
-                      <div className="flex items-center space-x-1 bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-medium shadow-sm">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                        <span>Processing</span>
-                      </div>
-                    </div>
-                  )}
                   
                   <div className="relative p-6 flex flex-col h-full">
                     {/* Title and Description */}
@@ -240,10 +231,10 @@ const BriefManagementGrid: React.FC = () => {
                             e.stopPropagation(); 
                             openConfirmationModal(brief.id); 
                           }}
-                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-full transition-colors duration-200 z-10"
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-100 rounded-lg transition-colors duration-200 z-10"
                           title={t('brief.card.archive_button', 'Archive Brief')}
                         >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H9a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
                       </div>
 
