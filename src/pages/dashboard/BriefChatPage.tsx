@@ -36,6 +36,7 @@ const BriefChatPage = () => {
   const [brief, setBrief] = useState<Brief | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string>('');
   
   // Charger les détails du brief
   useEffect(() => {
@@ -48,6 +49,12 @@ const BriefChatPage = () => {
     const loadBrief = async () => {
       try {
         console.log('DEBUG BriefChatPage - Loading brief details for ID:', briefId);
+        
+        // Get user session to retrieve email
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user?.email) {
+          setUserEmail(session.user.email);
+        }
         
         const { data, error } = await supabase
           .from('briefs')
@@ -239,7 +246,14 @@ const BriefChatPage = () => {
               />
             </div>
 
-            <PremiumDeepSearchCTA briefId={brief.id} autoShowModal={true} solutions={solutions} />
+            <PremiumDeepSearchCTA 
+              briefId={brief.id} 
+              autoShowModal={true} 
+              solutions={solutions}
+              briefTitle={brief.title}
+              briefDescription={brief.description || ''}
+              userEmail={userEmail}
+            />
             
             {/* Nouveau panneau de fournisseurs avec design moderne */}
             <NewSuppliersPanel briefId={brief.id} />

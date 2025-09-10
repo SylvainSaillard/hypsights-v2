@@ -5,9 +5,19 @@ interface PremiumDeepSearchCTAProps {
   briefId: string;
   autoShowModal?: boolean;
   solutions?: Array<{id: string; status: string}>;
+  briefTitle?: string;
+  briefDescription?: string;
+  userEmail?: string;
 }
 
-const PremiumDeepSearchCTA: React.FC<PremiumDeepSearchCTAProps> = ({ briefId, autoShowModal = false, solutions = [] }) => {
+const PremiumDeepSearchCTA: React.FC<PremiumDeepSearchCTAProps> = ({ 
+  briefId, 
+  autoShowModal = false, 
+  solutions = [], 
+  briefTitle = '', 
+  briefDescription = '', 
+  userEmail = '' 
+}) => {
   const [isModalOpen, setModalOpen] = useState(false);
 
   // Auto-show modal when all solutions are finished
@@ -65,7 +75,11 @@ const PremiumDeepSearchCTA: React.FC<PremiumDeepSearchCTAProps> = ({ briefId, au
       <DeepSearchRequestModal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
-        onSubmit={handleSubmitRequest} 
+        onSubmit={handleSubmitRequest}
+        briefId={briefId}
+        briefTitle={briefTitle}
+        briefDescription={briefDescription}
+        userEmail={userEmail}
       />
     </>
   );
