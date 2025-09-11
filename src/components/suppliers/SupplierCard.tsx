@@ -15,7 +15,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   onViewDetails,
   onSolutionSelect
 }) => {
-  const { supplier, solutions, scores, ai_explanation } = supplierGroup;
+  const { supplier, solutions, scores } = supplierGroup;
   const navigate = useNavigate();
   const { briefId } = useParams<{ briefId: string }>();
   
@@ -157,7 +157,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
             </div>
             <div className="ml-4 text-right">
               <div className="bg-white bg-opacity-20 rounded-lg px-3 py-2 backdrop-blur-sm">
-                <div className="text-2xl font-bold">{scores.overall}%</div>
+                <div className="text-2xl font-bold">{scores.brief_fit}%</div>
                 <div className="text-xs opacity-90">Overall Match</div>
               </div>
             </div>
@@ -199,17 +199,11 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
       <div className="p-6">
 
 
-        {/* AI Fit Scores */}
-        <div className="space-y-4 mb-6">
+        {/* Hypsights AI Analysis */}
+        <div className="mb-6">
           <FitScoreBlock 
-            title="Solution Fit"
-            score={scores.solution_fit}
-            explanation={scores.solution_fit_explanation}
-            color="blue"
-          />
-          <FitScoreBlock 
-            title="Brief Fit"
-            score={scores.brief_fit}
+            title="Hypsights AI Analysis"
+            score={null}
             explanation={scores.brief_fit_explanation}
             color="green"
           />
@@ -254,35 +248,29 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           </div>
         )}
 
-        {/* Explication IA */}
-        {ai_explanation && (
-          <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 mb-4 border border-purple-100">
-            <div className="flex items-start gap-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-sm">🧠</span>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-800 mb-1">AI Analysis</div>
-                <p className="text-sm text-gray-600 leading-relaxed">{ai_explanation}</p>
-              </div>
-            </div>
-          </div>
-        )}
 
-        {/* Résumé des produits */}
+        {/* Résumé des produits - Design amélioré */}
         {products.length > 0 && (
-          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 mb-4 border border-gray-100">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-sm">📦</span>
-              </div>
-              <div>
-                <div className="text-sm font-semibold text-gray-800">
-                  {products.length} Product{products.length !== 1 ? 's' : ''} Available
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 mb-4 border border-blue-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                  <span className="text-white text-lg">📦</span>
                 </div>
-                <p className="text-xs text-gray-600">
-                  Across {solutions.length} solution{solutions.length !== 1 ? 's' : ''}
-                </p>
+                <div>
+                  <div className="text-base font-bold text-gray-800">
+                    {products.length} Product{products.length !== 1 ? 's' : ''} Available
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    Across {solutions.length} solution{solutions.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="bg-white rounded-lg px-3 py-2 shadow-sm border border-blue-200">
+                  <div className="text-xl font-bold text-blue-600">{products.length}</div>
+                  <div className="text-xs text-gray-500">Items</div>
+                </div>
               </div>
             </div>
           </div>

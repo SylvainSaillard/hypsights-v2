@@ -2,7 +2,7 @@ import React from 'react';
 
 interface FitScoreBlockProps {
   title: string;
-  score: number;
+  score: number | null;
   explanation: string;
   color: 'blue' | 'green';
 }
@@ -31,11 +31,15 @@ export const FitScoreBlock: React.FC<FitScoreBlockProps> = ({ title, score, expl
     <div className="bg-gray-900 p-4 rounded-lg border border-gray-700">
       <div className="flex justify-between items-center mb-3">
         <h4 className="font-semibold text-white text-lg">{title}</h4>
-        <div className={`text-2xl font-bold ${styles.text}`}>{score}%</div>
+        {score !== null && (
+          <div className={`text-2xl font-bold ${styles.text}`}>{score}%</div>
+        )}
       </div>
-      <div className={`w-full ${styles.barBg} rounded-full h-2 mb-4`}>
-        <div className={`${styles.barFill} h-2 rounded-full`} style={{ width: `${score}%` }}></div>
-      </div>
+      {score !== null && (
+        <div className={`w-full ${styles.barBg} rounded-full h-2 mb-4`}>
+          <div className={`${styles.barFill} h-2 rounded-full`} style={{ width: `${score}%` }}></div>
+        </div>
+      )}
       <div className="flex items-start">
         <div className={`flex-shrink-0 w-8 h-8 rounded-full border-2 ${styles.iconBorder} flex items-center justify-center mr-3`}>
           <span className={`font-bold text-sm ${styles.iconText}`}>AI</span>
