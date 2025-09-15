@@ -102,7 +102,7 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
   console.log('[getBriefsWithStats] Fetching active briefs for user:', userId);
   const { data: briefs, error: briefsError } = await supabaseAdmin
     .from('briefs')
-    .select('*')
+    .select('*, deep_search_requested')
     .eq('user_id', userId)
     .neq('status', 'archived') // Exclude archived briefs
     .order('created_at', { ascending: false });

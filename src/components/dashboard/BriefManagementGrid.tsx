@@ -16,6 +16,7 @@ type Brief = {
   fast_searches_used: number;
   has_active_solutions?: boolean;
   active_solutions_count?: number;
+  deep_search_requested?: boolean;
 };
 
 /**
@@ -217,10 +218,20 @@ const BriefManagementGrid: React.FC = () => {
                     {/* Title and Description */}
                     <div className="mb-6 flex-1">
                       <div className="flex justify-between items-start mb-4">
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-800 truncate" title={brief.title}>
-                            {brief.title}
-                          </h3>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-lg font-bold text-gray-800 truncate" title={brief.title}>
+                              {brief.title}
+                            </h3>
+                            {brief.deep_search_requested && (
+                              <div className="flex items-center bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-2 py-1 rounded-full text-xs font-medium shadow-sm">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                {t('brief.card.deep_search_badge', 'Deep Search')}
+                              </div>
+                            )}
+                          </div>
                           <p className="text-sm text-gray-500">
                             {new Date(brief.created_at).toLocaleDateString(locale, { year: 'numeric', month: 'long', day: 'numeric' })}
                           </p>
