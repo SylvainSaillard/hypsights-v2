@@ -13,6 +13,7 @@ interface DeepSearchWebhookPayload {
   briefTitle: string
   briefDescription: string
   additionalInfo?: string
+  phone?: string
 }
 
 serve(async (req) => {
@@ -80,6 +81,18 @@ serve(async (req) => {
 
     console.log('Brief updated successfully:', data[0])
 
+    // Save phone number to user_metadata if provided
+    if (payload.phone && payload.phone.trim()) {
+      await supabase
+        .from('users_metadata')
+        .upsert({
+          user_id: briefData.user_id,
+          phone: payload.phone.trim()
+        }, {
+          onConflict: 'user_id'
+        })
+    }
+
     // Log the event for analytics
     await supabase
       .from('raw_analytics_events')
@@ -90,7 +103,8 @@ serve(async (req) => {
           brief_id: payload.briefId,
           brief_title: payload.briefTitle,
           user_email: payload.userEmail,
-          additional_info: payload.additionalInfo || null
+          additional_info: payload.additionalInfo || null,
+          phone: payload.phone || null
         },
         source: 'webhook',
         timestamp: new Date().toISOString()

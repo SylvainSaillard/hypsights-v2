@@ -21,6 +21,7 @@ const DeepSearchRequestModal: React.FC<DeepSearchRequestModalProps> = ({
   userEmail 
 }) => {
   const [additionalInfo, setAdditionalInfo] = useState('');
+  const [phone, setPhone] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
@@ -55,7 +56,8 @@ const DeepSearchRequestModal: React.FC<DeepSearchRequestModalProps> = ({
           briefId,
           briefTitle,
           briefDescription,
-          additionalInfo
+          additionalInfo,
+          phone
         })
       });
 
@@ -69,7 +71,8 @@ const DeepSearchRequestModal: React.FC<DeepSearchRequestModalProps> = ({
         briefId,
         briefTitle,
         briefDescription,
-        additionalInfo
+        additionalInfo,
+        phone
       };
 
       const makeWebhookResponse = await fetch('https://hook.eu1.make.com/sg1brkl4b6fzl82te1k3q3n6x8nt8wvh', {
@@ -107,6 +110,18 @@ const DeepSearchRequestModal: React.FC<DeepSearchRequestModalProps> = ({
         </div>
         <p className="text-gray-600 mb-6">Our experts will conduct a detailed search based on your brief. Please provide any additional information that might help.</p>
         
+        <div className="mb-4">
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number (Optional)</label>
+          <input
+            id="phone"
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="+33 1 23 45 67 89"
+            className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+          />
+        </div>
+
         <div className="mb-4">
           <label htmlFor="additionalInfo" className="block text-sm font-medium text-gray-700 mb-1">Additional Information</label>
           <textarea
