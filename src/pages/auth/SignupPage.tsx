@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const SignupPage = () => {
@@ -9,8 +9,7 @@ const SignupPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth(); // Use signup from AuthContext
-  const navigate = useNavigate(); // Keep navigate for potential future use
+  const { signup } = useAuth(); // Use signup from AuthContext // Keep navigate for potential future use
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,6 +65,19 @@ const SignupPage = () => {
       </div>
       
       <div className="w-full max-w-md p-8 space-y-6 bg-white shadow-2xl rounded-xl border border-gray-100 z-10 relative">
+        {/* Back to home button */}
+        <div className="flex justify-center">
+          <Link 
+            to="/" 
+            className="inline-flex items-center text-sm text-gray-500 hover:text-blue-600 transition-colors duration-200 group"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1 group-hover:-translate-x-1 transition-transform duration-200" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+            Back to home
+          </Link>
+        </div>
+        
         <div className="text-center">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-2">
             Create your Hypsights Account
