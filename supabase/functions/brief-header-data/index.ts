@@ -154,19 +154,17 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
   const supplierIds = suppliers?.map(s => s.id) || [];
   let productsCount = 0;
 
-  // Step 2: If suppliers exist, count their associated products.
-  if (suppliersCount > 0) {
-    const { count, error: productsError } = await supabaseAdmin
-      .from('products')
-      .select('id', { count: 'exact', head: true })
-      .in('supplier_id', supplierIds);
+  // Step 2: Count products directly linked to the brief
+  const { count, error: productsError } = await supabaseAdmin
+    .from('products')
+    .select('id', { count: 'exact', head: true })
+    .eq('brief_id', briefId);
 
-    if (productsError) {
-      console.error(`[${FUNCTION_NAME}] Error fetching products count:`, productsError);
-      // Do not throw, return partial data instead
-    } else {
-      productsCount = count || 0;
-    }
+  if (productsError) {
+    console.error(`[${FUNCTION_NAME}] Error fetching products count:`, productsError);
+    // Do not throw, return partial data instead
+  } else {
+    productsCount = count || 0;
   }
 
   /* --- DEPRECATED (2024-07-15): Aggregate filters from search results ---
