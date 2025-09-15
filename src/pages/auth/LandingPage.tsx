@@ -14,7 +14,7 @@ const LandingPage: React.FC = () => {
                   <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                 </svg>
                 <span className="ml-2 text-2xl font-bold text-gray-900">Hypsights</span>
-                <span className="ml-1 text-sm text-primary font-semibold">v2</span>
+                <span className="ml-1 text-sm text-primary font-semibold">Beta</span>
               </div>
             </div>
             <div className="flex items-center space-x-6">
@@ -280,7 +280,7 @@ const LandingPage: React.FC = () => {
                   <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                 </svg>
                 <span className="ml-2 text-2xl font-bold text-white">Hypsights</span>
-                <span className="ml-1 text-sm text-primary font-semibold">v2</span>
+                <span className="ml-1 text-sm text-primary font-semibold">Beta</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">
                 The B2B platform that helps professionals find qualified suppliers and products through AI-assisted search and expert validation.

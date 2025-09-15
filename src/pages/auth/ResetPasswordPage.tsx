@@ -58,7 +58,7 @@ const ResetPasswordPage: React.FC = () => {
               <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
             </svg>
             <span className="text-3xl font-bold text-gray-900">Hypsights</span>
-            <span className="ml-1 text-sm text-orange-600 font-semibold">v2</span>
+            <span className="ml-1 text-sm text-orange-600 font-semibold">Beta</span>
           </Link>
         </div>
         
