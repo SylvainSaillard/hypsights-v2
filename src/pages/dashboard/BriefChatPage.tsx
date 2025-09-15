@@ -87,6 +87,30 @@ const BriefChatPage = () => {
     
     loadBrief();
   }, [briefId]);
+
+  // Function to refresh brief data after deep search submission
+  const refreshBriefData = async () => {
+    if (!briefId) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('briefs')
+        .select('*, deep_search_requested')
+        .eq('id', briefId)
+        .single();
+      
+      if (error) {
+        console.error('Error refreshing brief data:', error);
+        return;
+      }
+      
+      if (data) {
+        setBrief(data);
+      }
+    } catch (error) {
+      console.error('Exception refreshing brief data:', error);
+    }
+  };
   
   // Gérer la validation d'une solution
   const handleSolutionValidated = async (solutionId: string) => {
@@ -255,6 +279,7 @@ const BriefChatPage = () => {
               briefDescription={brief.description || ''}
               userEmail={userEmail}
               deepSearchRequested={brief.deep_search_requested || false}
+              onDeepSearchSubmitted={refreshBriefData}
             />
             
             {/* Nouveau panneau de fournisseurs avec design moderne */}
