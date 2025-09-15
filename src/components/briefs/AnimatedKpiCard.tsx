@@ -19,6 +19,7 @@ if (typeof document !== 'undefined' && !document.getElementById('kpi-animations'
 
 interface AnimatedKpiCardProps {
   title: string;
+  subtitle?: string;
   value: number;
   previousValue: number;
   icon: React.ReactNode;
@@ -32,6 +33,7 @@ interface AnimatedKpiCardProps {
  */
 const AnimatedKpiCard: React.FC<AnimatedKpiCardProps> = ({ 
   title, 
+  subtitle,
   value, 
   previousValue, 
   icon, 
@@ -139,7 +141,12 @@ const AnimatedKpiCard: React.FC<AnimatedKpiCardProps> = ({
               )}
             </div>
             
-            <p className="text-slate-400 text-sm font-medium tracking-wide">{title}</p>
+            <div>
+              <p className="text-slate-400 text-sm font-medium tracking-wide">{title}</p>
+              {subtitle && (
+                <p className="text-slate-500 text-xs mt-0.5">{subtitle}</p>
+              )}
+            </div>
           </div>
           
           <div className="relative">

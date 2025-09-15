@@ -121,37 +121,31 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
     console.error(`[${FUNCTION_NAME}] Error fetching fast searches count:`, fastSearchesError);
   }
 
-  // Step 1: Use the join table `supplier_match_profiles` to find suppliers for the brief.
-  const { data: supplierMatches, error: matchError } = await supabaseAdmin
-    .from('supplier_match_profiles')
-    .select('supplier_id')
-    .eq('brief_id', briefId);
+  // Step 1: Count total suppliers and filtered suppliers (>70% match)
+  const [
+    { count: totalSuppliersCount, error: totalMatchError },
+    { count: filteredSuppliersCount, error: filteredMatchError }
+  ] = await Promise.all([
+    // Total suppliers count
+    supabaseAdmin
+      .from('supplier_match_profiles')
+      .select('supplier_id', { count: 'exact', head: true })
+      .eq('brief_id', briefId),
+    // Filtered suppliers count (>70% match)
+    supabaseAdmin
+      .from('supplier_match_profiles')
+      .select('supplier_id', { count: 'exact', head: true })
+      .eq('brief_id', briefId)
+      .gte('overall_match_score', 70)
+  ]);
 
-  if (matchError) {
-    console.error(`[${FUNCTION_NAME}] Error fetching supplier matches:`, matchError);
+  if (totalMatchError || filteredMatchError) {
+    console.error(`[${FUNCTION_NAME}] Error fetching supplier matches:`, totalMatchError || filteredMatchError);
     throw new HttpError('Failed to fetch supplier matches', 500);
   }
 
-  const supplierIdsFromMatches = supplierMatches.map(m => m.supplier_id).filter(id => id);
-
-  let suppliers: any[] = [];
-  if (supplierIdsFromMatches.length > 0) {
-    const { data: fetchedSuppliers, error: suppliersError } = await supabaseAdmin
-      .from('suppliers')
-      .select('*')
-      .in('id', supplierIdsFromMatches);
-
-    if (suppliersError) {
-      console.error(`[${FUNCTION_NAME}] Database error fetching suppliers:`, JSON.stringify(suppliersError, null, 2));
-      throw new HttpError('Failed to fetch suppliers', 500);
-    }
-    suppliers = fetchedSuppliers;
-  }
-
-  console.log(`[${FUNCTION_NAME}] Successfully fetched suppliers. Count: ${suppliers.length}`);
-
-  const suppliersCount = suppliers?.length || 0;
-  const supplierIds = suppliers?.map(s => s.id) || [];
+  console.log(`[${FUNCTION_NAME}] Total suppliers: ${totalSuppliersCount || 0}, Filtered (>70%): ${filteredSuppliersCount || 0}`);
+  
   let productsCount = 0;
 
   // Step 2: Count products directly linked to the brief
@@ -202,7 +196,8 @@ async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string,
   return {
     ...brief,
     solutions_count: solutionsCount || 0,
-    suppliers_count: suppliersCount,
+    suppliers_count: totalSuppliersCount || 0,
+    suppliers_filtered_count: filteredSuppliersCount || 0,
     products_count: productsCount,
     fast_searches_used: fastSearchesUsed || 0
   };

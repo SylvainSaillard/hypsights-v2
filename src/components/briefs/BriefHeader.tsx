@@ -16,13 +16,14 @@ interface BriefHeaderData {
     created_at: string;
     solutions_count: number;
     suppliers_count: number;
+    suppliers_filtered_count: number;
     products_count: number;
-    fast_searches_used?: number; // Ajout du champ
-    geographies: string[];
-    organization_types: string[];
-    capabilities: string[];
-    maturity: string[];
-    reference_companies?: Array<{name: string; url: string}> | string[];
+    fast_searches_used: number;
+    geographies?: string[];
+    organization_types?: string[];
+    capabilities?: string[];
+    maturity?: string[];
+    reference_companies?: string[] | Array<{name: string; url: string}>;
     goals?: string;
     timeline?: string;
     budget?: string;
@@ -190,6 +191,7 @@ const BriefHeader: React.FC<BriefHeaderProps> = ({ briefId }) => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <AnimatedKpiCard 
                     title={t('brief.header.kpi.companies', 'Companies')} 
+                    subtitle={`${headerData.suppliers_filtered_count || 0} shown of ${suppliers_count} found`}
                     value={suppliers_count} 
                     previousValue={suppliers_count_prev}
                     hasChanged={suppliers_count_changed}

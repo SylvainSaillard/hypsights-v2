@@ -94,13 +94,13 @@ export function SuppliersFoundPanel({ briefId, maxResults = 10 }: SuppliersFound
             Suppliers Found
           </h2>
           <p className="text-gray-600 text-sm mt-1">
-            {limitedGroups.length} supplier{limitedGroups.length !== 1 ? 's' : ''} found
-            {supplierGroups.length > maxResults && (
+            {limitedGroups.length} supplier{limitedGroups.length !== 1 ? 's' : ''} found ({'>'}70% match)
+          </p>  
+          {supplierGroups.length > maxResults && (
               <span className="text-orange-600 font-medium ml-1">
                 (showing top {maxResults})
               </span>
             )}
-          </p>
         </div>
 
         <button 
