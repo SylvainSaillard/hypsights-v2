@@ -26,6 +26,7 @@ interface Brief {
   locale?: string;
   metadata?: any;
   reference_companies?: Array<{name: string; url: string}>;
+  deep_search_requested?: boolean;
 }
 
 const BriefChatPage = () => {
@@ -58,7 +59,7 @@ const BriefChatPage = () => {
         
         const { data, error } = await supabase
           .from('briefs')
-          .select('*')
+          .select('*, deep_search_requested')
           .eq('id', briefId)
           .single();
         
@@ -253,6 +254,7 @@ const BriefChatPage = () => {
               briefTitle={brief.title}
               briefDescription={brief.description || ''}
               userEmail={userEmail}
+              deepSearchRequested={brief.deep_search_requested || false}
             />
             
             {/* Nouveau panneau de fournisseurs avec design moderne */}
