@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
 interface DeepSearchRequestModalProps {
   isOpen: boolean;
@@ -28,12 +29,26 @@ const DeepSearchRequestModal: React.FC<DeepSearchRequestModalProps> = ({
     setIsSubmitting(true);
     
     try {
+      // Get user session for authentication
+      const supabase = createClient(
+        import.meta.env.VITE_SUPABASE_URL!,
+        import.meta.env.VITE_SUPABASE_ANON_KEY!
+      );
+      
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        throw new Error('User not authenticated');
+      }
+
       // First, call our Edge Function to update the database flag
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
       const edgeFunctionResponse = await fetch(`${supabaseUrl}/functions/v1/deep-search-webhook`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({
           userEmail,

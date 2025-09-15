@@ -47,6 +47,17 @@ serve(async (req) => {
       throw new Error('Missing required fields: briefId and userEmail')
     }
 
+    // Verify the brief exists and get user_id for security
+    const { data: briefData, error: briefError } = await supabase
+      .from('briefs')
+      .select('id, user_id, title')
+      .eq('id', payload.briefId)
+      .single()
+
+    if (briefError || !briefData) {
+      throw new Error(`Brief with ID ${payload.briefId} not found`)
+    }
+
     // Update the brief with deep search requested flag
     const { data, error } = await supabase
       .from('briefs')
@@ -74,6 +85,7 @@ serve(async (req) => {
       .from('raw_analytics_events')
       .insert({
         event_name: 'deep_search_requested',
+        user_id: briefData.user_id,
         payload: {
           brief_id: payload.briefId,
           brief_title: payload.briefTitle,
