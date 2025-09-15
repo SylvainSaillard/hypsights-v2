@@ -23,7 +23,7 @@ const LandingPage: React.FC = () => {
               </Link>
               <Link 
                 to="/signup" 
-                className="bg-primary text-primary-foreground hover:bg-primary-dark transition-all duration-200 px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md"
+                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 transition-all duration-200 px-5 py-2.5 rounded-lg text-sm font-semibold shadow-md"
               >
                 Sign up free
               </Link>

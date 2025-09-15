@@ -25,21 +25,34 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-hypsights-background p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 p-4 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div className="absolute top-20 left-20 w-64 h-64 rounded-full bg-gradient-to-r from-indigo-400 to-blue-500 opacity-10 animate-pulse"></div>
+        <div className="absolute bottom-20 right-20 w-96 h-96 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 opacity-10 animate-pulse"></div>
+        <div className="absolute top-1/2 right-1/4 w-32 h-32 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 opacity-15 transform animate-bounce"></div>
+      </div>
+      
+      <div className="w-full max-w-md z-10 relative">
         {/* Logo and branding */}
         <div className="mb-8 text-center">
           <Link to="/" className="inline-flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600 mr-2" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+            </svg>
             <span className="text-3xl font-bold text-gray-900">Hypsights</span>
-            <span className="ml-1 text-sm text-primary font-semibold">v2</span>
+            <span className="ml-1 text-sm text-blue-600 font-semibold">v2</span>
           </Link>
         </div>
         
         {/* Login card with enhanced styling */}
-        <div className="bg-white p-8 space-y-6 rounded-xl shadow-lg border border-gray-100">
-          <h1 className="text-2xl font-bold text-center text-gray-900">
-            Login to Hypsights
-          </h1>
+        <div className="bg-white p-8 space-y-6 rounded-xl shadow-2xl border border-gray-100">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              Login to Hypsights
+            </h1>
+            <p className="text-gray-600 text-sm">👋 Welcome back! Ready to find amazing suppliers?</p>
+          </div>
           
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -64,7 +77,7 @@ const LoginPage = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                  className="pl-10 block w-full px-3 py-3 border-2 border-gray-200 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
                   placeholder="you@example.com"
                 />
               </div>
@@ -78,7 +91,7 @@ const LoginPage = () => {
                 >
                   Password
                 </label>
-                <Link to="/reset-password" className="text-xs font-medium text-primary hover:text-primary-dark transition-colors">
+                <Link to="/reset-password" className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -96,23 +109,19 @@ const LoginPage = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200"
+                  className="pl-10 block w-full px-3 py-3 border-2 border-gray-200 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all duration-200"
                   placeholder="••••••••"
                 />
               </div>
             </div>
 
             {error && (
-              <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
+              <div className="bg-red-50 border-2 border-red-200 p-4 rounded-lg">
                 <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm text-red-700">{error}</p>
-                  </div>
+                  <svg className="h-5 w-5 text-red-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                  <p className="text-sm text-red-700">{error}</p>
                 </div>
               </div>
             )}
@@ -121,7 +130,7 @@ const LoginPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-base font-semibold text-primary-foreground bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 transition-all duration-200"
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-lg text-base font-semibold text-white bg-gradient-to-r from-indigo-500 via-blue-500 to-purple-600 hover:from-indigo-600 hover:via-blue-600 hover:to-purple-700 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
               >
                 {loading ? (
                   <span className="flex items-center">
@@ -131,7 +140,11 @@ const LoginPage = () => {
                     </svg>
                     Logging in...
                   </span>
-                ) : 'Login'}
+                ) : (
+                  <>
+                    🔑 Login
+                  </>
+                )}
               </button>
             </div>
           </form>
@@ -139,10 +152,28 @@ const LoginPage = () => {
           <div className="pt-4 text-center border-t border-gray-200">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
-              <Link to="/signup" className="font-medium text-primary hover:text-primary-dark transition-colors">
-                Sign up
+              <Link to="/signup" className="font-medium text-green-600 hover:text-green-700 transition-colors">
+                Sign up 🚀
               </Link>
             </p>
+          </div>
+          
+          {/* Features highlight */}
+          <div className="pt-4 border-t border-gray-100">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div className="text-xs text-gray-500">
+                <div className="text-blue-600 font-semibold">3+</div>
+                <div>Free searches</div>
+              </div>
+              <div className="text-xs text-gray-500">
+                <div className="text-purple-600 font-semibold">24/7</div>
+                <div>AI assistance</div>
+              </div>
+              <div className="text-xs text-gray-500">
+                <div className="text-green-600 font-semibold">100%</div>
+                <div>Expert validation</div>
+              </div>
+            </div>
           </div>
         </div>
         
