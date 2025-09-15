@@ -28,7 +28,27 @@ const DeepSearchRequestModal: React.FC<DeepSearchRequestModalProps> = ({
     setIsSubmitting(true);
     
     try {
-      // Call the webhook
+      // First, call our Edge Function to update the database flag
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const edgeFunctionResponse = await fetch(`${supabaseUrl}/functions/v1/deep-search-webhook`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userEmail,
+          briefId,
+          briefTitle,
+          briefDescription,
+          additionalInfo
+        })
+      });
+
+      if (!edgeFunctionResponse.ok) {
+        throw new Error('Failed to update brief status');
+      }
+
+      // Then call the Make.com webhook for the actual deep search processing
       const webhookData = {
         userEmail,
         briefId,
@@ -37,7 +57,7 @@ const DeepSearchRequestModal: React.FC<DeepSearchRequestModalProps> = ({
         additionalInfo
       };
 
-      const response = await fetch('https://hook.eu1.make.com/sg1brkl4b6fzl82te1k3q3n6x8nt8wvh', {
+      const makeWebhookResponse = await fetch('https://hook.eu1.make.com/sg1brkl4b6fzl82te1k3q3n6x8nt8wvh', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -45,12 +65,12 @@ const DeepSearchRequestModal: React.FC<DeepSearchRequestModalProps> = ({
         body: JSON.stringify(webhookData)
       });
 
-      if (response.ok) {
+      if (makeWebhookResponse.ok) {
         console.log('DeepSearch request sent successfully');
         onSubmit(additionalInfo);
         onClose();
       } else {
-        console.error('Failed to send DeepSearch request:', response.statusText);
+        console.error('Failed to send DeepSearch request:', makeWebhookResponse.statusText);
         alert('Failed to submit request. Please try again.');
       }
     } catch (error) {
