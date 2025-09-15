@@ -125,12 +125,17 @@ const SupplierCarousel: React.FC<SupplierCarouselProps> = ({
           </h2>
           <p className="text-gray-600 text-sm mt-1">
             {limitedGroups.length} supplier{limitedGroups.length !== 1 ? 's' : ''} found
-            {supplierGroups.length > maxResults && (
+          </p>
+          <p className="text-gray-500 text-xs mt-1">
+            Only showing suppliers with {'>'}70% match score
+          </p>
+          {supplierGroups.length > maxResults && (
+            <p className="text-gray-600 text-sm mt-1">
               <span className="text-orange-600 font-medium ml-1">
                 (showing top {maxResults})
               </span>
-            )}
-          </p>
+            </p>
+          )}
         </div>
 
         {/* Navigation buttons */}
