@@ -476,52 +476,106 @@ const SupplierDetailPage: React.FC = () => {
                     </div>
                   )}
                   
-                  {/* Encarts IA avec scores réels */}
-                  <div className="space-y-3">
-                    <div className="bg-blue-900 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-black text-xs font-bold">AI</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="text-blue-200 text-xs font-medium">Solution Fit Analysis</div>
-                            {product.ai_solution_fit_score && (
-                              <div className="bg-blue-400 text-blue-900 px-2 py-0.5 rounded text-xs font-bold">
-                                {product.ai_solution_fit_score}%
-                              </div>
-                            )}
-                          </div>
-                          <p className="text-blue-100 text-xs leading-relaxed">
-                            {product.ai_solution_fit_explanation || 
-                             'This product directly addresses your solution requirements with innovative features and proven market success.'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                  {/* Encarts IA avec affichage intelligent */}
+                  {(() => {
+                    const solutionScore = product.ai_solution_fit_score || 0;
+                    const briefScore = product.ai_brief_fit_score || 0;
+                    const scoreDifference = Math.abs(solutionScore - briefScore);
+                    const showBothScores = scoreDifference >= 15; // Seuil de 15% d'écart
                     
-                    <div className="bg-emerald-900 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <div className="w-5 h-5 bg-emerald-400 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-black text-xs font-bold">AI</span>
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between mb-1">
-                            <div className="text-emerald-200 text-xs font-medium">Brief Fit Analysis</div>
-                            {product.ai_brief_fit_score && (
-                              <div className="bg-emerald-400 text-emerald-900 px-2 py-0.5 rounded text-xs font-bold">
-                                {product.ai_brief_fit_score}%
+                    if (showBothScores) {
+                      // Afficher les deux encarts avec un indicateur d'écart
+                      return (
+                        <div className="space-y-3">
+                          <div className="bg-amber-50 border border-amber-200 rounded-lg p-2 mb-3">
+                            <div className="flex items-center gap-2">
+                              <div className="w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
+                                <span className="text-white text-xs">⚠</span>
                               </div>
-                            )}
+                              <p className="text-amber-800 text-xs font-medium">
+                                Significant difference detected ({scoreDifference}% gap) - showing detailed analysis
+                              </p>
+                            </div>
                           </div>
-                          <p className="text-emerald-100 text-xs leading-relaxed">
-                            {product.ai_brief_fit_explanation || 
-                             'Excellent alignment with your brief specifications and project timeline requirements.'}
-                          </p>
+                          
+                          <div className="bg-blue-900 rounded-lg p-3">
+                            <div className="flex items-start gap-2">
+                              <div className="w-5 h-5 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span className="text-black text-xs font-bold">AI</span>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="text-blue-200 text-xs font-medium">Solution Fit Analysis</div>
+                                  {solutionScore > 0 && (
+                                    <div className="bg-blue-400 text-blue-900 px-2 py-0.5 rounded text-xs font-bold">
+                                      {solutionScore}%
+                                    </div>
+                                  )}
+                                </div>
+                                <p className="text-blue-100 text-xs leading-relaxed">
+                                  {product.ai_solution_fit_explanation || 
+                                   'This product directly addresses your solution requirements with innovative features and proven market success.'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="bg-emerald-900 rounded-lg p-3">
+                            <div className="flex items-start gap-2">
+                              <div className="w-5 h-5 bg-emerald-400 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span className="text-black text-xs font-bold">AI</span>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="text-emerald-200 text-xs font-medium">Brief Fit Analysis</div>
+                                  {briefScore > 0 && (
+                                    <div className="bg-emerald-400 text-emerald-900 px-2 py-0.5 rounded text-xs font-bold">
+                                      {briefScore}%
+                                    </div>
+                                  )}
+                                </div>
+                                <p className="text-emerald-100 text-xs leading-relaxed">
+                                  {product.ai_brief_fit_explanation || 
+                                   'Excellent alignment with your brief specifications and project timeline requirements.'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
+                      );
+                    } else {
+                      // Afficher uniquement le Solution Fit avec un design unifié
+                      const avgScore = Math.round((solutionScore + briefScore) / 2);
+                      return (
+                        <div className="space-y-3">
+                          <div className="bg-gradient-to-r from-blue-900 to-emerald-900 rounded-lg p-3">
+                            <div className="flex items-start gap-2">
+                              <div className="w-5 h-5 bg-gradient-to-r from-blue-400 to-emerald-400 rounded-full flex items-center justify-center flex-shrink-0">
+                                <span className="text-black text-xs font-bold">AI</span>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-1">
+                                  <div className="text-blue-100 text-xs font-medium flex items-center gap-2">
+                                    Overall Fit Analysis
+                                    <span className="text-xs text-blue-200/70">({scoreDifference}% variance)</span>
+                                  </div>
+                                  {avgScore > 0 && (
+                                    <div className="bg-gradient-to-r from-blue-400 to-emerald-400 text-gray-900 px-2 py-0.5 rounded text-xs font-bold">
+                                      {avgScore}%
+                                    </div>
+                                  )}
+                                </div>
+                                <p className="text-blue-100 text-xs leading-relaxed">
+                                  {product.ai_solution_fit_explanation || 
+                                   'This product shows excellent alignment with both your solution requirements and brief specifications.'}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    }
+                  })()}
                   
                   {/* Données de scraping enrichies */}
                   {product.scraping_data && Object.keys(product.scraping_data).length > 0 && (
