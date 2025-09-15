@@ -147,12 +147,10 @@ async function getBriefsWithStats(supabaseAdmin: SupabaseClient, userId: string)
             .from('solutions')
             .select('id', { count: 'exact', head: true })
             .eq('brief_id', brief.id),
-          supplierIds.length > 0
-            ? supabaseAdmin
-                .from('products')
-                .select('id', { count: 'exact', head: true })
-                .in('supplier_id', supplierIds)
-            : Promise.resolve({ count: 0, error: null }),
+          supabaseAdmin
+            .from('products')
+            .select('id', { count: 'exact', head: true })
+            .eq('brief_id', brief.id),
           supabaseAdmin
             .from('solutions')
             .select('id', { count: 'exact', head: true })
