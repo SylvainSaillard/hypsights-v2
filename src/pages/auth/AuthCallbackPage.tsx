@@ -12,6 +12,27 @@ const AuthCallbackPage = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // Check for errors in URL first (from Supabase)
+        const error_code = searchParams.get('error_code');
+        const error_description = searchParams.get('error_description');
+        
+        if (error_code) {
+          let errorMessage = 'Failed to confirm account.';
+          
+          switch (error_code) {
+            case 'otp_expired':
+              errorMessage = 'The confirmation link has expired. Please request a new one by signing up again.';
+              break;
+            case 'access_denied':
+              errorMessage = 'Access denied. The confirmation link may be invalid or expired.';
+              break;
+            default:
+              errorMessage = error_description ? decodeURIComponent(error_description) : 'An error occurred during confirmation.';
+          }
+          
+          throw new Error(errorMessage);
+        }
+
         // Get the tokens from the URL
         const token_hash = searchParams.get('token_hash');
         const type = searchParams.get('type');
