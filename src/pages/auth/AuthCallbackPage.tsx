@@ -46,18 +46,23 @@ const AuthCallbackPage = () => {
           throw new Error(errorMessage);
         }
 
-        // Get the tokens from the URL
-        const token_hash = searchParams.get('token_hash');
-        const type = searchParams.get('type');
-        const access_token = searchParams.get('access_token');
-        const refresh_token = searchParams.get('refresh_token');
+        // Get the tokens from the URL (both query params and hash)
+        const token_hash = searchParams.get('token_hash') || hashParams.get('token_hash');
+        const type = searchParams.get('type') || hashParams.get('type');
+        const access_token = searchParams.get('access_token') || hashParams.get('access_token');
+        const refresh_token = searchParams.get('refresh_token') || hashParams.get('refresh_token');
+
+        console.log('Extracted tokens:', { token_hash, type, access_token, refresh_token });
 
         if (token_hash && type) {
           // Handle email confirmation
+          console.log('Attempting OTP verification with:', { token_hash, type });
           const { data, error } = await supabase.auth.verifyOtp({
             token_hash,
             type: type as any,
           });
+
+          console.log('OTP verification result:', { data, error });
 
           if (error) {
             throw error;
@@ -71,10 +76,13 @@ const AuthCallbackPage = () => {
           }
         } else if (access_token && refresh_token) {
           // Handle session from URL (fallback)
+          console.log('Attempting session setup with tokens');
           const { data, error } = await supabase.auth.setSession({
             access_token,
             refresh_token,
           });
+
+          console.log('Session setup result:', { data, error });
 
           if (error) {
             throw error;
@@ -87,7 +95,20 @@ const AuthCallbackPage = () => {
             }, 2000);
           }
         } else {
-          throw new Error('Invalid confirmation link. Please try signing up again.');
+          // Try to handle the session automatically (implicit flow)
+          console.log('No tokens found, trying to get current session');
+          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+          
+          console.log('Current session check:', { sessionData, sessionError });
+          
+          if (sessionData.session && sessionData.session.user) {
+            setSuccess(true);
+            setTimeout(() => {
+              navigate('/dashboard');
+            }, 2000);
+          } else {
+            throw new Error('Invalid confirmation link. Please try signing up again.');
+          }
         }
       } catch (err) {
         console.error('Auth callback error:', err);
