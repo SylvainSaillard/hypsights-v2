@@ -2,12 +2,18 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '../lib/supabaseClient';
 import { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
 
+interface SignupResult {
+  user: User | null;
+  needsEmailConfirmation: boolean;
+  message: string;
+}
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
   login: (email?: string, password?: string) => Promise<void>;
-  signup: (email?: string, password?: string) => Promise<void>;
+  signup: (email?: string, password?: string) => Promise<SignupResult>;
   logout: () => Promise<void>;
 }
 
@@ -68,10 +74,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      // You can add options here, like redirect URL for email confirmation
-      // options: {
-      //   emailRedirectTo: window.location.origin + '/login', // Or wherever you want them to go after confirming
-      // }
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        data: {
+          // Add any additional user metadata here if needed
+        }
+      }
     });
 
     if (error) {
@@ -81,18 +89,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     console.log('Supabase signup data:', data); // Log data for debugging
     
-    // if (data.user && data.user.identities && data.user.identities.length === 0) {
-    //   // This can happen if "Confirm email" is ON but the email is already in use (but not confirmed)
-    //   // Or if an unhandled error occurred where user is null but no error was thrown by signUp
-    //   setIsLoading(false);
-    //   throw new Error('Signup failed. The email might already be in use or an unknown error occurred.');
-    // }
+    // Check if user needs to confirm email
+    if (data.user && !data.session) {
+      // Email confirmation is required
+      setIsLoading(false);
+      return {
+        user: data.user,
+        needsEmailConfirmation: true,
+        message: 'Please check your email and click the confirmation link to activate your account.'
+      };
+    }
 
-    // If "Confirm email" is ON, data.user will exist but data.session will be null.
-    // The onAuthStateChange listener will eventually update user state if they confirm.
-    // If "Confirm email" is OFF, data.session will be populated, and onAuthStateChange will fire.
-    setIsLoading(false); // Set loading to false here as onAuthStateChange might not fire immediately if email confirmation is needed
-    return; // Let the UI decide what message to show based on data.user and data.session
+    // If we reach here, either email confirmation is disabled or there was an issue
+    if (data.user && data.user.identities && data.user.identities.length === 0) {
+      // This can happen if "Confirm email" is ON but the email is already in use (but not confirmed)
+      setIsLoading(false);
+      throw new Error('This email is already registered but not confirmed. Please check your email for the confirmation link.');
+    }
+
+    setIsLoading(false);
+    return {
+      user: data.user,
+      needsEmailConfirmation: false,
+      message: 'Account created successfully!'
+    };
   };
 
 

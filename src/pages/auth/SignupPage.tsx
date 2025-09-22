@@ -27,16 +27,18 @@ const SignupPage = () => {
 
     setLoading(true);
     try {
-      await signup(email, password); // Call the actual signup function
-      // Check Supabase Auth settings: if "Confirm email" is ON, user needs to confirm.
-      // If "Confirm email" is OFF, user is logged in immediately.
-      setMessage(
-        'Signup successful! If email confirmation is required, please check your email to confirm your account. You can then log in.'
-      );
-      // setEmail(''); // Optionally clear fields
-      // setPassword('');
-      // setConfirmPassword('');
-      // navigate('/login'); // Or redirect to a page that says "check your email"
+      const result = await signup(email, password); // Call the actual signup function
+      
+      if (result.needsEmailConfirmation) {
+        setMessage(result.message);
+        // Clear the form since signup was successful but needs email confirmation
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+      } else {
+        // This shouldn't happen if email confirmation is properly configured
+        setMessage(result.message);
+      }
     } catch (err) {
       setError((err as Error).message || 'Failed to sign up. Please try again.');
     } finally {
