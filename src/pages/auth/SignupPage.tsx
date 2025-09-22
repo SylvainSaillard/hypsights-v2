@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 const SignupPage = () => {
@@ -9,7 +9,8 @@ const SignupPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { signup } = useAuth(); // Use signup from AuthContext // Keep navigate for potential future use
+  const { signup } = useAuth(); // Use signup from AuthContext
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -30,11 +31,8 @@ const SignupPage = () => {
       const result = await signup(email, password); // Call the actual signup function
       
       if (result.needsEmailConfirmation) {
-        setMessage(result.message);
-        // Clear the form since signup was successful but needs email confirmation
-        setEmail('');
-        setPassword('');
-        setConfirmPassword('');
+        // Redirect to email confirmation page with email as parameter
+        navigate(`/auth/email-confirmation?email=${encodeURIComponent(email)}`);
       } else {
         // This shouldn't happen if email confirmation is properly configured
         setMessage(result.message);

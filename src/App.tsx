@@ -7,6 +7,7 @@ import LandingPage from './pages/auth/LandingPage'; // Import the new LandingPag
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'; // Import the new ResetPasswordPage
 import UpdatePasswordPage from './pages/auth/UpdatePasswordPage';
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
+import EmailConfirmationPage from './pages/auth/EmailConfirmationPage';
 import './styles/main.css'; // Import main CSS with design tokens
 
 // Brief and search pages
@@ -122,6 +123,7 @@ function App() {
       <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <SignupPage />} />
       <Route path="/reset-password" element={user ? <Navigate to="/dashboard" /> : <ResetPasswordPage />} />
       <Route path="/auth/callback" element={<AuthCallbackPage />} />
+      <Route path="/auth/email-confirmation" element={<EmailConfirmationPage />} />
 
       {/* Protected Dashboard Routes */}
       <Route 

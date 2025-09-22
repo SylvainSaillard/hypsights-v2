@@ -82,14 +82,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     });
     
-    console.log('Signup response:', { data, error });
+    // console.log('Signup response:', { data, error });
 
     if (error) {
       setIsLoading(false);
       throw error;
     }
 
-    console.log('Supabase signup data:', data); // Log data for debugging
+    // console.log('Supabase signup data:', data); // Log data for debugging
     
     // Check if user needs to confirm email
     if (data.user && !data.session) {

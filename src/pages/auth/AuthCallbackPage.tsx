@@ -12,9 +12,9 @@ const AuthCallbackPage = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        // Log all URL parameters for debugging
-        console.log('All URL parameters:', Object.fromEntries(searchParams.entries()));
-        console.log('Hash parameters:', window.location.hash);
+        // Check URL parameters for debugging if needed
+        // console.log('All URL parameters:', Object.fromEntries(searchParams.entries()));
+        // console.log('Hash parameters:', window.location.hash);
         
         // Check for errors in URL first (from Supabase)
         const error_code = searchParams.get('error_code');
@@ -30,7 +30,7 @@ const AuthCallbackPage = () => {
           const actualErrorCode = error_code || hashError;
           const actualErrorDesc = error_description || hashErrorDesc;
           
-          console.log('Error detected:', { actualErrorCode, actualErrorDesc });
+          // console.log('Error detected:', { actualErrorCode, actualErrorDesc });
           
           switch (actualErrorCode) {
             case 'otp_expired':
@@ -52,17 +52,17 @@ const AuthCallbackPage = () => {
         const access_token = searchParams.get('access_token') || hashParams.get('access_token');
         const refresh_token = searchParams.get('refresh_token') || hashParams.get('refresh_token');
 
-        console.log('Extracted tokens:', { token_hash, type, access_token, refresh_token });
+        // console.log('Extracted tokens:', { token_hash, type, access_token, refresh_token });
 
         if (token_hash && type) {
           // Handle email confirmation
-          console.log('Attempting OTP verification with:', { token_hash, type });
+          // console.log('Attempting OTP verification with:', { token_hash, type });
           const { data, error } = await supabase.auth.verifyOtp({
             token_hash,
             type: type as any,
           });
 
-          console.log('OTP verification result:', { data, error });
+          // console.log('OTP verification result:', { data, error });
 
           if (error) {
             throw error;
@@ -76,13 +76,13 @@ const AuthCallbackPage = () => {
           }
         } else if (access_token && refresh_token) {
           // Handle session from URL (fallback)
-          console.log('Attempting session setup with tokens');
+          // console.log('Attempting session setup with tokens');
           const { data, error } = await supabase.auth.setSession({
             access_token,
             refresh_token,
           });
 
-          console.log('Session setup result:', { data, error });
+          // console.log('Session setup result:', { data, error });
 
           if (error) {
             throw error;
@@ -96,10 +96,10 @@ const AuthCallbackPage = () => {
           }
         } else {
           // Try to handle the session automatically (implicit flow)
-          console.log('No tokens found, trying to get current session');
-          const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+          // console.log('No tokens found, trying to get current session');
+          const { data: sessionData } = await supabase.auth.getSession();
           
-          console.log('Current session check:', { sessionData, sessionError });
+          // console.log('Current session check:', { sessionData });
           
           if (sessionData.session && sessionData.session.user) {
             setSuccess(true);
