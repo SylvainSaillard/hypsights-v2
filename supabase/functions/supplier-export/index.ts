@@ -132,8 +132,22 @@ interface ExportRow {
   product_price_range: string; // JSON stringified
 }
 
-async function getSupplierExportData(briefId: string): Promise<ExportRow[]> {
+async function getSupplierExportData(briefId: string): Promise<{ exportRows: ExportRow[], briefTitle: string }> {
   const supabaseAdmin = createSupabaseClient(true);
+  
+  // Get brief title first
+  const { data: briefData, error: briefError } = await supabaseAdmin
+    .from('briefs')
+    .select('title')
+    .eq('id', briefId)
+    .single();
+
+  if (briefError) {
+    console.error('Error fetching brief:', briefError);
+    throw new HttpError(`Failed to fetch brief: ${briefError.message}`, 500);
+  }
+
+  const briefTitle = briefData?.title || 'Unknown Brief';
   
   // Get all supplier matches for this brief
   const { data: matchData, error: matchError } = await supabaseAdmin
@@ -160,7 +174,7 @@ async function getSupplierExportData(briefId: string): Promise<ExportRow[]> {
   }
 
   if (!matchData || matchData.length === 0) {
-    return [];
+    return { exportRows: [], briefTitle };
   }
 
   // Get suppliers data
@@ -219,7 +233,7 @@ async function getSupplierExportData(briefId: string): Promise<ExportRow[]> {
   })).filter(item => item.suppliers); // Only include matches with valid suppliers
 
   if (!data || data.length === 0) {
-    return [];
+    return { exportRows: [], briefTitle };
   }
 
   // Transform data into export format - one row per product
@@ -309,7 +323,7 @@ async function getSupplierExportData(briefId: string): Promise<ExportRow[]> {
     }
   }
   
-  return exportRows;
+  return { exportRows, briefTitle };
 }
 
 function getRegionFromCountry(country?: string): string {
@@ -416,6 +430,17 @@ function escapeCSV(value: string): string {
   return value;
 }
 
+function sanitizeFilename(title: string): string {
+  // Remove or replace characters that are not allowed in filenames
+  return title
+    .replace(/[<>:"/\\|?*]/g, '-') // Replace forbidden characters with dash
+    .replace(/\s+/g, '-') // Replace spaces with dash
+    .replace(/-+/g, '-') // Replace multiple dashes with single dash
+    .replace(/^-|-$/g, '') // Remove leading/trailing dashes
+    .substring(0, 50) // Limit length to 50 characters
+    .toLowerCase();
+}
+
 serve(async (req) => {
   console.log(`${FUNCTION_NAME} received ${req.method} request from ${req.headers.get('origin') || 'unknown'}`);  
   
@@ -453,31 +478,34 @@ serve(async (req) => {
     
     switch (action) {
       case 'export_suppliers':
-        const exportData = await getSupplierExportData(brief_id);
+        const { exportRows, briefTitle } = await getSupplierExportData(brief_id);
         
         if (format === 'csv') {
-          const csvContent = convertToCSV(exportData);
+          const csvContent = convertToCSV(exportRows);
+          const sanitizedTitle = sanitizeFilename(briefTitle);
           
           // Track the export event
           const supabaseAdmin = createSupabaseClient(true);
           await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_export_csv_success`, user.id, { 
             brief_id, 
-            rows_exported: exportData.length 
+            brief_title: briefTitle,
+            rows_exported: exportRows.length 
           });
           
-          // Return CSV with appropriate headers
+          // Return CSV with appropriate headers using brief title
           return new Response(csvContent, {
             headers: {
               ...getCorsHeaders(req),
               'Content-Type': 'text/csv',
-              'Content-Disposition': `attachment; filename="suppliers-brief-${brief_id}.csv"`
+              'Content-Disposition': `attachment; filename="suppliers-${sanitizedTitle}.csv"`
             }
           });
         } else {
           // Return JSON data for other formats (could be extended for XLS)
           result = {
-            data: exportData,
-            total_rows: exportData.length,
+            data: exportRows,
+            brief_title: briefTitle,
+            total_rows: exportRows.length,
             format: format
           };
         }
