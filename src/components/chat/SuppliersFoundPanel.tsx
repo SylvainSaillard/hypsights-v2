@@ -1,6 +1,7 @@
 import { useSuppliers } from '../../hooks/useSuppliers';
 import SupplierCard from '../suppliers/SupplierCard';
 import type { SupplierGroup } from '../../types/supplierTypes';
+import { supabase } from '../../lib/supabaseClient';
 
 interface SuppliersFoundPanelProps {
   briefId: string;
@@ -13,6 +14,52 @@ export function SuppliersFoundPanel({ briefId, maxResults = 10 }: SuppliersFound
   // Transformer les données existantes en format groupé par fournisseur
   const supplierGroups = transformToSupplierGroups(suppliers, solutionGroups);
   const limitedGroups = supplierGroups.slice(0, maxResults);
+
+  const handleExportCSV = async () => {
+    try {
+      // Get current session token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        alert('Please log in to export data.');
+        return;
+      }
+
+      // Call the supplier export Edge Function
+      const response = await fetch('/functions/v1/supplier-export', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'export_suppliers',
+          brief_id: briefId,
+          format: 'csv'
+        })
+      });
+
+      if (response.ok) {
+        // Create download link
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `suppliers-brief-${briefId}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Export failed:', await response.text());
+        alert('Export failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Export failed. Please try again.');
+    }
+  };
 
   if (isLoading && suppliers.length === 0) {
     return (
@@ -106,15 +153,27 @@ export function SuppliersFoundPanel({ briefId, maxResults = 10 }: SuppliersFound
             )}
         </div>
 
-        <button 
-          className="px-4 py-2 bg-white shadow-md border border-purple-200 text-purple-700 text-sm rounded-lg hover:bg-purple-50 hover:shadow-lg transition-all duration-200 flex items-center gap-2"
-          onClick={() => refresh()}
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-          </svg>
-          Refresh
-        </button>
+        <div className="flex gap-2">
+          <button 
+            className="px-4 py-2 bg-white shadow-md border border-green-200 text-green-700 text-sm rounded-lg hover:bg-green-50 hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+            onClick={() => handleExportCSV()}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export CSV
+          </button>
+          
+          <button 
+            className="px-4 py-2 bg-white shadow-md border border-purple-200 text-purple-700 text-sm rounded-lg hover:bg-purple-50 hover:shadow-lg transition-all duration-200 flex items-center gap-2"
+            onClick={() => refresh()}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Refresh
+          </button>
+        </div>
       </div>
 
       {/* Carrousel horizontal */}
