@@ -135,11 +135,13 @@ interface ExportRow {
 async function getSupplierExportData(briefId: string): Promise<ExportRow[]> {
   const supabaseAdmin = createSupabaseClient(true);
   
-  // Get all supplier matches for this brief with their products
-  const { data, error } = await supabaseAdmin
+  // Get all supplier matches for this brief
+  const { data: matchData, error: matchError } = await supabaseAdmin
     .from('supplier_match_profiles')
     .select(`
       id,
+      supplier_id,
+      solution_id,
       overall_match_score,
       solution_fit_score,
       brief_fit_score,
@@ -147,40 +149,74 @@ async function getSupplierExportData(briefId: string): Promise<ExportRow[]> {
       company_size_score,
       maturity_score,
       organization_score,
-      match_explanation,
-      suppliers!inner (
-        id,
-        name,
-        description,
-        company_overview,
-        country,
-        region,
-        company_size,
-        company_type,
-        website,
-        maturity
-      ),
-      solutions!inner (
-        id,
-        title,
-        solution_number
-      ),
-      products!inner (
-        id,
-        name,
-        product_description,
-        url,
-        features,
-        price_range
-      )
+      match_explanation
     `)
     .eq('brief_id', briefId)
     .order('overall_match_score', { ascending: false });
 
-  if (error) {
-    console.error('Error fetching supplier export data:', error);
-    throw new HttpError(`Failed to fetch supplier data: ${error.message}`, 500);
+  if (matchError) {
+    console.error('Error fetching supplier matches:', matchError);
+    throw new HttpError(`Failed to fetch supplier matches: ${matchError.message}`, 500);
   }
+
+  if (!matchData || matchData.length === 0) {
+    return [];
+  }
+
+  // Get suppliers data
+  const supplierIds = [...new Set(matchData.map(m => m.supplier_id))];
+  const { data: suppliersData, error: suppliersError } = await supabaseAdmin
+    .from('suppliers')
+    .select('*')
+    .in('id', supplierIds);
+
+  if (suppliersError) {
+    console.error('Error fetching suppliers:', suppliersError);
+    throw new HttpError(`Failed to fetch suppliers: ${suppliersError.message}`, 500);
+  }
+
+  // Get solutions data
+  const solutionIds = [...new Set(matchData.map(m => m.solution_id).filter(Boolean))];
+  const { data: solutionsData, error: solutionsError } = await supabaseAdmin
+    .from('solutions')
+    .select('*')
+    .in('id', solutionIds);
+
+  if (solutionsError) {
+    console.error('Error fetching solutions:', solutionsError);
+    throw new HttpError(`Failed to fetch solutions: ${solutionsError.message}`, 500);
+  }
+
+  // Get products data
+  const { data: productsData, error: productsError } = await supabaseAdmin
+    .from('products')
+    .select('*')
+    .eq('brief_id', briefId)
+    .in('supplier_id', supplierIds);
+
+  if (productsError) {
+    console.error('Error fetching products:', productsError);
+    // Don't throw error for products, just continue with empty array
+  }
+
+  // Create lookup maps
+  const suppliersMap = new Map(suppliersData?.map(s => [s.id, s]) || []);
+  const solutionsMap = new Map(solutionsData?.map(s => [s.id, s]) || []);
+  const productsBySupplier = new Map();
+  
+  productsData?.forEach(product => {
+    if (!productsBySupplier.has(product.supplier_id)) {
+      productsBySupplier.set(product.supplier_id, []);
+    }
+    productsBySupplier.get(product.supplier_id).push(product);
+  });
+
+  const data = matchData.map(match => ({
+    ...match,
+    suppliers: suppliersMap.get(match.supplier_id),
+    solutions: solutionsMap.get(match.solution_id),
+    products: productsBySupplier.get(match.supplier_id) || []
+  })).filter(item => item.suppliers); // Only include matches with valid suppliers
 
   if (!data || data.length === 0) {
     return [];

@@ -29,7 +29,7 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
       }
 
       // Call the supplier export Edge Function
-      const response = await fetch('/functions/v1/supplier-export', {
+      const response = await fetch('https://lmqagaenmseopcctkrwv.supabase.co/functions/v1/supplier-export', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,48 +118,10 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 pt-8">
-      {/* Header avec titre et bouton d'export */}
+      {/* Header avec filtre et bouton d'export */}
       <div className="mb-6 flex justify-between items-start">
-        <div>
-          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            Suppliers Found
-          </h2>
-          <p className="text-gray-600 text-sm">
-            {filteredSupplierGroups.length} supplier{filteredSupplierGroups.length !== 1 ? 's' : ''} found
-          </p>
-        </div>
-        
-        {/* Bouton d'export attractif */}
-        <button
-          onClick={handleExportCSV}
-          disabled={isExporting || filteredSupplierGroups.length === 0}
-          className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-          <div className="relative flex items-center gap-3">
-            {isExporting ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Exporting...</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Export CSV</span>
-                <div className="bg-white/20 px-2 py-1 rounded-md text-xs">
-                  {filteredSupplierGroups.length}
-                </div>
-              </>
-            )}
-          </div>
-        </button>
-      </div>
-
-      {/* Filtre par solution */}
-      {allSolutions.length > 1 && (
-        <div className="mb-6 flex justify-end">
+        {/* Filtre par solution */}
+        {allSolutions.length > 1 ? (
           <div className="relative">
             <label htmlFor="solution-filter" className="block text-sm font-medium text-gray-600 mb-2">
               Filter by Solution
@@ -189,8 +151,37 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
               </div>
             </div>
           </div>
-        </div>
-      )}
+        ) : (
+          <div></div>
+        )}
+        
+        {/* Bouton d'export attractif */}
+        <button
+          onClick={handleExportCSV}
+          disabled={isExporting || filteredSupplierGroups.length === 0}
+          className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+          <div className="relative flex items-center gap-3">
+            {isExporting ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Exporting...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Export CSV</span>
+                <div className="bg-white/20 px-2 py-1 rounded-md text-xs">
+                  {filteredSupplierGroups.length}
+                </div>
+              </>
+            )}
+          </div>
+        </button>
+      </div>
       
       <SupplierCarousel supplierGroups={filteredSupplierGroups} onSolutionSelect={setSelectedSolutionNumber} />
     </div>
