@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { useSupplierGroups } from '../../hooks/useSupplierGroups';
 import SupplierCarousel from '../suppliers/SupplierCarousel';
 import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { supabase } from '../../lib/supabaseClient';
 
 interface NewSuppliersPanelProps {
   briefId: string;
@@ -12,6 +13,57 @@ interface NewSuppliersPanelProps {
 export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
   const { supplierGroups, isLoading, error } = useSupplierGroups({ briefId });
   const [selectedSolutionNumber, setSelectedSolutionNumber] = useState<number | 'all'>('all');
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportCSV = async () => {
+    try {
+      setIsExporting(true);
+      
+      // Get current session token
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      if (!token) {
+        alert('Please log in to export data.');
+        return;
+      }
+
+      // Call the supplier export Edge Function
+      const response = await fetch('/functions/v1/supplier-export', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'export_suppliers',
+          brief_id: briefId,
+          format: 'csv'
+        })
+      });
+
+      if (response.ok) {
+        // Create download link
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `suppliers-brief-${briefId}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      } else {
+        console.error('Export failed:', await response.text());
+        alert('Export failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Export failed. Please try again.');
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   // Créer une liste unique de toutes les solutions pour le filtre
   const allSolutions = useMemo(() => {
@@ -66,6 +118,46 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 pt-8">
+      {/* Header avec titre et bouton d'export */}
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            Suppliers Found
+          </h2>
+          <p className="text-gray-600 text-sm">
+            {filteredSupplierGroups.length} supplier{filteredSupplierGroups.length !== 1 ? 's' : ''} found
+          </p>
+        </div>
+        
+        {/* Bouton d'export attractif */}
+        <button
+          onClick={handleExportCSV}
+          disabled={isExporting || filteredSupplierGroups.length === 0}
+          className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+          <div className="relative flex items-center gap-3">
+            {isExporting ? (
+              <>
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Exporting...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Export CSV</span>
+                <div className="bg-white/20 px-2 py-1 rounded-md text-xs">
+                  {filteredSupplierGroups.length}
+                </div>
+              </>
+            )}
+          </div>
+        </button>
+      </div>
+
+      {/* Filtre par solution */}
       {allSolutions.length > 1 && (
         <div className="mb-6 flex justify-end">
           <div className="relative">
@@ -99,6 +191,7 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
           </div>
         </div>
       )}
+      
       <SupplierCarousel supplierGroups={filteredSupplierGroups} onSolutionSelect={setSelectedSolutionNumber} />
     </div>
   );
