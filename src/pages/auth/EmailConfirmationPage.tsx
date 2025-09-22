@@ -19,25 +19,6 @@ const EmailConfirmationPage = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getEmailProvider = (email: string) => {
-    const domain = email.split('@')[1]?.toLowerCase();
-    switch (domain) {
-      case 'gmail.com':
-        return { name: 'Gmail', url: 'https://gmail.com' };
-      case 'outlook.com':
-      case 'hotmail.com':
-      case 'live.com':
-        return { name: 'Outlook', url: 'https://outlook.live.com' };
-      case 'yahoo.com':
-        return { name: 'Yahoo Mail', url: 'https://mail.yahoo.com' };
-      case 'icloud.com':
-        return { name: 'iCloud Mail', url: 'https://www.icloud.com/mail' };
-      default:
-        return null;
-    }
-  };
-
-  const emailProvider = getEmailProvider(email);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4 relative overflow-hidden">
@@ -110,23 +91,6 @@ const EmailConfirmationPage = () => {
           </div>
         </div>
 
-        {/* Quick access to email provider */}
-        {emailProvider && (
-          <div className="text-center">
-            <p className="text-gray-600 text-sm mb-3">Quick access to your email:</p>
-            <a
-              href={emailProvider.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 text-sm font-medium"
-            >
-              <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-              Open {emailProvider.name}
-            </a>
-          </div>
-        )}
 
         {/* Timer */}
         <div className="text-center">
