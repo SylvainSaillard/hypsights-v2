@@ -12,22 +12,35 @@ const AuthCallbackPage = () => {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
+        // Log all URL parameters for debugging
+        console.log('All URL parameters:', Object.fromEntries(searchParams.entries()));
+        console.log('Hash parameters:', window.location.hash);
+        
         // Check for errors in URL first (from Supabase)
         const error_code = searchParams.get('error_code');
         const error_description = searchParams.get('error_description');
         
-        if (error_code) {
+        // Also check hash parameters (sometimes Supabase puts errors there)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hashError = hashParams.get('error_code') || hashParams.get('error');
+        const hashErrorDesc = hashParams.get('error_description');
+        
+        if (error_code || hashError) {
           let errorMessage = 'Failed to confirm account.';
+          const actualErrorCode = error_code || hashError;
+          const actualErrorDesc = error_description || hashErrorDesc;
           
-          switch (error_code) {
+          console.log('Error detected:', { actualErrorCode, actualErrorDesc });
+          
+          switch (actualErrorCode) {
             case 'otp_expired':
-              errorMessage = 'The confirmation link has expired. Please request a new one by signing up again.';
+              errorMessage = 'The confirmation link has expired. This might indicate a configuration issue. Please try signing up again and click the link immediately.';
               break;
             case 'access_denied':
               errorMessage = 'Access denied. The confirmation link may be invalid or expired.';
               break;
             default:
-              errorMessage = error_description ? decodeURIComponent(error_description) : 'An error occurred during confirmation.';
+              errorMessage = actualErrorDesc ? decodeURIComponent(actualErrorDesc) : 'An error occurred during confirmation.';
           }
           
           throw new Error(errorMessage);

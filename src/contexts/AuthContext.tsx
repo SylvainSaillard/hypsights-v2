@@ -81,6 +81,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     });
+    
+    console.log('Signup response:', { data, error });
 
     if (error) {
       setIsLoading(false);
