@@ -13,6 +13,7 @@ interface SolutionsPanelProps {
   briefHasActiveSearch?: boolean;
   showFastSearchDirectly?: boolean;
   fastSearchQuota?: { used: number; total: number };
+  briefTitle?: string;
 }
 
 /**
@@ -27,7 +28,8 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
   onRefresh,
   onStartFastSearch,
   startingSolutionId = null,
-  fastSearchQuota
+  fastSearchQuota,
+  briefTitle // Prop ajoutée mais non utilisée ici, pour la cohérence
 }) => {
   const { t } = useI18n();
   

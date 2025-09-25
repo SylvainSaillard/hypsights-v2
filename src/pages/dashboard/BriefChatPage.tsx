@@ -283,7 +283,7 @@ const BriefChatPage = () => {
             />
             
             {/* Nouveau panneau de fournisseurs avec design moderne */}
-            <NewSuppliersPanel briefId={brief.id} />
+            <NewSuppliersPanel briefId={brief.id} briefTitle={brief.title} />
 
 
           </div>

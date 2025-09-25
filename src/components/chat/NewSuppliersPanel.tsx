@@ -8,9 +8,10 @@ import { supabase } from '../../lib/supabaseClient';
 
 interface NewSuppliersPanelProps {
   briefId: string;
+  briefTitle: string;
 }
 
-export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
+export function NewSuppliersPanel({ briefId, briefTitle }: NewSuppliersPanelProps) {
   const { supplierGroups, isLoading, error } = useSupplierGroups({ briefId });
   const [selectedSolutionNumber, setSelectedSolutionNumber] = useState<number | 'all'>('all');
   const [isExportingCSV, setIsExportingCSV] = useState(false);
@@ -56,7 +57,7 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
         
         // Extract filename from Content-Disposition header if available
         const contentDisposition = response.headers.get('Content-Disposition');
-        let filename = `suppliers-brief-${briefId}.${format}`; // Dynamic fallback
+        let filename = `suppliers-${briefTitle.replace(/\s+/g, '-').toLowerCase()}.${format}`; // Dynamic fallback with title
 
         if (contentDisposition) {
           const filenameMatch = contentDisposition.match(/filename="(.+)"/);

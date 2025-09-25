@@ -22,6 +22,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   const [inputValue, setInputValue] = useState('');
   const [fastSearchQuota, setFastSearchQuota] = useState({ used: 0, total: 3 });
   const [startingSolutionId, setStartingSolutionId] = useState<string | null>(null);
+  const [briefTitle, setBriefTitle] = useState<string>('');
   
   // Utilisation des hooks personnalisés pour la logique métier
   const {
@@ -87,7 +88,23 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     };
     
     fetchQuota();
-  }, []);
+
+    const fetchBriefTitle = async () => {
+      const { data, error } = await supabase
+        .from('briefs')
+        .select('title')
+        .eq('id', briefId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching brief title:', error);
+      } else if (data) {
+        setBriefTitle(data.title);
+      }
+    };
+
+    fetchBriefTitle();
+  }, [briefId]);
   
   // Gestionnaire d'envoi de message
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -181,6 +198,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
               briefHasActiveSearch={true}
               showFastSearchDirectly={true}
               fastSearchQuota={fastSearchQuota}
+              briefTitle={briefTitle}
             />
           </div>
         </div>
