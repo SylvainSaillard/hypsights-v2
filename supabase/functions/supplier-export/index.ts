@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2';
-import * as ExcelJS from 'https://esm.sh/exceljs@4.3.0';
+import ExcelJS from 'https://esm.sh/exceljs@4.3.0';
 
 // CORS Template v1.0 (2025-06-04) - Standardized implementation
 const ALLOWED_ORIGINS = [
@@ -348,12 +348,8 @@ function getRegionFromCountry(country?: string): string {
 }
 
 async function convertToXLSX(data: ExportRow[]): Promise<Uint8Array> {
-  const workbook = new ExcelJS.Workbook();
+  const workbook = new (ExcelJS as any).Workbook();
   const worksheet = workbook.addWorksheet('Suppliers');
-
-  const cellStyle: Partial<ExcelJS.Style> = {
-    alignment: { vertical: 'top', horizontal: 'left', wrapText: true },
-  };
 
   // Headers
   const headers = [
@@ -365,10 +361,11 @@ async function convertToXLSX(data: ExportRow[]): Promise<Uint8Array> {
     'Product Description', 'Product URL', 'Product Features', 'Product Price Range'
   ];
 
-  worksheet.getRow(1).values = headers;
-  worksheet.getRow(1).font = { bold: true };
-  worksheet.getRow(1).eachCell(cell => {
-    cell.style = cellStyle;
+  const headerRow = worksheet.getRow(1);
+  headerRow.values = headers;
+  headerRow.font = { bold: true };
+  headerRow.eachCell(cell => {
+    cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
   });
 
   // Add data rows
@@ -383,10 +380,10 @@ async function convertToXLSX(data: ExportRow[]): Promise<Uint8Array> {
       row.product_id, row.product_name, row.product_description, row.product_url,
       row.product_features, row.product_price_range
     ];
-    const wsRow = worksheet.getRow(rowIndex);
-    wsRow.values = rowData;
-    wsRow.eachCell({ includeEmpty: true }, cell => {
-      cell.style = cellStyle;
+    const dataRow = worksheet.getRow(rowIndex);
+    dataRow.values = rowData;
+    dataRow.eachCell({ includeEmpty: true }, cell => {
+      cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
     });
   });
 

@@ -56,13 +56,17 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
         
         // Extract filename from Content-Disposition header if available
         const contentDisposition = response.headers.get('Content-Disposition');
-        let filename = `suppliers-brief-${briefId}.csv`; // fallback
-        
+        let filename = `suppliers-brief-${briefId}.${format}`; // Dynamic fallback
+
         if (contentDisposition) {
           const filenameMatch = contentDisposition.match(/filename="(.+)"/);
-          if (filenameMatch) {
+          if (filenameMatch && filenameMatch[1]) {
             filename = filenameMatch[1];
+          } else {
+            console.warn('Could not extract filename from Content-Disposition:', contentDisposition);
           }
+        } else {
+            console.warn('Content-Disposition header not found.');
         }
         
         link.download = filename;
