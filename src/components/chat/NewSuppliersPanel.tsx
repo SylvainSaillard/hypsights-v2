@@ -13,11 +13,16 @@ interface NewSuppliersPanelProps {
 export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
   const { supplierGroups, isLoading, error } = useSupplierGroups({ briefId });
   const [selectedSolutionNumber, setSelectedSolutionNumber] = useState<number | 'all'>('all');
-  const [isExporting, setIsExporting] = useState(false);
+  const [isExportingCSV, setIsExportingCSV] = useState(false);
+  const [isExportingXLSX, setIsExportingXLSX] = useState(false);
 
-  const handleExportCSV = async () => {
+  const handleExport = async (format: 'csv' | 'xlsx') => {
+    if (format === 'csv') {
+      setIsExportingCSV(true);
+    } else {
+      setIsExportingXLSX(true);
+    }
     try {
-      setIsExporting(true);
       
       // Get current session token
       const { data: { session } } = await supabase.auth.getSession();
@@ -38,7 +43,7 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
         body: JSON.stringify({
           action: 'export_suppliers',
           brief_id: briefId,
-          format: 'csv'
+          format: format
         })
       });
 
@@ -73,7 +78,11 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
       console.error('Export error:', error);
       alert('Export failed. Please try again.');
     } finally {
-      setIsExporting(false);
+      if (format === 'csv') {
+        setIsExportingCSV(false);
+      } else {
+        setIsExportingXLSX(false);
+      }
     }
   };
 
@@ -168,31 +177,57 @@ export function NewSuppliersPanel({ briefId }: NewSuppliersPanelProps) {
         )}
         
         {/* Bouton d'export attractif */}
-        <button
-          onClick={handleExportCSV}
-          disabled={isExporting || filteredSupplierGroups.length === 0}
-          className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-          <div className="relative flex items-center gap-3">
-            {isExporting ? (
-              <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Exporting...</span>
-              </>
-            ) : (
-              <>
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Export CSV</span>
-                <div className="bg-white/20 px-2 py-1 rounded-md text-xs">
-                  {filteredSupplierGroups.length}
-                </div>
-              </>
-            )}
-          </div>
-        </button>
+        <div className="flex items-center gap-4">
+          {/* Bouton d'export CSV */}
+          <button
+            onClick={() => handleExport('csv')}
+          disabled={isExportingCSV || filteredSupplierGroups.length === 0}
+          className="group relative overflow-hidden bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+            <div className="relative flex items-center gap-3">
+              {isExportingCSV ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Exporting...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                  <span>Export CSV</span>
+                  <div className="bg-white/20 px-2 py-1 rounded-md text-xs">
+                    {filteredSupplierGroups.length}
+                  </div>
+                </>
+              )}
+            </div>
+          </button>
+
+          {/* Bouton d'export Excel */}
+          <button
+            onClick={() => handleExport('xlsx')}
+            disabled={isExportingXLSX || filteredSupplierGroups.length === 0}
+            className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+            <div className="relative flex items-center gap-3">
+              {isExportingXLSX ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Exporting...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                  <span>Export Excel</span>
+                  <div className="bg-white/20 px-2 py-1 rounded-md text-xs">
+                    {filteredSupplierGroups.length}
+                  </div>
+                </>
+              )}
+            </div>
+          </button>
+        </div>
       </div>
       
       <SupplierCarousel supplierGroups={filteredSupplierGroups} onSolutionSelect={setSelectedSolutionNumber} />

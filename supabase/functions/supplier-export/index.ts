@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/supabase-js@2';
+import * as ExcelJS from 'https://esm.sh/exceljs@4.3.0';
 
 // CORS Template v1.0 (2025-06-04) - Standardized implementation
 const ALLOWED_ORIGINS = [
@@ -346,6 +347,65 @@ function getRegionFromCountry(country?: string): string {
   return 'Other';
 }
 
+async function convertToXLSX(data: ExportRow[]): Promise<Uint8Array> {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Suppliers');
+
+  const cellStyle: Partial<ExcelJS.Style> = {
+    alignment: { vertical: 'top', horizontal: 'left', wrapText: true },
+  };
+
+  // Headers
+  const headers = [
+    'Supplier ID', 'Supplier Name', 'Supplier Description', 'Supplier Overview',
+    'Country', 'Region', 'Company Size', 'Company Type', 'Website', 'Maturity',
+    'Overall Match Score', 'Solution Fit Score', 'Brief Fit Score', 'Geography Score',
+    'Company Size Score', 'Maturity Score', 'Organization Score', 'Solution ID',
+    'Solution Title', 'Solution Number', 'Product ID', 'Product Name',
+    'Product Description', 'Product URL', 'Product Features', 'Product Price Range'
+  ];
+
+  worksheet.getRow(1).values = headers;
+  worksheet.getRow(1).font = { bold: true };
+  worksheet.getRow(1).eachCell(cell => {
+    cell.style = cellStyle;
+  });
+
+  // Add data rows
+  data.forEach((row, index) => {
+    const rowIndex = index + 2;
+    const rowData = [
+      row.supplier_id, row.supplier_name, row.supplier_description, row.supplier_overview,
+      row.supplier_country, row.supplier_region, row.supplier_company_size, row.supplier_company_type,
+      row.supplier_website, row.supplier_maturity, row.overall_match_score, row.solution_fit_score,
+      row.brief_fit_score, row.geography_score, row.company_size_score, row.maturity_score,
+      row.organization_score, row.solution_id, row.solution_title, row.solution_number,
+      row.product_id, row.product_name, row.product_description, row.product_url,
+      row.product_features, row.product_price_range
+    ];
+    const wsRow = worksheet.getRow(rowIndex);
+    wsRow.values = rowData;
+    wsRow.eachCell({ includeEmpty: true }, cell => {
+      cell.style = cellStyle;
+    });
+  });
+
+  // Set column widths
+  worksheet.columns.forEach(column => {
+    let maxLength = 0;
+    column.eachCell({ includeEmpty: true }, cell => {
+      const columnLength = cell.value ? cell.value.toString().length : 10;
+      if (columnLength > maxLength) {
+        maxLength = columnLength;
+      }
+    });
+    column.width = maxLength < 20 ? 20 : (maxLength > 50 ? 50 : maxLength);
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  return new Uint8Array(buffer);
+}
+
 function convertToCSV(data: ExportRow[]): string {
   if (data.length === 0) {
     return 'No data available';
@@ -480,19 +540,13 @@ serve(async (req) => {
       case 'export_suppliers':
         const { exportRows, briefTitle } = await getSupplierExportData(brief_id);
         
+        const sanitizedTitle = sanitizeFilename(briefTitle);
+
         if (format === 'csv') {
           const csvContent = convertToCSV(exportRows);
-          const sanitizedTitle = sanitizeFilename(briefTitle);
-          
-          // Track the export event
-          const supabaseAdmin = createSupabaseClient(true);
-          await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_export_csv_success`, user.id, { 
-            brief_id, 
-            brief_title: briefTitle,
-            rows_exported: exportRows.length 
+          await trackEvent(createSupabaseClient(true), `${FUNCTION_NAME}_export_csv_success`, user.id, { 
+            brief_id, brief_title: briefTitle, rows_exported: exportRows.length 
           });
-          
-          // Return CSV with appropriate headers using brief title
           return new Response(csvContent, {
             headers: {
               ...getCorsHeaders(req),
@@ -500,8 +554,20 @@ serve(async (req) => {
               'Content-Disposition': `attachment; filename="suppliers-${sanitizedTitle}.csv"`
             }
           });
+        } else if (format === 'xlsx') {
+          const xlsxContent = await convertToXLSX(exportRows);
+          await trackEvent(createSupabaseClient(true), `${FUNCTION_NAME}_export_xlsx_success`, user.id, { 
+            brief_id, brief_title: briefTitle, rows_exported: exportRows.length 
+          });
+          return new Response(xlsxContent, {
+            headers: {
+              ...getCorsHeaders(req),
+              'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              'Content-Disposition': `attachment; filename="suppliers-${sanitizedTitle}.xlsx"`
+            }
+          });
         } else {
-          // Return JSON data for other formats (could be extended for XLS)
+          // Fallback for unknown formats
           result = {
             data: exportRows,
             brief_title: briefTitle,
