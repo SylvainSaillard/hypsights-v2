@@ -3,6 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import type { SupplierGroup } from '../../types/supplierTypes';
 import { useSupplierProducts } from '../../hooks/useSupplierProducts';
 import { FitScoreBlock } from './FitScoreBlock';
+import { FileDown } from 'lucide-react';
+import { supabase } from '../../lib/supabaseClient';
+import { useToast } from '../../hooks/use-toast';
 
 interface SupplierCardProps {
   supplierGroup: SupplierGroup;
@@ -18,6 +21,8 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   const { supplier, solutions, scores } = supplierGroup;
   const navigate = useNavigate();
   const { briefId } = useParams<{ briefId: string }>();
+  const [isExporting, setIsExporting] = React.useState(false);
+  const { toast } = useToast();
   
   // Récupérer le vrai nombre de produits depuis la table products
   const { products } = useSupplierProducts({
@@ -31,6 +36,54 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
       navigate(`/dashboard/briefs/${briefId}/suppliers/${supplier.id}`);
     } else if (onViewDetails) {
       onViewDetails(supplier.id);
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (!briefId) return;
+    setIsExporting(true);
+    toast({ title: 'Generating PDF...', description: 'Your supplier report is being created.' });
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('User not authenticated');
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/supplier-pdf-export`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ brief_id: briefId, supplier_id: supplier.id }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const sanitizedSupplierName = supplier.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      a.download = `supplier-report-${sanitizedSupplierName}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      toast({ title: '✅ Success', description: 'PDF report downloaded successfully.' });
+
+    } catch (error: any) {
+      console.error('Failed to export PDF:', error);
+      toast({ 
+        title: '❌ Error',
+        description: error.message || 'Could not generate the PDF report.',
+        variant: 'destructive' 
+      });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -296,6 +349,21 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
               </svg>
             </a>
           )}
+          <button
+            onClick={handleExportPdf}
+            disabled={isExporting}
+            className="px-4 py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Export as PDF"
+          >
+            {isExporting ? (
+              <svg className="animate-spin h-5 w-5 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            ) : (
+              <FileDown className="w-5 h-5" />
+            )}
+          </button>
         </div>
       </div>
     </div>
