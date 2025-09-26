@@ -118,6 +118,7 @@ interface ExportRow {
   company_size_score: number;
   maturity_score: number;
   organization_score: number;
+  match_explanation: string;
   
   // Solution information
   solution_id: string;
@@ -268,6 +269,7 @@ async function getSupplierExportData(briefId: string): Promise<{ exportRows: Exp
         company_size_score: match.company_size_score || 0,
         maturity_score: match.maturity_score || 0,
         organization_score: match.organization_score || 0,
+        match_explanation: match.match_explanation || '',
         
         // Solution info
         solution_id: solution.id,
@@ -306,6 +308,7 @@ async function getSupplierExportData(briefId: string): Promise<{ exportRows: Exp
           company_size_score: match.company_size_score || 0,
           maturity_score: match.maturity_score || 0,
           organization_score: match.organization_score || 0,
+          match_explanation: match.match_explanation || '',
           
           // Solution info (repeated for each product)
           solution_id: solution.id,
@@ -355,7 +358,7 @@ async function convertToXLSX(data: ExportRow[]): Promise<Uint8Array> {
   const headers = [
     'Supplier Name', 'Supplier Description', 'Supplier Overview',
     'Country', 'Region', 'Company Size', 'Company Type', 'Website',
-    'Overall Match Score', 'Solution Title', 'Product Name',
+    'Overall Match Score', 'Hypsights AI Evaluation', 'Solution Title', 'Product Name',
     'Product Description', 'Product URL', 'Product Features', 'Product Price Range'
   ];
 
@@ -372,7 +375,7 @@ async function convertToXLSX(data: ExportRow[]): Promise<Uint8Array> {
     const rowData = [
       row.supplier_name, row.supplier_description, row.supplier_overview,
       row.supplier_country, row.supplier_region, row.supplier_company_size, row.supplier_company_type,
-      row.supplier_website, row.overall_match_score, row.solution_title,
+      row.supplier_website, row.overall_match_score, row.match_explanation, row.solution_title,
       row.product_name, row.product_description, row.product_url,
       row.product_features, row.product_price_range
     ];
@@ -415,6 +418,7 @@ function convertToCSV(data: ExportRow[]): string {
     'Company Type',
     'Website',
     'Overall Match Score',
+    'Hypsights AI Evaluation',
     'Solution Title',
     'Product Name',
     'Product Description',
@@ -437,6 +441,7 @@ function convertToCSV(data: ExportRow[]): string {
       escapeCSV(row.supplier_company_type),
       escapeCSV(row.supplier_website),
       row.overall_match_score.toString(),
+      escapeCSV(row.match_explanation),
       escapeCSV(row.solution_title),
       escapeCSV(row.product_name),
       escapeCSV(row.product_description),
