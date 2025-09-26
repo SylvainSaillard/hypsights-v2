@@ -353,11 +353,9 @@ async function convertToXLSX(data: ExportRow[]): Promise<Uint8Array> {
 
   // Headers
   const headers = [
-    'Supplier ID', 'Supplier Name', 'Supplier Description', 'Supplier Overview',
-    'Country', 'Region', 'Company Size', 'Company Type', 'Website', 'Maturity',
-    'Overall Match Score', 'Solution Fit Score', 'Brief Fit Score', 'Geography Score',
-    'Company Size Score', 'Maturity Score', 'Organization Score', 'Solution ID',
-    'Solution Title', 'Solution Number', 'Product ID', 'Product Name',
+    'Supplier Name', 'Supplier Description', 'Supplier Overview',
+    'Country', 'Region', 'Company Size', 'Company Type', 'Website',
+    'Overall Match Score', 'Solution Title', 'Product Name',
     'Product Description', 'Product URL', 'Product Features', 'Product Price Range'
   ];
 
@@ -372,12 +370,10 @@ async function convertToXLSX(data: ExportRow[]): Promise<Uint8Array> {
   data.forEach((row, index) => {
     const rowIndex = index + 2;
     const rowData = [
-      row.supplier_id, row.supplier_name, row.supplier_description, row.supplier_overview,
+      row.supplier_name, row.supplier_description, row.supplier_overview,
       row.supplier_country, row.supplier_region, row.supplier_company_size, row.supplier_company_type,
-      row.supplier_website, row.supplier_maturity, row.overall_match_score, row.solution_fit_score,
-      row.brief_fit_score, row.geography_score, row.company_size_score, row.maturity_score,
-      row.organization_score, row.solution_id, row.solution_title, row.solution_number,
-      row.product_id, row.product_name, row.product_description, row.product_url,
+      row.supplier_website, row.overall_match_score, row.solution_title,
+      row.product_name, row.product_description, row.product_url,
       row.product_features, row.product_price_range
     ];
     const dataRow = worksheet.getRow(rowIndex);
@@ -410,7 +406,6 @@ function convertToCSV(data: ExportRow[]): string {
   
   // Headers
   const headers = [
-    'Supplier ID',
     'Supplier Name',
     'Supplier Description',
     'Supplier Overview',
@@ -419,18 +414,8 @@ function convertToCSV(data: ExportRow[]): string {
     'Company Size',
     'Company Type',
     'Website',
-    'Maturity',
     'Overall Match Score',
-    'Solution Fit Score',
-    'Brief Fit Score',
-    'Geography Score',
-    'Company Size Score',
-    'Maturity Score',
-    'Organization Score',
-    'Solution ID',
     'Solution Title',
-    'Solution Number',
-    'Product ID',
     'Product Name',
     'Product Description',
     'Product URL',
@@ -443,7 +428,6 @@ function convertToCSV(data: ExportRow[]): string {
   
   for (const row of data) {
     const csvRow = [
-      escapeCSV(row.supplier_id),
       escapeCSV(row.supplier_name),
       escapeCSV(row.supplier_description),
       escapeCSV(row.supplier_overview),
@@ -452,18 +436,8 @@ function convertToCSV(data: ExportRow[]): string {
       escapeCSV(row.supplier_company_size),
       escapeCSV(row.supplier_company_type),
       escapeCSV(row.supplier_website),
-      escapeCSV(row.supplier_maturity),
       row.overall_match_score.toString(),
-      row.solution_fit_score.toString(),
-      row.brief_fit_score.toString(),
-      row.geography_score.toString(),
-      row.company_size_score.toString(),
-      row.maturity_score.toString(),
-      row.organization_score.toString(),
-      escapeCSV(row.solution_id),
       escapeCSV(row.solution_title),
-      row.solution_number.toString(),
-      escapeCSV(row.product_id),
       escapeCSV(row.product_name),
       escapeCSV(row.product_description),
       escapeCSV(row.product_url),
