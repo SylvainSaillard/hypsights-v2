@@ -261,7 +261,8 @@ serve(async (req) => {
         'Content-Type': 'application/json',
         'Authorization': apiKey
       },
-      body: JSON.stringify({ html: htmlContent, inlinePdf: true })
+      body: JSON.stringify({ html: htmlContent })
+
     });
 
     if (!apiResponse.ok) {

@@ -57,23 +57,24 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
         body: JSON.stringify({ brief_id: briefId, supplier_id: supplier.id }),
       });
 
-      if (!response.ok) {
+      if (response.ok && response.headers.get('Content-Type')?.includes('application/pdf')) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const sanitizedSupplierName = supplier.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+        a.download = `supplier-report-${sanitizedSupplierName}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+
+        toast({ title: '✅ Success', description: 'PDF report downloaded successfully.' });
+      } else {
+        // Handle JSON error response
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate PDF');
+        throw new Error(errorData.error || 'An unexpected error occurred during PDF generation.');
       }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      const sanitizedSupplierName = supplier.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-      a.download = `supplier-report-${sanitizedSupplierName}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-
-      toast({ title: '✅ Success', description: 'PDF report downloaded successfully.' });
 
     } catch (error: any) {
       console.error('Failed to export PDF:', error);
