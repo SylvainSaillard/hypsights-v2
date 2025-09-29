@@ -271,7 +271,21 @@ serve(async (req) => {
       throw new HttpError(errorBody.message || 'Failed to generate PDF via external service.', 500);
     }
 
-    const pdfBuffer = await apiResponse.arrayBuffer();
+    // Api2Pdf returns a JSON response with a URL to the generated PDF
+    const apiResult = await apiResponse.json();
+    console.log('Api2Pdf result:', apiResult);
+    
+    if (!apiResult.success || !apiResult.pdf) {
+      throw new HttpError(apiResult.error || 'PDF generation failed', 500);
+    }
+
+    // Download the actual PDF content from the provided URL
+    const pdfResponse = await fetch(apiResult.pdf);
+    if (!pdfResponse.ok) {
+      throw new HttpError('Failed to download generated PDF', 500);
+    }
+    
+    const pdfBuffer = await pdfResponse.arrayBuffer();
 
     await trackEvent(createSupabaseClient(true), `${FUNCTION_NAME}_success`, user.id, { brief_id, supplier_id });
 
