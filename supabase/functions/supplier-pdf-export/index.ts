@@ -102,8 +102,8 @@ function generateHtmlForPdf(data: any): string {
 
   const overallMatchScore = matches.length > 0 ? Math.round(matches.reduce((acc: any, m: any) => acc + m.overall_match_score, 0) / matches.length) : 0;
 
-  // Logo Hypsights en Base64 (version simplifiée du logo vert)
-  const logoBase64 = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM4NENDMTYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSI4IiB5PSI4Ij4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+';
+  // Logo Hypsights en Base64 (logo officiel avec cercles concentriques)
+  const logoBase64 = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzg0Q0MxNiIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjE1IiBmaWxsPSJub25lIiBzdHJva2U9IiMyMjI3MkEiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjEwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyMjI3MkEiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjUiIGZpbGw9IiMyMjI3MkEiLz4KPC9zdmc+';
 
   const styles = `
     @page { margin: 60px 40px 40px 40px; }
@@ -113,7 +113,7 @@ function generateHtmlForPdf(data: any): string {
     .page-header .brand { font-size: 18px; font-weight: bold; color: #84CC16; }
     .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; }
     .document-header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 10px; }
-    .document-header h1 { font-size: 28px; color: #1a202c; margin: 0 0 10px 0; }
+    .document-header h1 { font-size: 24px; color: #1a202c; margin: 0 0 10px 0; word-wrap: break-word; line-height: 1.2; }
     .document-header p { font-size: 16px; color: #718096; margin: 0; }
     .section { margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; background-color: #fdfdff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
     .section h2 { font-size: 20px; color: #2d3748; border-bottom: 2px solid #84CC16; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; }
