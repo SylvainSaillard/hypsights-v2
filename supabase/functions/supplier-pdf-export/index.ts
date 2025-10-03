@@ -96,48 +96,48 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
   }
 }
 
-const maturityIcons = {
-  'Concept': 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0YTc3ZTEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgMWEzIDMgMCAwIDAgLTMgM2g2YTQgNCAwIDAgMC0zLTNaTTEzIDE5djJhMiAyIDAgMCAxLTIgMGwwLTJhNyA3IDAgMCAxLTMuNS02LjA2YTcgNyAwIDEgMSAxMS45MiA0LjQ0QzEyLjEyIDE3LjAzIDEyIDE4IDEyIDE5WiIvPjwvc3ZnPg==',
-  'In Development': 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNkMDc4MjUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIzIj48L2NpcmNsZT48cGF0aCBkPSJNMTkuNCAxNWExLjY1IDEuNjUgMCAwIDAgLjMzIDEuODJsLjA2LjA2YTIgMiAwIDAgMSAwIDIuODMgMiAyIDAgMCAxLTIuODMgMGwtLjA2LS4wNmExLjY1IDEuNjUgMCAwIDAtMS44Mi0uMzMgMS42NSAxLjY1IDAgMCAwLTEgMS41MVYyMWEyIDIgMCAwIDEtMiAyIDIgMiAwIDAgMS0yLTJ2LS4wOUExLjY1IDEuNjUgMCAwIDAgOSAxOS40YTEuNjUgMS42NSAwIDAgMC0xLjgyLjMzbC0uMDYuMDZhMiAyIDAgMCAxLTIuODMgMCAyIDIgMCAwIDEgMC0yLjgzbC4wNi0uMDZhMS42NSAxLjY1IDAgMCAwIC4zMy0xLjgyIDEuNjUgMS42NSAwIDAgMC0xLTEuNTFWMjhhMiAyIDAgMCAxIDIgMiAyIDIgMCAwIDEgMi0ydj4wOUExLjY1IDEuNjUgMCAwIDAgMTUgNC42YTEuNjUgMS42NSAwIDAgMCAxLjgyLS4zM2wuMDYtLjA2YTIgMiAwIDAgMSAyLjgzIDAgMiAyIDAgMCAxIDAgMi44M2wtLjA2LjA2YTEuNjUgMS42NSAwIDAgMC0uMzMgMS44MkExLjY1IDEuNjUgMCAwIDAgMjEgMTN2LTJhMiAyIDAgMCAxIDIgMiAyIDIgMCAwIDEtMiAyaC0uMDlBMS42NSAxLjY1IDAgMCAwIDE5LjQgMTVaIj48L3BhdGg+PC9zdmc+',
-  'Launched': 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMyYTlhNjIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNNCAxMmw2IDYgOS0xNCIvPjwvc3ZnPg==',
-};
-
-function getMaturityIcon(maturity: keyof typeof maturityIcons | null): string {
-  if (maturity && maturityIcons[maturity]) {
-    return `<img src="${maturityIcons[maturity]}" alt="${maturity}" width="20" height="20" style="vertical-align: middle; margin-right: 8px;">`;
-  }
-  return '';
-}
 
 function generateHtmlForPdf(data: any): string {
   const { brief, supplier, matches, solutions, products } = data;
 
   const overallMatchScore = matches.length > 0 ? Math.round(matches.reduce((acc: any, m: any) => acc + m.overall_match_score, 0) / matches.length) : 0;
 
+  // Logo Hypsights en Base64 (version simplifiée du logo vert)
+  const logoBase64 = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMjAiIGZpbGw9IiM4NENDMTYiLz4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4PSI4IiB5PSI4Ij4KPHBhdGggZD0iTTEyIDJMMTMuMDkgOC4yNkwyMCA5TDEzLjA5IDE1Ljc0TDEyIDIyTDEwLjkxIDE1Ljc0TDQgOUwxMC45MSA4LjI2TDEyIDJaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4KPC9zdmc+';
+
   const styles = `
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; }
-    .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 30px; }
-    .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
-    .header h1 { font-size: 28px; color: #1a202c; margin: 0; }
-    .header p { font-size: 16px; color: #718096; margin: 5px 0 0; }
-    .section { margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: #fdfdff; }
-    .section h2 { font-size: 20px; color: #2d3748; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; }
+    @page { margin: 60px 40px 40px 40px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; margin: 0; }
+    .page-header { position: fixed; top: 0; left: 0; right: 0; height: 50px; background: white; border-bottom: 2px solid #84CC16; padding: 10px 40px; display: flex; align-items: center; z-index: 1000; }
+    .page-header img { width: 30px; height: 30px; margin-right: 10px; }
+    .page-header .brand { font-size: 18px; font-weight: bold; color: #84CC16; }
+    .container { width: 100%; max-width: 800px; margin: 0 auto; padding: 20px; }
+    .document-header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 10px; }
+    .document-header h1 { font-size: 28px; color: #1a202c; margin: 0 0 10px 0; }
+    .document-header p { font-size: 16px; color: #718096; margin: 0; }
+    .section { margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; background-color: #fdfdff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .section h2 { font-size: 20px; color: #2d3748; border-bottom: 2px solid #84CC16; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-    .info-item { background-color: #f7fafc; padding: 15px; border-radius: 6px; }
-    .info-item strong { display: block; color: #4a5568; margin-bottom: 5px; }
-    .ai-analysis { background-color: #f0fff4; border-left: 4px solid #48bb78; padding: 20px; border-radius: 6px; }
+    .info-item { background-color: #f7fafc; padding: 15px; border-radius: 6px; border-left: 3px solid #84CC16; }
+    .info-item strong { display: block; color: #4a5568; margin-bottom: 5px; font-weight: 600; }
+    .ai-analysis { background-color: #f0fff4; border-left: 4px solid #84CC16; padding: 20px; border-radius: 6px; }
     .product-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     .product-table th, .product-table td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
-    .product-table th { background-color: #f7fafc; font-weight: bold; }
-    .footer { text-align: center; margin-top: 40px; font-size: 12px; color: #a0aec0; }
+    .product-table th { background-color: #84CC16; color: white; font-weight: bold; }
+    .product-table tr:nth-child(even) { background-color: #f9f9f9; }
+    .footer { text-align: center; margin-top: 40px; font-size: 12px; color: #a0aec0; border-top: 1px solid #e2e8f0; padding-top: 20px; }
   `;
 
   let html = `
     <html>
       <head><style>${styles}</style></head>
       <body>
+        <div class="page-header">
+          <img src="${logoBase64}" alt="Hypsights Logo" />
+          <span class="brand">Hypsights</span>
+        </div>
         <div class="container">
-          <div class="header">
+          <div class="document-header">
             <h1>Supplier Report: ${supplier.name}</h1>
             <p>For Brief: ${brief.title}</p>
           </div>
@@ -164,9 +164,13 @@ function generateHtmlForPdf(data: any): string {
           <div class="section">
             <h2>Products</h2>
             <table class="product-table">
-              <thead><tr><th style="width: 30%;">Name</th><th style="width: 15%;">Maturity</th><th>Description</th></tr></thead>
+              <thead><tr><th style="width: 25%;">Name</th><th style="width: 15%;">Maturity</th><th style="width: 10%;">Score</th><th>Description</th></tr></thead>
               <tbody>
-                ${products.map((p: any) => `<tr><td>${p.name}</td><td>${getMaturityIcon(p.maturity)}${p.maturity || 'N/A'}</td><td>${p.product_description || 'N/A'}</td></tr>`).join('')}
+                ${products.map((p: any) => {
+                  const score = p.match_details?.match_score || 'N/A';
+                  const scoreDisplay = typeof score === 'number' ? `${score}%` : score;
+                  return `<tr><td>${p.name}</td><td>${p.maturity || 'N/A'}</td><td><strong>${scoreDisplay}</strong></td><td>${p.product_description || 'N/A'}</td></tr>`;
+                }).join('')}
               </tbody>
             </table>
           </div>
@@ -220,7 +224,7 @@ async function getSupplierDataForPdf(briefId: string, supplierId: string) {
 
   const { data: productsData, error: productsError } = await supabaseAdmin
     .from('products')
-    .select('*, maturity')
+    .select('*, maturity, match_details')
     .eq('brief_id', briefId)
     .eq('supplier_id', supplierId);
 
