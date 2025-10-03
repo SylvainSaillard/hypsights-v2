@@ -121,6 +121,7 @@ function generateHtmlForPdf(data: any): string {
     .info-item { background-color: #f7fafc; padding: 15px; border-radius: 6px; border-left: 3px solid #84CC16; }
     .info-item strong { display: block; color: #4a5568; margin-bottom: 5px; font-weight: 600; }
     .ai-analysis { background-color: #f0fff4; border-left: 4px solid #84CC16; padding: 20px; border-radius: 6px; }
+    .products-section { page-break-before: always; }
     .product-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     .product-table th, .product-table td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
     .product-table th { background-color: #84CC16; color: white; font-weight: bold; }
@@ -161,7 +162,7 @@ function generateHtmlForPdf(data: any): string {
           </div>
 
           ${products.length > 0 ? `
-          <div class="section">
+          <div class="section products-section">
             <h2>Products</h2>
             <table class="product-table">
               <thead><tr><th style="width: 25%;">Name</th><th style="width: 15%;">Maturity</th><th style="width: 10%;">Score</th><th>Description</th></tr></thead>
