@@ -167,8 +167,11 @@ function generateHtmlForPdf(data: any): string {
               <thead><tr><th style="width: 25%;">Name</th><th style="width: 15%;">Maturity</th><th style="width: 10%;">Score</th><th>Description</th></tr></thead>
               <tbody>
                 ${products.map((p: any) => {
-                  const score = p.match_details?.match_score || 'N/A';
-                  const scoreDisplay = typeof score === 'number' ? `${score}%` : score;
+                  // Calculer un score moyen entre solution fit et brief fit
+                  const solutionScore = p.ai_solution_fit_score || 0;
+                  const briefScore = p.ai_brief_fit_score || 0;
+                  const averageScore = solutionScore && briefScore ? Math.round((solutionScore + briefScore) / 2) : (solutionScore || briefScore || 'N/A');
+                  const scoreDisplay = typeof averageScore === 'number' ? `${averageScore}%` : averageScore;
                   return `<tr><td>${p.name}</td><td>${p.maturity || 'N/A'}</td><td><strong>${scoreDisplay}</strong></td><td>${p.product_description || 'N/A'}</td></tr>`;
                 }).join('')}
               </tbody>
@@ -224,7 +227,7 @@ async function getSupplierDataForPdf(briefId: string, supplierId: string) {
 
   const { data: productsData, error: productsError } = await supabaseAdmin
     .from('products')
-    .select('*, maturity, match_details')
+    .select('*, maturity, ai_solution_fit_score, ai_brief_fit_score')
     .eq('brief_id', briefId)
     .eq('supplier_id', supplierId);
 
