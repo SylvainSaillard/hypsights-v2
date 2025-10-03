@@ -96,6 +96,19 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
   }
 }
 
+const maturityIcons = {
+  'Concept': 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM0YTc3ZTEiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNMTIgMWEzIDMgMCAwIDAgLTMgM2g2YTQgNCAwIDAgMC0zLTNaTTEzIDE5djJhMiAyIDAgMCAxLTIgMGwwLTJhNyA3IDAgMCAxLTMuNS02LjA2YTcgNyAwIDEgMSAxMS45MiA0LjQ0QzEyLjEyIDE3LjAzIDEyIDE4IDEyIDE5WiIvPjwvc3ZnPg==',
+  'In Development': 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiNkMDc4MjUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48Y2lyY2xlIGN4PSIxMiIgY3k9IjEyIiByPSIzIj48L2NpcmNsZT48cGF0aCBkPSJNMTkuNCAxNWExLjY1IDEuNjUgMCAwIDAgLjMzIDEuODJsLjA2LjA2YTIgMiAwIDAgMSAwIDIuODMgMiAyIDAgMCAxLTIuODMgMGwtLjA2LS4wNmExLjY1IDEuNjUgMCAwIDAtMS44Mi0uMzMgMS42NSAxLjY1IDAgMCAwLTEgMS41MVYyMWEyIDIgMCAwIDEtMiAyIDIgMiAwIDAgMS0yLTJ2LS4wOUExLjY1IDEuNjUgMCAwIDAgOSAxOS40YTEuNjUgMS42NSAwIDAgMC0xLjgyLjMzbC0uMDYuMDZhMiAyIDAgMCAxLTIuODMgMCAyIDIgMCAwIDEgMC0yLjgzbC4wNi0uMDZhMS42NSAxLjY1IDAgMCAwIC4zMy0xLjgyIDEuNjUgMS42NSAwIDAgMC0xLTEuNTFWMjhhMiAyIDAgMCAxIDIgMiAyIDIgMCAwIDEgMi0ydj4wOUExLjY1IDEuNjUgMCAwIDAgMTUgNC42YTEuNjUgMS42NSAwIDAgMCAxLjgyLS4zM2wuMDYtLjA2YTIgMiAwIDAgMSAyLjgzIDAgMiAyIDAgMCAxIDAgMi44M2wtLjA2LjA2YTEuNjUgMS42NSAwIDAgMC0uMzMgMS44MkExLjY1IDEuNjUgMCAwIDAgMjEgMTN2LTJhMiAyIDAgMCAxIDIgMiAyIDIgMCAwIDEtMiAyaC0uMDlBMS42NSAxLjY1IDAgMCAwIDE5LjQgMTVaIj48L3BhdGg+PC9zdmc+',
+  'Launched': 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiMyYTlhNjIiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cGF0aCBkPSJNNCAxMmw2IDYgOS0xNCIvPjwvc3ZnPg==',
+};
+
+function getMaturityIcon(maturity: keyof typeof maturityIcons | null): string {
+  if (maturity && maturityIcons[maturity]) {
+    return `<img src="${maturityIcons[maturity]}" alt="${maturity}" width="20" height="20" style="vertical-align: middle; margin-right: 8px;">`;
+  }
+  return '';
+}
+
 function generateHtmlForPdf(data: any): string {
   const { brief, supplier, matches, solutions, products } = data;
 
@@ -151,9 +164,9 @@ function generateHtmlForPdf(data: any): string {
           <div class="section">
             <h2>Products</h2>
             <table class="product-table">
-              <thead><tr><th>Name</th><th>Description</th></tr></thead>
+              <thead><tr><th style="width: 30%;">Name</th><th style="width: 15%;">Maturity</th><th>Description</th></tr></thead>
               <tbody>
-                ${products.map((p: any) => `<tr><td>${p.name}</td><td>${p.product_description || 'N/A'}</td></tr>`).join('')}
+                ${products.map((p: any) => `<tr><td>${p.name}</td><td>${getMaturityIcon(p.maturity)}${p.maturity || 'N/A'}</td><td>${p.product_description || 'N/A'}</td></tr>`).join('')}
               </tbody>
             </table>
           </div>
@@ -207,7 +220,7 @@ async function getSupplierDataForPdf(briefId: string, supplierId: string) {
 
   const { data: productsData, error: productsError } = await supabaseAdmin
     .from('products')
-    .select('*')
+    .select('*, maturity')
     .eq('brief_id', briefId)
     .eq('supplier_id', supplierId);
 

@@ -258,7 +258,7 @@ async function getSupplierExportData(briefId: string): Promise<{ exportRows: Exp
         supplier_region: supplier.region || getRegionFromCountry(supplier.country),
         supplier_company_size: supplier.company_size || 'N/A',
         supplier_company_type: supplier.company_type || 'N/A',
-        supplier_website: supplier.website || '',
+        supplier_website: supplier.url || supplier.website || '',
         supplier_maturity: supplier.maturity || 'N/A',
         
         // Scores
@@ -297,7 +297,7 @@ async function getSupplierExportData(briefId: string): Promise<{ exportRows: Exp
           supplier_region: supplier.region || getRegionFromCountry(supplier.country),
           supplier_company_size: supplier.company_size || 'N/A',
           supplier_company_type: supplier.company_type || 'N/A',
-          supplier_website: supplier.website || '',
+          supplier_website: supplier.url || supplier.website || '',
           supplier_maturity: supplier.maturity || 'N/A',
           
           // Scores (repeated for each product)
