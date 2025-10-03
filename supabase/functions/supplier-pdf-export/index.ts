@@ -111,18 +111,17 @@ function generateHtmlForPdf(data: any): string {
     .page-header { position: fixed; top: 0; left: 0; right: 0; height: 50px; background: white; border-bottom: 2px solid #84CC16; padding: 10px 40px; display: flex; align-items: center; z-index: 1000; }
     .page-header img { width: 30px; height: 30px; margin-right: 10px; }
     .page-header .brand { font-size: 18px; font-weight: bold; color: #84CC16; }
-    .container { width: 100%; max-width: 750px; margin: 0 auto; padding: 20px; }
+    .container { width: 100%; max-width: 700px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
     .document-header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 10px; }
     .document-header h1 { font-size: 24px; color: #1a202c; margin: 0 0 10px 0; word-wrap: break-word; line-height: 1.2; }
     .document-header p { font-size: 16px; color: #718096; margin: 0; }
-    .section { margin-bottom: 30px; border: 2px solid #e2e8f0; border-radius: 8px; padding: 20px; background-color: #fdfdff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .section { margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; background-color: #fdfdff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .section h2 { font-size: 20px; color: #2d3748; border-bottom: 2px solid #84CC16; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .info-item { background-color: #f7fafc; padding: 15px; border-radius: 6px; border-left: 3px solid #84CC16; }
     .info-item strong { display: block; color: #4a5568; margin-bottom: 5px; font-weight: 600; }
     .ai-analysis { background-color: #f0fff4; border-left: 4px solid #84CC16; padding: 20px; border-radius: 6px; }
     .products-section { page-break-before: always; }
-    .products-section h2 { margin-top: 0; }
     .product-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     .product-table th, .product-table td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
     .product-table th { background-color: #84CC16; color: white; font-weight: bold; }
