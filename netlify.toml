@@ -30,3 +30,15 @@
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[redirects]]
+  from = "http://hypsights.com/*"
+  to = "https://hypsights.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.hypsights.com/*"
+  to = "https://hypsights.com/:splat"
+  status = 301
+  force = true
