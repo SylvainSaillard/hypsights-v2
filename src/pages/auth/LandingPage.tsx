@@ -52,11 +52,11 @@ const LandingPage: React.FC = () => {
                   🚀 B2B Supplier Search Platform
                 </div>
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 leading-tight">
-                  Find the <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">perfect suppliers</span> for your business needs
+                  Find <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">Faster</span>. Qualify <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">Smarter</span>. Connect <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">Sooner</span>.
                 </h1>
               </div>
               <p className="text-xl text-gray-600 max-w-2xl leading-relaxed">
-                Hypsights helps professionals discover qualified suppliers and products through AI-assisted search and expert validation, saving you time and resources.
+                Hypsights is AI-powered supplier search. It does not just show you what exists. It shows you why it matters for your specific brief.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link 
@@ -144,7 +144,7 @@ const LandingPage: React.FC = () => {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-4">How Hypsights works</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Our streamlined process helps you find the right suppliers efficiently</p>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">Our streamlined process helps you find the right suppliers efficiently and tells you <span className="font-semibold">why it matters</span></p>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
