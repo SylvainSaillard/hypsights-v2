@@ -88,20 +88,20 @@ const PremiumDeepSearchCTA: React.FC<PremiumDeepSearchCTAProps> = ({
             <div>
               <h2 className="text-2xl font-bold flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                {t('deepSearch.cta.title', 'Premium Deep Search')}
+                {t('deepSearch.cta.title', 'Expand Your Search. Deep Dive.')}
               </h2>
-              <p className="mt-2 max-w-2xl">{t('deepSearch.cta.description', 'Get VIP treatment with our expert team providing personalized, hand-curated solutions and exclusive market insights.')}</p>
+              <p className="mt-2 max-w-2xl">{t('deepSearch.cta.description', 'Let our expert team provide you with personalized analysis by expanding the search, contacting and interviewing selected parties to prepare your next steps.')}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium flex items-center"><span role="img" aria-label="expert">🎯</span><span className="ml-1.5">{t('deepSearch.cta.expertAnalysis', 'Expert Analysis')}</span></span>
                 <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium flex items-center"><span role="img" aria-label="premium">💎</span><span className="ml-1.5">{t('deepSearch.cta.premiumResults', 'Premium Results')}</span></span>
-                <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium flex items-center"><span role="img" aria-label="exclusive">✨</span><span className="ml-1.5">{t('deepSearch.cta.exclusiveAccess', 'Exclusive Access')}</span></span>
+                <span className="bg-white/20 px-3 py-1 rounded-full text-sm font-medium flex items-center"><span role="img" aria-label="exclusive">✨</span><span className="ml-1.5">{t('deepSearch.cta.exclusiveAccess', 'Deeper Access')}</span></span>
               </div>
             </div>
             <button 
               onClick={handleOpenModal}
               className="mt-6 bg-white text-purple-600 font-bold py-3 px-6 rounded-lg shadow-md hover:bg-gray-100 transition-colors whitespace-nowrap"
             >
-              {t('deepSearch.cta.button', 'Access deep search')}
+              {t('deepSearch.cta.button', 'Access Deep Dive')}
             </button>
           </div>
         </div>
