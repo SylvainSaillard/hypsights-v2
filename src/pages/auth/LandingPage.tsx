@@ -193,7 +193,7 @@ const LandingPage: React.FC = () => {
               </div>
               <h3 className="text-xl font-bold bg-gradient-to-r from-green-700 to-emerald-700 bg-clip-text text-transparent mb-4">⚡ Fast Search</h3>
               <p className="text-gray-600 leading-relaxed">
-                Get immediate results through our automated search system, with 3 free searches included in your account.
+                Get fast, assessed results through our automated search system, with 3 free searches included in your account
               </p>
               <div className="mt-6 pt-6 border-t border-green-100">
                 <div className="flex items-center text-sm text-green-600 bg-green-50 rounded-lg px-3 py-2">
