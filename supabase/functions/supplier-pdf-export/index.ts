@@ -106,11 +106,10 @@ function generateHtmlForPdf(data: any): string {
   const logoBase64 = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzg0Q0MxNiIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjE1IiBmaWxsPSJub25lIiBzdHJva2U9IiMyMjI3MkEiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjEwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyMjI3MkEiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjUiIGZpbGw9IiMyMjI3MkEiLz4KPC9zdmc+';
 
   const styles = `
-    @page { margin: 60px 40px 40px 40px; }
+    @page { margin: 80px 40px 40px 40px; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; margin: 0; }
-    .page-header { position: fixed; top: 0; left: 0; right: 0; height: 50px; background: white; border-bottom: 2px solid #84CC16; padding: 10px 40px; display: flex; align-items: center; z-index: 1000; }
-    .page-header img { width: 30px; height: 30px; margin-right: 10px; }
-    .page-header .brand { font-size: 18px; font-weight: bold; color: #84CC16; }
+    .page-header { position: fixed; top: 0; left: 0; right: 0; height: 50px; background: white; border-bottom: 2px solid #84CC16; padding: 15px 40px; display: flex; align-items: center; z-index: 1000; }
+    .page-header .brand { font-size: 18px; font-weight: bold; color: #1a202c; }
     .container { width: 100%; max-width: 700px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
     .document-header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 10px; }
     .document-header h1 { font-size: 24px; color: #1a202c; margin: 0 0 10px 0; word-wrap: break-word; line-height: 1.2; }
@@ -134,8 +133,7 @@ function generateHtmlForPdf(data: any): string {
       <head><style>${styles}</style></head>
       <body>
         <div class="page-header">
-          <img src="${logoBase64}" alt="Hypsights Logo" />
-          <span class="brand">Hypsights</span>
+          <span class="brand">Hypsights beta</span>
         </div>
         <div class="container">
           <div class="document-header">
