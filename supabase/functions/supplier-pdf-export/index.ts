@@ -106,20 +106,21 @@ function generateHtmlForPdf(data: any): string {
   const logoBase64 = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSIyMCIgY3k9IjIwIiByPSIyMCIgZmlsbD0iIzg0Q0MxNiIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjE1IiBmaWxsPSJub25lIiBzdHJva2U9IiMyMjI3MkEiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjEwIiBmaWxsPSJub25lIiBzdHJva2U9IiMyMjI3MkEiIHN0cm9rZS13aWR0aD0iMiIvPgogIDxjaXJjbGUgY3g9IjIwIiBjeT0iMjAiIHI9IjUiIGZpbGw9IiMyMjI3MkEiLz4KPC9zdmc+';
 
   const styles = `
-    @page { margin: 80px 40px 40px 40px; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; margin: 0; }
-    .page-header { position: fixed; top: 0; left: 0; right: 0; height: 50px; background: white; border-bottom: 2px solid #84CC16; padding: 15px 40px; display: flex; align-items: center; z-index: 1000; }
+    @page { margin: 40px 40px 40px 40px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; margin: 0; padding-top: 80px; }
+    .page-header { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: white; border-bottom: 2px solid #84CC16; padding: 15px 40px; display: flex; align-items: center; z-index: 1000; }
     .page-header .brand { font-size: 18px; font-weight: bold; color: #1a202c; }
     .container { width: 100%; max-width: 700px; margin: 0 auto; padding: 0 20px; box-sizing: border-box; }
-    .document-header { text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); border-radius: 10px; }
-    .document-header h1 { font-size: 24px; color: #1a202c; margin: 0 0 10px 0; word-wrap: break-word; line-height: 1.2; }
-    .document-header p { font-size: 16px; color: #718096; margin: 0; }
+    .document-header { text-align: center; margin-bottom: 30px; padding: 25px 30px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .document-header h1 { font-size: 22px; color: #1a202c; margin: 0 0 12px 0; word-wrap: break-word; line-height: 1.3; font-weight: 700; }
+    .document-header p { font-size: 15px; color: #64748b; margin: 0; font-weight: 500; }
     .section { margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 25px; background-color: #fdfdff; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     .section h2 { font-size: 20px; color: #2d3748; border-bottom: 2px solid #84CC16; padding-bottom: 10px; margin-top: 0; margin-bottom: 20px; }
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
     .info-item { background-color: #f7fafc; padding: 15px; border-radius: 6px; border-left: 3px solid #84CC16; }
     .info-item strong { display: block; color: #4a5568; margin-bottom: 5px; font-weight: 600; }
     .ai-analysis { background-color: #f0fff4; border-left: 4px solid #84CC16; padding: 20px; border-radius: 6px; }
+    .ai-analysis-section { page-break-before: always; }
     .products-section { page-break-before: always; }
     .product-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     .product-table th, .product-table td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; }
@@ -152,7 +153,7 @@ function generateHtmlForPdf(data: any): string {
             <div class="info-item" style="margin-top: 20px;"><strong>Overview:</strong> ${supplier.overview || supplier.description || 'No description available'}</div>
           </div>
 
-          <div class="section">
+          <div class="section ai-analysis-section">
             <h2>Hypsights AI Analysis (Overall Match: ${overallMatchScore}%)</h2>
             <div class="ai-analysis">
               ${matches.map((m: any) => `<p><strong>Solution: ${solutions.find((s:any) => s.id === m.solution_id)?.title || 'N/A'}</strong><br>${m.match_explanation}</p>`).join('')}
