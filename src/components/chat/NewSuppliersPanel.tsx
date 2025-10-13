@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { useSupplierGroups } from '../../hooks/useSupplierGroups';
 import SupplierCarousel from '../suppliers/SupplierCarousel';
-import { LoadingSpinner } from '../ui/LoadingSpinner';
+import { FastSearchLoadingAnimation } from '../animations/FastSearchLoadingAnimation';
 import { supabase } from '../../lib/supabaseClient';
 
 interface NewSuppliersPanelProps {
@@ -118,13 +118,10 @@ export function NewSuppliersPanel({ briefId, briefTitle }: NewSuppliersPanelProp
     );
   }, [supplierGroups, selectedSolutionNumber]);
 
-  if (isLoading) {
+  if (isLoading && supplierGroups.length === 0) {
     return (
-      <div className="p-6 bg-white rounded-2xl shadow-lg border border-gray-200">
-        <div className="flex items-center justify-center py-12">
-          <LoadingSpinner />
-          <span className="ml-4 text-gray-500 text-lg">Finding best suppliers...</span>
-        </div>
+      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <FastSearchLoadingAnimation briefTitle={briefTitle} />
       </div>
     );
   }

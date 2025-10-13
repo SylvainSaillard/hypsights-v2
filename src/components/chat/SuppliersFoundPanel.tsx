@@ -2,13 +2,15 @@ import { useSuppliers } from '../../hooks/useSuppliers';
 import SupplierCard from '../suppliers/SupplierCard';
 import type { SupplierGroup } from '../../types/supplierTypes';
 import { supabase } from '../../lib/supabaseClient';
+import { FastSearchLoadingAnimation } from '../animations/FastSearchLoadingAnimation';
 
 interface SuppliersFoundPanelProps {
   briefId: string;
   maxResults?: number;
+  briefTitle?: string;
 }
 
-export function SuppliersFoundPanel({ briefId, maxResults = 10 }: SuppliersFoundPanelProps) {
+export function SuppliersFoundPanel({ briefId, maxResults = 10, briefTitle }: SuppliersFoundPanelProps) {
   const { suppliers, solutionGroups, isLoading, error, refresh } = useSuppliers(briefId);
 
   // Transformer les données existantes en format groupé par fournisseur
@@ -62,34 +64,7 @@ export function SuppliersFoundPanel({ briefId, maxResults = 10 }: SuppliersFound
   };
 
   if (isLoading && suppliers.length === 0) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
-          <div className="h-6 bg-gray-200 rounded w-24 animate-pulse"></div>
-        </div>
-        <div className="flex gap-6 overflow-hidden">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="flex-shrink-0 w-96">
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden animate-pulse">
-                <div className="h-40 bg-gradient-to-r from-gray-200 to-gray-300"></div>
-                <div className="p-6 space-y-4">
-                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                  <div className="grid grid-cols-3 gap-4">
-                    {[...Array(3)].map((_, j) => (
-                      <div key={j} className="h-12 bg-gray-200 rounded"></div>
-                    ))}
-                  </div>
-                  <div className="h-20 bg-gray-200 rounded"></div>
-                  <div className="h-10 bg-gray-200 rounded"></div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <FastSearchLoadingAnimation briefTitle={briefTitle} />;
   }
 
   if (error) {
