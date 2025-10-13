@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
+import { useAuth } from '../../contexts/AuthContext';
+import FastSearchQuotaModal from '../modals/FastSearchQuotaModal';
 
 /**
  * KPI Cards component for the dashboard
@@ -9,15 +11,21 @@ import { useI18n } from '../../contexts/I18nContext';
  * - Completed searches count
  * - Suppliers found count
  * - Quota usage with visual indicator
+ * - Auto-popup when quota is reached
  */
 const KpiCards: React.FC = () => {
   // Fetch dashboard data from edge function explicitly using POST method
   // This helps avoid CORS issues since our Edge Functions better support POST
   const { t } = useI18n();
+  const { user } = useAuth();
   const { data, loading, error, refresh: _refresh } = useEdgeFunction('dashboard-data', { action: 'get_user_metrics' }, { method: 'POST' });
   
+  // State for quota modal
+  const [isQuotaModalOpen, setIsQuotaModalOpen] = useState(false);
+  const [hasShownQuotaModal, setHasShownQuotaModal] = useState(false);
+  
   // Log debugging information for CORS issues
-  React.useEffect(() => {
+  useEffect(() => {
     if (error) {
       console.error('KpiCards data fetch error:', error);
     }
@@ -25,6 +33,21 @@ const KpiCards: React.FC = () => {
       console.log('KpiCards data received:', data);
     }
   }, [data, error]);
+  
+  // Auto-show quota modal when quota is reached (100%)
+  useEffect(() => {
+    if (data?.data && !hasShownQuotaModal) {
+      const metrics = data.data;
+      const quotaPercentage = Math.min(100, Math.round((metrics.fast_searches_used / metrics.fast_searches_quota) * 100));
+      
+      // Show modal when quota is at 100%
+      if (quotaPercentage >= 100) {
+        console.log('Fast Search quota reached - showing modal');
+        setIsQuotaModalOpen(true);
+        setHasShownQuotaModal(true);
+      }
+    }
+  }, [data, hasShownQuotaModal]);
   
   if (loading) {
     return (
@@ -142,7 +165,14 @@ const KpiCards: React.FC = () => {
               {quotaPercentage}%
             </span>
           </div>
-          {quotaPercentage >= 90 && (
+          {quotaPercentage >= 100 ? (
+            <button
+              onClick={() => setIsQuotaModalOpen(true)}
+              className="mt-2 w-full text-xs text-white bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 font-semibold py-2 px-3 rounded-lg transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
+            >
+              {t('kpi.card.fast_search_quota.get_more', '🎁 Obtenir +3 Fast Search')}
+            </button>
+          ) : quotaPercentage >= 90 && (
             <p className="text-xs text-red-600 mt-2 font-medium">{t('kpi.card.fast_search_quota.upgrade', 'Consider upgrading your plan')}</p>
           )}
         </div>
@@ -150,35 +180,55 @@ const KpiCards: React.FC = () => {
     }
   ];
 
+  const handleQuotaModalClose = () => {
+    setIsQuotaModalOpen(false);
+  };
+
+  const handleQuotaModalSuccess = () => {
+    // Optionally refresh the data after successful submission
+    console.log('Quota request submitted successfully');
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 perspective-1000">
-      {kpiCards.map((card, index) => (
-        <div 
-          key={index} 
-          className={`group bg-gradient-to-br ${card.bgGradient || 'from-white to-gray-50'} rounded-xl shadow-lg border ${card.borderColor || 'border-gray-200'} p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
-        >
-          <div className="flex justify-between items-start relative">
-            <div className="flex-1">
-              <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide group-hover:text-gray-800 transition-colors duration-300">{card.title}</h3>
-              <p className="text-3xl font-bold mt-2 text-gray-900 group-hover:scale-105 transform transition-transform duration-300">{card.value}</p>
-              {!card.customContent && (
-                <p className={`text-sm mt-2 font-medium ${
-                  card.changeType === 'positive' ? 'text-green-600' : 
-                  card.changeType === 'negative' ? 'text-red-600' : 
-                  'text-gray-500'
-                }`}>
-                  {card.change}
-                </p>
-              )}
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 perspective-1000">
+        {kpiCards.map((card, index) => (
+          <div 
+            key={index} 
+            className={`group bg-gradient-to-br ${card.bgGradient || 'from-white to-gray-50'} rounded-xl shadow-lg border ${card.borderColor || 'border-gray-200'} p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1`}
+          >
+            <div className="flex justify-between items-start relative">
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide group-hover:text-gray-800 transition-colors duration-300">{card.title}</h3>
+                <p className="text-3xl font-bold mt-2 text-gray-900 group-hover:scale-105 transform transition-transform duration-300">{card.value}</p>
+                {!card.customContent && (
+                  <p className={`text-sm mt-2 font-medium ${
+                    card.changeType === 'positive' ? 'text-green-600' : 
+                    card.changeType === 'negative' ? 'text-red-600' : 
+                    'text-gray-500'
+                  }`}>
+                    {card.change}
+                  </p>
+                )}
+              </div>
+              <div className={`ml-4 p-3 rounded-xl shadow-md bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm border ${card.borderColor} transform transition-all duration-300 group-hover:rotate-3 group-hover:scale-110 group-hover:shadow-lg`}>
+                {card.icon}
+              </div>
             </div>
-            <div className={`ml-4 p-3 rounded-xl shadow-md bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm border ${card.borderColor} transform transition-all duration-300 group-hover:rotate-3 group-hover:scale-110 group-hover:shadow-lg`}>
-              {card.icon}
-            </div>
+            {card.customContent}
           </div>
-          {card.customContent}
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      {/* Fast Search Quota Modal */}
+      <FastSearchQuotaModal
+        isOpen={isQuotaModalOpen}
+        onClose={handleQuotaModalClose}
+        onSuccess={handleQuotaModalSuccess}
+        userEmail={user?.email || ''}
+        userName={user?.user_metadata?.full_name || user?.email || ''}
+      />
+    </>
   );
 };
 
