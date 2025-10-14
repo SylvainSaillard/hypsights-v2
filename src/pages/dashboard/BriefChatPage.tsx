@@ -164,7 +164,7 @@ const BriefChatPage = () => {
             request_id: crypto.randomUUID()
           };
           
-          const webhookResponse = await fetch('https://n8n.proxiwave.app/webhook/brief_initialisation', {
+          const webhookResponse = await fetch('https://n8n-hypsights.proxiwave.app/webhook/brief_initialisation', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(webhookPayload)
