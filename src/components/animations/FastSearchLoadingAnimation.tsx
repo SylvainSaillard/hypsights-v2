@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 interface FastSearchLoadingAnimationProps {
   briefTitle?: string;
@@ -10,7 +10,7 @@ interface FastSearchLoadingAnimationProps {
  */
 export function FastSearchLoadingAnimation({ briefTitle }: FastSearchLoadingAnimationProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [progress, setProgress] = useState(0);
+  const animationRef = useRef<HTMLDivElement>(null);
 
   const steps = [
     {
@@ -45,6 +45,16 @@ export function FastSearchLoadingAnimation({ briefTitle }: FastSearchLoadingAnim
     }
   ];
 
+  // Auto-scroll vers l'animation au montage
+  useEffect(() => {
+    if (animationRef.current) {
+      animationRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  }, []);
+
   // Progression automatique des étapes
   useEffect(() => {
     const stepInterval = setInterval(() => {
@@ -52,29 +62,16 @@ export function FastSearchLoadingAnimation({ briefTitle }: FastSearchLoadingAnim
         if (prev < steps.length - 1) {
           return prev + 1;
         }
-        return prev;
+        // Revenir au début pour créer une boucle infinie
+        return 0;
       });
-    }, 3500);
+    }, 5000); // Ralenti pour un effet plus naturel
 
     return () => clearInterval(stepInterval);
   }, []);
 
-  // Animation de la barre de progression
-  useEffect(() => {
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev < 100) {
-          return prev + 0.5;
-        }
-        return 100;
-      });
-    }, 100);
-
-    return () => clearInterval(progressInterval);
-  }, []);
-
   return (
-    <div className="w-full py-12 px-6">
+    <div ref={animationRef} className="w-full py-12 px-6">
       <div className="max-w-3xl mx-auto">
         {/* Header avec titre animé */}
         <div className="text-center mb-12">
@@ -99,18 +96,22 @@ export function FastSearchLoadingAnimation({ briefTitle }: FastSearchLoadingAnim
           </p>
         </div>
 
-        {/* Barre de progression globale */}
-        <div className="mb-12">
-          <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-medium text-gray-700">Overall Progress</span>
-            <span className="text-sm font-bold text-blue-600">{Math.round(progress)}%</span>
-          </div>
-          <div className="h-3 bg-gray-200 rounded-full overflow-hidden shadow-inner">
-            <div 
-              className="h-full bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-full transition-all duration-300 ease-out relative"
-              style={{ width: `${progress}%` }}
-            >
-              <div className="absolute inset-0 bg-white opacity-30 animate-pulse"></div>
+        {/* Animation de sablier tournant */}
+        <div className="mb-12 flex justify-center">
+          <div className="relative w-32 h-32">
+            {/* Cercle extérieur tournant */}
+            <div className="absolute inset-0 rounded-full border-8 border-gray-200 border-t-blue-500 border-r-purple-500 animate-spin"></div>
+            
+            {/* Cercle intérieur tournant en sens inverse */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full border-6 border-transparent border-b-purple-400 border-l-blue-400 animate-spin" style={{animationDirection: 'reverse', animationDuration: '1s'}}></div>
+            </div>
+            
+            {/* Icône centrale */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg className="w-12 h-12 text-blue-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
             </div>
           </div>
         </div>
@@ -207,34 +208,27 @@ export function FastSearchLoadingAnimation({ briefTitle }: FastSearchLoadingAnim
         <div className="mt-8 grid grid-cols-3 gap-4">
           <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200 text-center">
             <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              {Math.min(Math.round(progress * 150), 15000)}+
+              <span className="animate-pulse">15,000+</span>
             </div>
             <div className="text-xs text-gray-600 mt-1">Companies Scanned</div>
           </div>
           
           <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200 text-center">
             <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-              {Math.min(Math.round(progress * 5), 500)}+
+              <span className="animate-pulse">500+</span>
             </div>
             <div className="text-xs text-gray-600 mt-1">Products Analyzed</div>
           </div>
           
           <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200 text-center">
             <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-              {Math.min(Math.round(progress / 10), 10)}
+              <span className="animate-pulse">10+</span>
             </div>
             <div className="text-xs text-gray-600 mt-1">Matches Found</div>
           </div>
         </div>
       </div>
 
-      <style>{`
-        @keyframes progressBar {
-          0% { width: 0%; }
-          50% { width: 70%; }
-          100% { width: 100%; }
-        }
-      `}</style>
     </div>
   );
 }
