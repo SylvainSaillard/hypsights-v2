@@ -301,7 +301,7 @@ const LandingPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Product</h3>
               <ul className="space-y-3">
                 <li><Link to="/features" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Features</Link></li>
-                <li><a href="#" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Pricing</a></li>
+                <li><Link to="/pricing" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Pricing</Link></li>
               </ul>
             </div>
             <div>
