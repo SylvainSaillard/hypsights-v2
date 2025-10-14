@@ -2,6 +2,99 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { ChatMessage } from './ChatInterface';
 import { createClient } from '@supabase/supabase-js';
 
+/**
+ * Formate le contenu d'un message en nettoyant les caractères d'échappement JSON
+ * et en convertissant le markdown basique en HTML
+ */
+const formatMessageContent = (content: string): string => {
+  if (!content) return '';
+  
+  // Nettoyer les caractères d'échappement JSON
+  let formatted = content
+    .replace(/\\n/g, '\n')  // Convertir \n en vrais sauts de ligne
+    .replace(/\\"/g, '"')   // Convertir \" en guillemets
+    .replace(/\\'/g, "'");   // Convertir \' en apostrophes
+  
+  // Supprimer le préfixe "text:" si présent
+  formatted = formatted.replace(/^text:\s*/, '');
+  
+  return formatted;
+};
+
+/**
+ * Composant pour afficher le contenu formaté d'un message avec support markdown basique
+ */
+const FormattedMessageContent: React.FC<{ content: string }> = ({ content }) => {
+  const formatted = formatMessageContent(content);
+  
+  // Diviser en lignes pour le rendu
+  const lines = formatted.split('\n');
+  
+  return (
+    <div className="space-y-2">
+      {lines.map((line, index) => {
+        // Ligne vide
+        if (!line.trim()) {
+          return <div key={index} className="h-2" />;
+        }
+        
+        // Titre en gras (commence par **)
+        if (line.trim().startsWith('**') && line.trim().endsWith('**')) {
+          const text = line.trim().slice(2, -2);
+          return (
+            <div key={index} className="font-bold text-gray-900">
+              {text}
+            </div>
+          );
+        }
+        
+        // Liste à puces (commence par - ou •)
+        if (line.trim().match(/^[-•]\s/)) {
+          const text = line.trim().slice(2);
+          // Gérer le texte en gras dans les listes
+          const parts = text.split(/\*\*(.*?)\*\*/);
+          return (
+            <div key={index} className="flex gap-2">
+              <span className="text-gray-600">•</span>
+              <span className="flex-1">
+                {parts.map((part, i) => 
+                  i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>
+                )}
+              </span>
+            </div>
+          );
+        }
+        
+        // Flèche de conclusion (→)
+        if (line.trim().startsWith('→')) {
+          const text = line.trim().slice(1).trim();
+          const parts = text.split(/\*\*(.*?)\*\*/);
+          return (
+            <div key={index} className="flex gap-2 mt-3 pt-3 border-t border-gray-200">
+              <span className="text-blue-600 font-bold">→</span>
+              <span className="flex-1 font-medium text-blue-900">
+                {parts.map((part, i) => 
+                  i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>
+                )}
+              </span>
+            </div>
+          );
+        }
+        
+        // Texte normal avec support du gras inline
+        const parts = line.split(/\*\*(.*?)\*\*/);
+        return (
+          <div key={index}>
+            {parts.map((part, i) => 
+              i % 2 === 1 ? <strong key={i}>{part}</strong> : <span key={i}>{part}</span>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
 // Initialisation du client Supabase pour les appels authentifiés
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
@@ -301,7 +394,7 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
     container: "flex flex-col h-96 border border-gray-200 rounded-lg",
     messagesArea: "flex-1 overflow-y-auto p-4 space-y-3",
     userMessage: "ml-auto max-w-xs bg-primary text-primary-foreground p-3 rounded-lg",
-    aiMessage: "mr-auto max-w-xs bg-gray-100 text-gray-800 p-3 rounded-lg",
+    aiMessage: "mr-auto max-w-[80%] bg-gray-100 text-gray-800 p-4 rounded-lg",
     inputArea: "border-t border-gray-200 p-4",
     input: "w-full border border-gray-300 rounded-md p-2",
     sendButton: "bg-primary text-primary-foreground px-4 py-2 rounded-md ml-2"
@@ -367,7 +460,13 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
             key={message.id}
             className={message.is_ai ? styles.aiMessage : styles.userMessage}
           >
-            <div className="text-sm">{message.content}</div>
+            <div className="text-sm">
+              {message.is_ai ? (
+                <FormattedMessageContent content={message.content} />
+              ) : (
+                message.content
+              )}
+            </div>
             <div className="text-xs opacity-70 mt-1">
               {new Date(message.created_at).toLocaleTimeString()}
             </div>
