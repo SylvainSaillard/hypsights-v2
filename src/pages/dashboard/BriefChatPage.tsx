@@ -200,6 +200,9 @@ const BriefChatPage = () => {
     console.log('BriefChatPage - Solutions changed:', newSolutions);
     setSolutions(newSolutions);
   };
+
+  // Détecter si un Fast Search est en cours
+  const isFastSearchInProgress = solutions.some(solution => solution.status === 'in_progress');
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
@@ -283,7 +286,11 @@ const BriefChatPage = () => {
             />
             
             {/* Nouveau panneau de fournisseurs avec design moderne */}
-            <NewSuppliersPanel briefId={brief.id} briefTitle={brief.title} />
+            <NewSuppliersPanel 
+              briefId={brief.id} 
+              briefTitle={brief.title} 
+              isFastSearchInProgress={isFastSearchInProgress}
+            />
 
 
           </div>

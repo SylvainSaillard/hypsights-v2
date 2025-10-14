@@ -17,7 +17,7 @@ export const useSupplierGroups = ({
   enabled = true
 }: UseSupplierGroupsProps) => {
   const [supplierGroups, setSupplierGroups] = useState<SupplierGroup[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSupplierGroups = async () => {

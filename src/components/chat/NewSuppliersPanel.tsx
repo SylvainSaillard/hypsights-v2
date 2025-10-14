@@ -9,9 +9,10 @@ import { supabase } from '../../lib/supabaseClient';
 interface NewSuppliersPanelProps {
   briefId: string;
   briefTitle: string;
+  isFastSearchInProgress?: boolean;
 }
 
-export function NewSuppliersPanel({ briefId, briefTitle }: NewSuppliersPanelProps) {
+export function NewSuppliersPanel({ briefId, briefTitle, isFastSearchInProgress = false }: NewSuppliersPanelProps) {
   const { supplierGroups, isLoading, error } = useSupplierGroups({ briefId });
   const [selectedSolutionNumber, setSelectedSolutionNumber] = useState<number | 'all'>('all');
   const [isExportingCSV, setIsExportingCSV] = useState(false);
@@ -118,7 +119,8 @@ export function NewSuppliersPanel({ briefId, briefTitle }: NewSuppliersPanelProp
     );
   }, [supplierGroups, selectedSolutionNumber]);
 
-  if (isLoading) {
+  // Show loading animation if initial loading OR if Fast Search is in progress with no suppliers yet
+  if (isLoading || (isFastSearchInProgress && supplierGroups.length === 0)) {
     return (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <FastSearchLoadingAnimation briefTitle={briefTitle} />
