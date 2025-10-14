@@ -118,7 +118,7 @@ export function NewSuppliersPanel({ briefId, briefTitle }: NewSuppliersPanelProp
     );
   }, [supplierGroups, selectedSolutionNumber]);
 
-  if (isLoading && supplierGroups.length === 0) {
+  if (isLoading) {
     return (
       <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         <FastSearchLoadingAnimation briefTitle={briefTitle} />
@@ -136,7 +136,17 @@ export function NewSuppliersPanel({ briefId, briefTitle }: NewSuppliersPanelProp
   }
 
   if (supplierGroups.length === 0) {
-    return null; // Ne rien afficher si aucun fournisseur n'est trouvé pour ce brief
+    return (
+      <div className="text-center py-12 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+        <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center">
+          <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-semibold text-gray-800 mb-2">No suppliers found yet</h3>
+        <p className="text-gray-600">Launch a Fast Search to discover new suppliers.</p>
+      </div>
+    );
   }
 
   return (
