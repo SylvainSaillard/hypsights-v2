@@ -303,9 +303,6 @@ const SupplierDetailPage: React.FC = () => {
             <div className="flex items-center gap-3 mb-6">
               <div className="w-2 h-8 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
               <h3 className="text-2xl font-bold text-gray-800">Criteria Assessment</h3>
-              <div className="ml-auto text-2xl font-black text-indigo-600">
-                {supplier.scores.criteria_match}%
-              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -359,7 +356,13 @@ const SupplierDetailPage: React.FC = () => {
             </div>
           ) : products.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {products.map((product) => (
+              {products
+                .sort((a, b) => {
+                  const avgScoreA = Math.round(((a.ai_solution_fit_score || 0) + (a.ai_brief_fit_score || 0)) / 2);
+                  const avgScoreB = Math.round(((b.ai_solution_fit_score || 0) + (b.ai_brief_fit_score || 0)) / 2);
+                  return avgScoreB - avgScoreA;
+                })
+                .map((product) => (
                 <div key={product.id} className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
                   {/* En-tête du produit avec catégorie et URL */}
                   <div className="flex items-start justify-between mb-4">
@@ -551,7 +554,6 @@ const SupplierDetailPage: React.FC = () => {
                                 <div className="flex items-center justify-between mb-1">
                                   <div className="text-blue-100 text-xs font-medium flex items-center gap-2">
                                     Overall Fit Analysis
-                                    <span className="text-xs text-blue-200/70">({scoreDifference}% variance)</span>
                                   </div>
                                   {avgScore > 0 && (
                                     <div className="bg-gradient-to-r from-blue-400 to-emerald-400 text-gray-900 px-2 py-0.5 rounded text-xs font-bold">
