@@ -239,9 +239,6 @@ const SupplierDetailPage: React.FC = () => {
                     <div className="w-3 h-8 bg-gradient-to-b from-blue-400 to-cyan-400 rounded-full"></div>
                     <h3 className="text-xl font-bold text-white">Solution Fit</h3>
                   </div>
-                  <div className="text-2xl font-black text-transparent bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text">
-                    {supplier.scores.solution_fit}%
-                  </div>
                 </div>
                 
                 <div className="h-3 bg-gray-800 rounded-full overflow-hidden mb-4">
@@ -257,7 +254,7 @@ const SupplierDetailPage: React.FC = () => {
                       <span className="text-black text-xs font-bold">AI</span>
                     </div>
                     <p className="text-gray-300 text-sm leading-relaxed">
-                      This supplier demonstrates exceptional alignment with your solution requirements. Their capabilities directly address your core needs with proven expertise and innovative approaches in this domain.
+                      {supplier.scores.solution_fit_explanation || 'This supplier demonstrates exceptional alignment with your solution requirements. Their capabilities directly address your core needs with proven expertise and innovative approaches in this domain.'}
                     </p>
                   </div>
                 </div>
@@ -276,9 +273,6 @@ const SupplierDetailPage: React.FC = () => {
                     <div className="w-3 h-8 bg-gradient-to-b from-emerald-400 to-green-400 rounded-full"></div>
                     <h3 className="text-xl font-bold text-white">Brief Fit</h3>
                   </div>
-                  <div className="text-2xl font-black text-transparent bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text">
-                    {supplier.scores.brief_fit}%
-                  </div>
                 </div>
                 
                 <div className="h-3 bg-gray-800 rounded-full overflow-hidden mb-4">
@@ -294,7 +288,7 @@ const SupplierDetailPage: React.FC = () => {
                       <span className="text-black text-xs font-bold">AI</span>
                     </div>
                     <p className="text-gray-300 text-sm leading-relaxed">
-                      Outstanding match with your original brief specifications. This supplier meets your stated requirements and project scope with remarkable precision and understanding.
+                      {supplier.scores.brief_fit_explanation || 'Outstanding match with your original brief specifications. This supplier meets your stated requirements and project scope with remarkable precision and understanding.'}
                     </p>
                   </div>
                 </div>
