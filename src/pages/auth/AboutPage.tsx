@@ -117,7 +117,7 @@ const AboutPage: React.FC = () => {
                 </h2>
               </div>
               <p className="text-lg text-gray-600 leading-relaxed">
-                Hypsights is owned and operated by <span className="font-semibold text-gray-800">Hypsous</span>, a French-based boutique consulting company specialized in Open Innovation and Technology Scouting. With years of expertise in connecting businesses with the right technological solutions, we've developed an AI-powered platform that revolutionizes how B2B professionals discover and qualify suppliers.
+                Hypsights is owned and operated by <span className="font-semibold text-gray-800">Hypsous</span>, a French-based boutique consulting company specialized in Open Innovation and Technology Scouting. With years of expertise in connecting businesses with the right technological solutions, we've developed an AI-powered platform that revolutionizes how B2B professionals discover and qualify suppliers. Hypsous SAS is a company incorporated in France under the registration number 888542131 RCS Paris, and headquartered in Paris, France.
               </p>
             </div>
           </div>
