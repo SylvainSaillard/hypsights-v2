@@ -317,8 +317,8 @@ const SupplierDetailPage: React.FC = () => {
                     <span className="font-semibold text-gray-800">Geography</span>
                   </div>
                   <div className={`w-4 h-4 rounded-full ${
-                    (supplier.scores.criteria_match >= 75) ? 'bg-green-500' : 
-                    (supplier.scores.criteria_match >= 50) ? 'bg-yellow-500' : 'bg-red-500'
+                    supplier.scores.geography_score === 2 ? 'bg-green-500' : 
+                    supplier.scores.geography_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}></div>
                 </div>
                 <p className="text-sm text-gray-600">{supplier.supplier.region || supplier.supplier.country || 'Global presence'}</p>
@@ -332,8 +332,8 @@ const SupplierDetailPage: React.FC = () => {
                     <span className="font-semibold text-gray-800">Organization</span>
                   </div>
                   <div className={`w-4 h-4 rounded-full ${
-                    (supplier.scores.criteria_match >= 60) ? 'bg-green-500' : 
-                    (supplier.scores.criteria_match >= 35) ? 'bg-yellow-500' : 'bg-red-500'
+                    supplier.scores.organization_score === 2 ? 'bg-green-500' : 
+                    supplier.scores.organization_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
                   }`}></div>
                 </div>
                 <p className="text-sm text-gray-600">{supplier.supplier.company_type || 'Private'}</p>
