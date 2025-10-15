@@ -211,7 +211,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
             </div>
             <div className="ml-4 text-right">
               <div className="bg-white bg-opacity-20 rounded-lg px-3 py-2 backdrop-blur-sm">
-                <div className="text-2xl font-bold">{scores.brief_fit}%</div>
+                <div className="text-2xl font-bold">{scores.overall}%</div>
                 <div className="text-xs opacity-90">Overall Match</div>
               </div>
             </div>
