@@ -41,17 +41,27 @@ const FastSearchQuotaModal: React.FC<FastSearchQuotaModalProps> = ({
         throw new Error('User not authenticated');
       }
 
-      // Call Make.com webhook to notify the team
+      // Get user metadata for additional context
+      const { data: userData } = await supabase.auth.getUser();
+      
+      // Call Make.com webhook to notify the team about beta feedback request
       const webhookData = {
-        type: 'fast_search_quota_request',
+        type: 'beta_feedback_request',
         userEmail,
         userName,
         phone,
         message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        // Additional user context
+        userId: userData?.user?.id,
+        userCreatedAt: userData?.user?.created_at,
+        userMetadata: userData?.user?.user_metadata,
+        // Request context
+        source: 'fast_search_quota_modal',
+        quotaReached: true
       };
 
-      const makeWebhookResponse = await fetch('https://hook.eu1.make.com/sg1brkl4b6fzl82te1k3q3n6x8nt8wvh', {
+      const makeWebhookResponse = await fetch('https://hook.eu1.make.com/3hstttc3isy4a4koz5p6i3fejpdnaj8e', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -60,8 +70,8 @@ const FastSearchQuotaModal: React.FC<FastSearchQuotaModalProps> = ({
       });
 
       if (makeWebhookResponse.ok) {
-        console.log('Fast Search quota request sent successfully');
-        alert(t('fastSearchQuota.modal.success', 'Votre demande a été envoyée ! Notre équipe vous contactera très prochainement pour vous offrir 3 Fast Search supplémentaires.'));
+        console.log('Beta feedback request sent successfully');
+        alert(t('fastSearchQuota.modal.success', 'Merci ! Notre équipe vous contactera très prochainement pour échanger sur votre expérience.'));
         onSuccess?.();
         onClose();
       } else {
