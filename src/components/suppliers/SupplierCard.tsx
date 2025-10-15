@@ -269,9 +269,6 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
             <div className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
               <div className="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
               <span>Criteria Assessment</span>
-              <div className="ml-auto text-lg font-black text-indigo-600">
-                {scores.criteria_match}%
-              </div>
             </div>
             
             <div className="grid grid-cols-2 gap-3">
@@ -303,27 +300,40 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
         )}
 
 
-        {/* Résumé des produits - Design amélioré */}
+        {/* Résumé des produits - Design amélioré avec effet "nouveaux produits" */}
         {products.length > 0 && (
-          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 mb-4 border border-blue-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                  <span className="text-white text-lg">📦</span>
-                </div>
-                <div>
-                  <div className="text-base font-bold text-gray-800">
-                    {products.length} Product{products.length !== 1 ? 's' : ''} Available
-                  </div>
-                  <p className="text-sm text-gray-600">
-                    Across {solutions.length} solution{solutions.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
+          <div className="relative bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 rounded-xl p-5 mb-4 border-2 border-emerald-200 overflow-hidden group hover:shadow-lg transition-all duration-300">
+            {/* Badge "New" animé */}
+            <div className="absolute top-2 right-2 bg-gradient-to-r from-emerald-500 to-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md animate-pulse">
+              ✨ NEW
+            </div>
+            
+            {/* Effet de brillance */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent transform -skew-x-12 translate-x-full group-hover:translate-x-[-200%] transition-transform duration-1000 ease-out pointer-events-none"></div>
+            
+            <div className="flex items-center gap-4 relative z-10">
+              {/* Icône avec animation */}
+              <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 via-blue-500 to-indigo-500 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                <span className="text-white text-2xl">🎁</span>
               </div>
+              
+              <div className="flex-1">
+                <div className="text-lg font-bold text-gray-800 mb-1 flex items-center gap-2">
+                  <span>{products.length} New Product{products.length !== 1 ? 's' : ''} Found!</span>
+                </div>
+                <p className="text-sm text-gray-600 flex items-center gap-1">
+                  <span className="inline-block w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                  Matching {solutions.length} solution{solutions.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              
+              {/* Compteur stylisé */}
               <div className="text-right">
-                <div className="bg-white rounded-lg px-3 py-2 shadow-sm border border-blue-200">
-                  <div className="text-xl font-bold text-blue-600">{products.length}</div>
-                  <div className="text-xs text-gray-500">Items</div>
+                <div className="bg-white/80 backdrop-blur-sm rounded-xl px-4 py-3 shadow-md border border-emerald-200">
+                  <div className="text-2xl font-black bg-gradient-to-r from-emerald-600 to-blue-600 bg-clip-text text-transparent">
+                    {products.length}
+                  </div>
+                  <div className="text-xs text-gray-500 font-medium">Items</div>
                 </div>
               </div>
             </div>
