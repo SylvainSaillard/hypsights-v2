@@ -10,7 +10,7 @@ const FeaturesPage: React.FC = () => {
     {
       icon: '📝',
       title: 'Structured Brief Creation',
-      description: 'Create detailed briefs using our intuitive structured forms. Define your business needs, requirements, budget, timeline, and target criteria with precision.',
+      description: 'Create detailed briefs using our intuitive structured forms. Define your business needs, requirements, and target criteria with precision.',
       benefits: ['Guided form workflow', 'Multi-criteria filtering', 'Industry-specific templates', 'Reference company examples'],
       color: 'from-blue-500 to-indigo-600',
       bgColor: 'from-blue-50 to-indigo-50'
@@ -67,7 +67,7 @@ const FeaturesPage: React.FC = () => {
   ];
 
   const workflowSteps = [
-    { number: '01', title: 'Create Your Brief', description: 'Start by describing your business need using our structured form. Provide details about your requirements, budget, timeline, and target criteria.', color: 'from-blue-500 to-indigo-600' },
+    { number: '01', title: 'Create Your Brief', description: 'Start by describing your business need using our structured form. Provide details about your requirements, and target criteria.', color: 'from-blue-500 to-indigo-600' },
     { number: '02', title: 'AI Assistance', description: 'Our AI assistant analyzes your brief and suggests relevant solutions. Chat with the AI to refine your requirements and explore options.', color: 'from-purple-500 to-pink-600' },
     { number: '03', title: 'Validate Solutions', description: 'Review and validate the AI-proposed solutions. This step ensures search quality and unlocks the ability to launch searches.', color: 'from-green-500 to-emerald-600' },
     { number: '04', title: 'Launch Search', description: 'Choose between Fast Search (automated, quota-limited) or Deep Search (expert research, unlimited) based on your needs.', color: 'from-orange-500 to-red-600' },
