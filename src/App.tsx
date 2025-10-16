@@ -8,6 +8,7 @@ import AboutPage from './pages/auth/AboutPage'; // Import the new AboutPage
 import FeaturesPage from './pages/auth/FeaturesPage'; // Import the new FeaturesPage
 import PricingPage from './pages/auth/PricingPage'; // Import the new PricingPage
 import ContactPage from './pages/auth/ContactPage'; // Import the new ContactPage
+import PrivacyPage from './pages/auth/PrivacyPage'; // Import the new PrivacyPage
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'; // Import the new ResetPasswordPage
 import UpdatePasswordPage from './pages/auth/UpdatePasswordPage';
 import AuthCallbackPage from './pages/auth/AuthCallbackPage';
@@ -130,6 +131,7 @@ function App() {
       <Route path="/features" element={<FeaturesPage />} />
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/contact" element={<ContactPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} />
       <Route path="/signup" element={user ? <Navigate to="/dashboard" /> : <SignupPage />} />
       <Route path="/reset-password" element={user ? <Navigate to="/dashboard" /> : <ResetPasswordPage />} />

@@ -160,27 +160,6 @@ const ContactPage: React.FC = () => {
         </div>
       </section>
 
-      {/* About Hypsous Section */}
-      <section className="py-24 bg-gradient-to-b from-gray-50 to-blue-50">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto">
-            <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-12">
-              <div className="text-center mb-8">
-                <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-gray-900 via-purple-800 to-indigo-800 bg-clip-text text-transparent mb-4">
-                  About Hypsous
-                </h2>
-              </div>
-              <p className="text-lg text-gray-600 leading-relaxed mb-6">
-                Hypsights is owned and operated by <span className="font-bold text-gray-900">Hypsous</span>, a French-based boutique consulting company specialized in Open Innovation and Technology Scouting.
-              </p>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                With deep expertise in connecting businesses with cutting-edge suppliers and technology solutions, Hypsous brings years of experience in innovation consulting to the Hypsights platform.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden">
@@ -247,9 +226,7 @@ const ContactPage: React.FC = () => {
             <div>
               <h3 className="text-lg font-semibold mb-4">Legal</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Privacy</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Terms</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Cookie policy</a></li>
+                <li><Link to="/privacy" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Privacy</Link></li>
               </ul>
             </div>
           </div>

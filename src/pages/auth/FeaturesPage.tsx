@@ -282,22 +282,20 @@ const FeaturesPage: React.FC = () => {
               <h3 className="text-lg font-semibold mb-4">Hypsights</h3>
               <ul className="space-y-3">
                 <li><Link to="/about" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">About us</Link></li>
-                <li><a href="#" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Contact</a></li>
+                <li><Link to="/contact" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Contact</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Product</h3>
               <ul className="space-y-3">
                 <li><Link to="/features" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Features</Link></li>
-                <li><a href="#" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Pricing</a></li>
+                <li><Link to="/pricing" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Pricing</Link></li>
               </ul>
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-4">Legal</h3>
               <ul className="space-y-3">
-                <li><a href="#" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Privacy</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Terms</a></li>
-                <li><a href="#" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Cookie policy</a></li>
+                <li><Link to="/privacy" className="text-gray-400 hover:text-primary transition-colors duration-200 text-sm">Privacy</Link></li>
               </ul>
             </div>
           </div>
