@@ -39,6 +39,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
   const [companyInput, setCompanyInput] = useState('');
   const [companyUrlInput, setCompanyUrlInput] = useState('');
+  const [validationErrors, setValidationErrors] = useState<string[]>([]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -76,6 +77,40 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
 
   const handleSubmitForm = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validation des champs obligatoires
+    const errors: string[] = [];
+    
+    if (!formData.title.trim()) {
+      errors.push(t('brief.form.error.title_required', 'Brief title is required'));
+    }
+    
+    if (!formData.description.trim()) {
+      errors.push(t('brief.form.error.description_required', 'Brief description is required'));
+    }
+    
+    if (formData.maturity.length === 0) {
+      errors.push(t('brief.form.error.maturity_required', 'Please select at least one maturity level'));
+    }
+    
+    if (formData.organization_types.length === 0) {
+      errors.push(t('brief.form.error.organization_types_required', 'Please select at least one organization type'));
+    }
+    
+    if (formData.geographies.length === 0) {
+      errors.push(t('brief.form.error.geographies_required', 'Please select at least one geography'));
+    }
+    
+    // Si des erreurs existent, les afficher et empêcher la soumission
+    if (errors.length > 0) {
+      setValidationErrors(errors);
+      // Scroll vers le haut pour voir les erreurs
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    
+    // Réinitialiser les erreurs et soumettre
+    setValidationErrors([]);
     onSubmit(formData);
   };
 
@@ -116,6 +151,27 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
     <form onSubmit={handleSubmitForm} className="space-y-8">
       <div className="space-y-6 bg-white p-8 rounded-xl shadow-lg border-l-4 border border-primary border-l-primary">
         <h2 className="text-2xl font-semibold text-gray-800 border-b border-gray-200 pb-4 mb-6">Create New Brief</h2>
+        
+        {/* Validation Errors */}
+        {validationErrors.length > 0 && (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+            <div className="flex items-start">
+              <svg className="w-5 h-5 text-red-500 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-red-800 mb-2">
+                  {t('brief.form.error.validation_failed', 'Please complete all required fields:')}
+                </h3>
+                <ul className="list-disc list-inside text-sm text-red-700 space-y-1">
+                  {validationErrors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
         {/* Title */}
         <div>
           <label htmlFor="title" className="form-label text-gray-700 font-medium">
@@ -224,7 +280,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
         {/* Required Maturity */}
         <div>
           <label className="form-label mb-4 text-gray-700 font-medium">
-            {t('brief.form.required_maturity', 'Required Maturity')}
+            {t('brief.form.required_maturity', 'Required Maturity')} <span className="text-red-500">*</span>
           </label>
           <p className="text-sm text-gray-500 mb-4">
             {t('brief.form.required_maturity_help', 'Sélectionnez le niveau de maturité des solutions recherchées')}
@@ -276,7 +332,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
         {/* Types d'Organisation et Capacités */}
         <div>
           <label className="form-label mb-4 text-gray-700 font-medium">
-            {t('brief.form.organization_capabilities', 'Types d\'Organisation et Capacités Recherchées')}
+            {t('brief.form.organization_capabilities', 'Types d\'Organisation et Capacités Recherchées')} <span className="text-red-500">*</span>
           </label>
           <p className="text-sm text-gray-500 mb-4">
             {t('brief.form.organization_capabilities_help', 'Sélectionnez les types d\'organisations et capacités qui correspondent à vos besoins')}
@@ -458,7 +514,7 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
         {/* Preferred Geographies */}
         <div>
           <label className="form-label mb-3 text-gray-700 font-medium">
-            {t('brief.form.preferred_geographies', 'Preferred Geographies')}
+            {t('brief.form.preferred_geographies', 'Preferred Geographies')} <span className="text-red-500">*</span>
           </label>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
