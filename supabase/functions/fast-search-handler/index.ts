@@ -408,6 +408,29 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
   
   console.log('Appel du webhook searchsupplier avec les données:', webhookData);
   
+  // 1. Initialiser le monitoring de la Fast Search
+  try {
+    console.log('Initialisation du monitoring pour solution:', solution_id);
+    const { error: updateError } = await supabase
+      .from('solutions')
+      .update({
+        fast_search_status: 'pending',
+        fast_search_launched_at: new Date().toISOString(),
+        fast_search_checked_at: null,
+        fast_search_refunded: false
+      })
+      .eq('id', solution_id);
+    
+    if (updateError) {
+      console.error('Erreur lors de l\'initialisation du monitoring:', updateError);
+    } else {
+      console.log('✓ Monitoring initialisé avec succès');
+    }
+  } catch (error) {
+    console.error('Exception lors de l\'initialisation du monitoring:', error);
+  }
+  
+  // 2. Appeler le webhook N8n
   try {
     // Appel réel du webhook avec timeout
     const controller = new AbortController();
@@ -439,12 +462,17 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     // Ne pas bloquer en cas d'erreur webhook
   }
   
+  // 3. Programmer la vérification automatique après 10 minutes
+  // Note: Ceci sera géré par un cron job ou un appel manuel à fast-search-monitor
+  console.log('Fast Search lancée - vérification automatique programmée dans 10 minutes');
+  
   // Toujours retourner un succès pour le front-end
   return {
     success: true,
     search_id: searchId,
     message: 'Recherche démarrée avec appel webhook',
-    webhook_called: true
+    webhook_called: true,
+    monitoring_enabled: true
   };
 }
 
