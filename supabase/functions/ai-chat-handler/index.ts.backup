@@ -5,7 +5,6 @@ import { createClient, SupabaseClient, User } from 'https://esm.sh/@supabase/sup
 const ALLOWED_ORIGINS = [
   'https://hypsights-v2.netlify.app',
   'https://hypsights.com',
-  'https://www.hypsights.com',
   'https://hypsights-v2.vercel.app',
   'http://localhost:3000',
   'http://localhost:5173',
