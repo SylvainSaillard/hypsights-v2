@@ -85,7 +85,29 @@ const KpiCards: React.FC = () => {
     completedSearches: 0,
     suppliersFound: 0,
     fast_searches_used: 0,
-    fast_searches_quota: 3
+    fast_searches_quota: 3,
+    briefsCreatedThisWeek: 0,
+    lastSearchDate: null
+  };
+  
+  // Helper function to format relative time
+  const getRelativeTime = (dateString: string | null): string => {
+    if (!dateString) return t('kpi.card.change_none', 'None yet');
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 0) return t('kpi.card.time.today', 'Today');
+    if (diffDays === 1) return t('kpi.card.time.yesterday', 'Yesterday');
+    if (diffDays < 7) return t('kpi.card.time.days_ago', '{days} days ago', { days: diffDays });
+    if (diffDays < 30) {
+      const weeks = Math.floor(diffDays / 7);
+      return t('kpi.card.time.weeks_ago', '{weeks} week(s) ago', { weeks });
+    }
+    const months = Math.floor(diffDays / 30);
+    return t('kpi.card.time.months_ago', '{months} month(s) ago', { months });
   };
   
   // Calculate quota percentage
@@ -107,8 +129,10 @@ const KpiCards: React.FC = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       ),
-      change: t('kpi.card.active_briefs.change_static_example', '+2 this week'),
-      changeType: 'positive',
+      change: metrics.briefsCreatedThisWeek > 0 
+        ? t('kpi.card.active_briefs.change_dynamic', '+{count} this week', { count: metrics.briefsCreatedThisWeek })
+        : t('kpi.card.change_none', 'None this week'),
+      changeType: metrics.briefsCreatedThisWeek > 0 ? 'positive' : 'neutral',
       bgGradient: 'from-blue-50 to-blue-100',
       borderColor: 'border-blue-200'
     },
@@ -120,8 +144,10 @@ const KpiCards: React.FC = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       ),
-      change: metrics.completedSearches > 0 ? t('kpi.card.completed_searches.change_recent', 'Last: Yesterday') : t('kpi.card.change_none', 'None yet'),
-      changeType: metrics.completedSearches > 0 ? 'neutral' : 'negative',
+      change: metrics.lastSearchDate 
+        ? t('kpi.card.completed_searches.change_dynamic', 'Last: {time}', { time: getRelativeTime(metrics.lastSearchDate) })
+        : t('kpi.card.change_none', 'None yet'),
+      changeType: metrics.lastSearchDate ? 'neutral' : 'negative',
       bgGradient: 'from-purple-50 to-purple-100',
       borderColor: 'border-purple-200'
     },
@@ -133,7 +159,9 @@ const KpiCards: React.FC = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
         </svg>
       ),
-      change: metrics.suppliersFound > 0 ? t('kpi.card.suppliers_found.change_per_search', '{count} per search', { count: Math.round(metrics.suppliersFound / Math.max(1, metrics.completedSearches)) }) : t('kpi.card.change_none', 'None yet'),
+      change: metrics.suppliersFound > 0 && metrics.completedSearches > 0
+        ? t('kpi.card.suppliers_found.change_per_search', '~{count} per search', { count: Math.round(metrics.suppliersFound / metrics.completedSearches) })
+        : t('kpi.card.change_none', 'None yet'),
       changeType: metrics.suppliersFound > 0 ? 'positive' : 'neutral',
       bgGradient: 'from-green-50 to-green-100',
       borderColor: 'border-green-200'

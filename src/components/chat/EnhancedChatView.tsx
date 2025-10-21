@@ -6,6 +6,8 @@ import ChatPanel from './ChatPanel';
 import SolutionsPanel from './SolutionsPanel';
 import type { EnhancedChatViewProps } from './types';
 import { supabase } from '../../lib/supabaseClient';
+import { useFastSearchRefundNotifications } from '../../hooks/useFastSearchRefundNotifications';
+import { FastSearchRefundNotification } from '../notifications/FastSearchRefundNotification';
 
 /**
  * Composant de chat amélioré avec affichage des solutions et des fournisseurs
@@ -23,6 +25,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   const [fastSearchQuota, setFastSearchQuota] = useState({ used: 0, total: 3 });
   const [startingSolutionId, setStartingSolutionId] = useState<string | null>(null);
   const [briefTitle, setBriefTitle] = useState<string>('');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userLocale, setUserLocale] = useState<'en' | 'fr'>('en');
   
   // Utilisation des hooks personnalisés pour la logique métier
   const {
@@ -42,6 +46,9 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     validateSolution
   } = useSolutions(briefId, onSolutionValidated);
 
+  // Hook pour les notifications de remboursement
+  const { notifications, removeNotification } = useFastSearchRefundNotifications(briefId, userId);
+
   // Notifier le parent des changements de solutions
   useEffect(() => {
     if (onSolutionsChange) {
@@ -49,7 +56,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     }
   }, [solutions, onSolutionsChange]);
   
-  // Charger le quota de Fast Search
+  // Charger le quota de Fast Search et les infos utilisateur
   useEffect(() => {
     const fetchQuota = async () => {
       try {
@@ -57,6 +64,20 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
         if (!session) {
           console.error('User not authenticated for quota check.');
           return;
+        }
+
+        // Récupérer l'ID utilisateur
+        setUserId(session.user.id);
+
+        // Récupérer la locale utilisateur depuis les métadonnées
+        const { data: userMetadata } = await supabase
+          .from('users_metadata')
+          .select('preferred_locale')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        if (userMetadata?.preferred_locale) {
+          setUserLocale(userMetadata.preferred_locale as 'en' | 'fr');
         }
 
         const response = await fetch('/functions/v1/dashboard-data', {
@@ -166,6 +187,17 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   
   return (
     <div className="flex flex-col h-full p-6">
+      {/* Notifications de remboursement Fast Search */}
+      {notifications.map((notification) => (
+        <FastSearchRefundNotification
+          key={notification.id}
+          solutionTitle={notification.solutionTitle}
+          reason={notification.reason}
+          locale={userLocale}
+          onClose={() => removeNotification(notification.id)}
+        />
+      ))}
+
       {/* Conteneur principal avec hauteur fixe */}
       <div className="flex gap-6 h-[600px]">
         {/* Panneau de chat avec hauteur fixe et défilement */}

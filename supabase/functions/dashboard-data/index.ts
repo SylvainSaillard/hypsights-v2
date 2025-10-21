@@ -237,11 +237,14 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
     console.error('[getUserMetrics] Error fetching user metadata:', error);
   }
   
+  let briefsCreatedThisWeek = 0;
+  let lastSearchDate: string | null = null;
+  
   try {
     console.log(`[getUserMetrics] Fetching briefs for user: ${userId}`);
     const { data: userBriefs, error: briefsError } = await supabaseAdmin
       .from('briefs')
-      .select('id')
+      .select('id, created_at')
       .eq('user_id', userId)
       .neq('status', 'archived');
       
@@ -250,6 +253,13 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
     } else if (userBriefs) {
       activeBriefs = userBriefs.length;
       console.log(`[getUserMetrics] Found ${activeBriefs} active briefs.`);
+      
+      // Calculate briefs created this week
+      const oneWeekAgo = new Date();
+      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+      briefsCreatedThisWeek = userBriefs.filter(b => new Date(b.created_at) >= oneWeekAgo).length;
+      console.log(`[getUserMetrics] Found ${briefsCreatedThisWeek} briefs created this week.`);
+      
       const briefIds = userBriefs.map(b => b.id);
       
       if (briefIds.length > 0) {
@@ -266,18 +276,23 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
           console.log(`[getUserMetrics] Found ${suppliersFound} suppliers.`);
         }
 
-        // Calculate completedSearches from solutions with status 'finished'
-        const { count: searchesCount, error: searchesError } = await supabaseAdmin
+        // Calculate completedSearches from solutions with status 'finished' and get last search date
+        const { data: finishedSolutions, error: searchesError } = await supabaseAdmin
           .from('solutions')
-          .select('id', { count: 'exact', head: true })
+          .select('id, fast_search_launched_at')
           .in('brief_id', briefIds)
-          .eq('status', 'finished');
+          .eq('status', 'finished')
+          .order('fast_search_launched_at', { ascending: false });
 
         if (searchesError) {
-          console.error('[getUserMetrics] Error fetching finished solutions count:', searchesError);
+          console.error('[getUserMetrics] Error fetching finished solutions:', searchesError);
         } else {
-          userMetadata.completedSearches = searchesCount || 0;
-          console.log(`[getUserMetrics] Found ${userMetadata.completedSearches} completed searches.`);
+          userMetadata.completedSearches = finishedSolutions?.length || 0;
+          // Get the most recent search date
+          if (finishedSolutions && finishedSolutions.length > 0 && finishedSolutions[0].fast_search_launched_at) {
+            lastSearchDate = finishedSolutions[0].fast_search_launched_at;
+          }
+          console.log(`[getUserMetrics] Found ${userMetadata.completedSearches} completed searches. Last search: ${lastSearchDate}`);
         }
 
         // Calculate REAL fast searches used from solutions with fast_search_launched_at
@@ -305,6 +320,8 @@ async function getUserMetrics(supabaseAdmin: SupabaseClient, userId: string) {
     suppliersFound: suppliersFound || 0,
     fast_searches_used: userMetadata.fast_searches_used || 0,
     fast_searches_quota: userMetadata.fast_searches_quota || 3,
+    briefsCreatedThisWeek: briefsCreatedThisWeek || 0,
+    lastSearchDate: lastSearchDate,
   };
 
   console.log('[getUserMetrics] Returning metrics:', JSON.stringify(metrics));
