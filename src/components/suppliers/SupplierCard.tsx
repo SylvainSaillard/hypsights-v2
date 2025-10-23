@@ -6,6 +6,7 @@ import { FitScoreBlock } from './FitScoreBlock';
 import { FileDown } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { useToast } from '../../hooks/use-toast';
+import StarRating from './StarRating';
 
 interface SupplierCardProps {
   supplierGroup: SupplierGroup;
@@ -211,8 +212,8 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
             </div>
             <div className="ml-4 text-right">
               <div className="bg-white bg-opacity-20 rounded-lg px-3 py-2 backdrop-blur-sm">
-                <div className="text-2xl font-bold">{scores.overall}%</div>
-                <div className="text-xs opacity-90">Overall Match</div>
+                <div className="text-2xl font-bold">{scores.score_entreprise ?? scores.overall}%</div>
+                <div className="text-xs opacity-90">Match Score</div>
               </div>
             </div>
           </div>
@@ -263,41 +264,48 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           />
         </div>
 
-        {/* Critères individuels - Design épuré */}
-        {scores.criteria_match && (
-          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-5 mb-6 border border-gray-200">
-            <div className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-              <div className="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
-              <span>Criteria Assessment</span>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              {/* Géographie */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Geography</span>
-                  <div className={`w-3 h-3 rounded-full ${
-                    scores.geography_score === 2 ? 'bg-green-500' : 
-                    scores.geography_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <div className="text-xs text-gray-600">{supplier.region || supplier.country || 'Global'}</div>
-              </div>
-              
-              {/* Type d'organisation */}
-              <div className="bg-white rounded-lg p-3 border border-gray-100">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">Organization</span>
-                  <div className={`w-3 h-3 rounded-full ${
-                    scores.organization_score === 2 ? 'bg-green-500' : 
-                    scores.organization_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <div className="text-xs text-gray-600">{supplier.company_type || 'Private'}</div>
-              </div>
-            </div>
+        {/* Nouveau système de scoring avec étoiles */}
+        <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-5 mb-6 border border-gray-200">
+          <div className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+            <span>Criteria Assessment</span>
           </div>
-        )}
+          
+          <div className="space-y-3">
+            {/* Adéquation Produit/Brief - 5 étoiles */}
+            {scores.score_produit_brief !== undefined && (
+              <div className="bg-white rounded-lg p-3 border border-gray-100">
+                <StarRating 
+                  score={scores.score_produit_brief} 
+                  maxStars={5} 
+                  label="Adéquation Produit" 
+                />
+              </div>
+            )}
+            
+            {/* Fiabilité Entreprise - 5 étoiles */}
+            {scores.score_fiabilite !== undefined && (
+              <div className="bg-white rounded-lg p-3 border border-gray-100">
+                <StarRating 
+                  score={scores.score_fiabilite} 
+                  maxStars={5} 
+                  label="Fiabilité Entreprise" 
+                />
+              </div>
+            )}
+            
+            {/* Critères Stricts - 3 étoiles */}
+            {scores.score_criteres !== undefined && (
+              <div className="bg-white rounded-lg p-3 border border-gray-100">
+                <StarRating 
+                  score={scores.score_criteres} 
+                  maxStars={3} 
+                  label="Critères Stricts" 
+                />
+              </div>
+            )}
+          </div>
+        </div>
 
 
         {/* Résumé des produits - Design amélioré */}

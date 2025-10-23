@@ -55,12 +55,17 @@ export interface SupplierGroup {
     brief_fit: number;
     brief_fit_explanation: string;
     criteria_match: number;
-    overall: number;
+    overall: number; // LEGACY - kept for backward compatibility
     // Nouveaux scores individuels des critères (0=Rouge, 1=Jaune, 2=Vert)
     geography_score: number;
     company_size_score: number;
     maturity_score: number;
     organization_score: number;
+    // Nouveau système de scoring dynamique
+    score_entreprise?: number; // Nouveau score global (0-100)
+    score_produit_brief?: number; // Score pertinence produit/brief (0-100)
+    score_fiabilite?: number; // Score fiabilité entreprise (0-100)
+    score_criteres?: number; // Score critères stricts (0-1, ex: 0.33, 0.66, 1.0)
   };
   ai_explanation?: string;
   total_products: number;
