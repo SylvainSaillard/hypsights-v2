@@ -19,7 +19,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   onViewDetails,
   onSolutionSelect
 }) => {
-  const { supplier, solutions, scores } = supplierGroup;
+  const { supplier, solutions, scores, total_products } = supplierGroup;
   const navigate = useNavigate();
   const { briefId } = useParams<{ briefId: string }>();
   const [isExporting, setIsExporting] = React.useState(false);
@@ -32,6 +32,9 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
     briefId: briefId,
     enabled: true
   });
+  
+  // Utiliser total_products du supplierGroup comme source de vérité
+  const productCount = total_products || products.length;
 
   const handleViewDetails = () => {
     if (briefId) {
@@ -231,7 +234,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
             </div>
             <div className="flex items-center gap-1 bg-white bg-opacity-20 rounded-full px-3 py-1">
               <span>📋</span>
-              <span>{products.length} {products.length === 1 ? 'Product' : 'Products'}</span>
+              <span>{productCount} {productCount === 1 ? 'Product' : 'Products'}</span>
             </div>
             {supplier.url && (
               <a 
@@ -303,7 +306,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
 
         {/* Résumé des produits - Design amélioré */}
-        {products.length > 0 && (
+        {productCount > 0 && (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-5 mb-4 border border-blue-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
@@ -312,7 +315,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                 </div>
                 <div>
                   <div className="text-base font-bold text-gray-800">
-                    {products.length} Product{products.length !== 1 ? 's' : ''} Available
+                    {productCount} Product{productCount !== 1 ? 's' : ''} Available
                   </div>
                   <p className="text-sm text-gray-600">
                     Across {solutions.length} solution{solutions.length !== 1 ? 's' : ''}
