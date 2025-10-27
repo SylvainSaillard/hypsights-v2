@@ -139,7 +139,11 @@ function groupSuppliersBySupplier(supplierMatches: any[]): SupplierGroup[] {
           score_entreprise: match.score_entreprise,
           score_produit_brief: match.score_produit_brief,
           score_fiabilite: match.score_fiabilite,
-          score_criteres: match.score_criteres
+          score_criteres: match.score_criteres,
+          // Explications détaillées pour chaque score
+          score_produit_brief_explanation: match.score_produit_brief_explanation,
+          score_fiabilite_explanation: match.score_fiabilite_explanation,
+          score_criteres_explanation: match.score_criteres_explanation
         },
         ai_explanation: match.match_explanation || 'This supplier matches your requirements based on our analysis.',
         total_products: 0
