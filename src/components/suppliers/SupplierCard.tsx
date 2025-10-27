@@ -20,7 +20,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   onViewDetails,
   onSolutionSelect
 }) => {
-  const { supplier, solutions, scores, total_products } = supplierGroup;
+  const { supplier, solutions, scores, total_products, ai_explanation } = supplierGroup;
   const navigate = useNavigate();
   const { briefId } = useParams<{ briefId: string }>();
   const [isExporting, setIsExporting] = React.useState(false);
@@ -278,6 +278,15 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
               </button>
             )}
           </div>
+          
+          {/* Résumé IA - Visible en permanence */}
+          {ai_explanation && (
+            <div className="mb-4 pb-4 border-b border-gray-300">
+              <p className="text-sm text-gray-700 italic leading-relaxed">
+                {ai_explanation}
+              </p>
+            </div>
+          )}
           
           <div className="space-y-4">
             {/* Adéquation Produit/Brief - 5 étoiles avec explication */}

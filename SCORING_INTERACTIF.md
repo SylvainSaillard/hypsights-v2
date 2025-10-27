@@ -1,7 +1,7 @@
 # Section "Analyse Détaillée" Interactive avec Transparence
 
 ## Résumé
-Évolution majeure de l'affichage des scores avec accordéons interactifs et pop-up de transparence.
+Évolution majeure de l'affichage des scores avec résumé IA permanent, accordéons interactifs et pop-up de transparence.
 
 ## Modifications
 
@@ -27,6 +27,7 @@ Ajout d'un système d'accordéon "En savoir plus" / "Masquer":
 - Props: `learnMoreLabel`, `hideLabel`
 
 ### 5. SupplierCard
+- **Résumé IA permanent**: Affichage de `ai_explanation` (match_explanation) juste sous le titre, en italique
 - Icône `?` (HelpCircle) dans le header "Analyse Détaillée"
 - Ouvre la modal de transparence au clic
 - Labels i18n pour tous les composants StarRating
@@ -41,12 +42,13 @@ Ajout d'un système d'accordéon "En savoir plus" / "Masquer":
 
 ## Données Backend Requises
 
-| Champ | Type | Description |
-|-------|------|-------------|
-| `scoring_reasoning` | `string` | Résumé du calcul (ex: "sE = 72% * 85% * 0.66 = 40%") |
-| `score_produit_brief_explanation` | `string` | Explication détaillée |
-| `score_fiabilite_explanation` | `string` | Explication détaillée |
-| `score_criteres_explanation` | `string` | Explication détaillée |
+| Champ | Type | Destination | Description |
+|-------|------|-------------|-------------|
+| `match_explanation` | `string` | Résumé permanent | Résumé général de l'analyse IA (visible en permanence) |
+| `scoring_reasoning` | `string` | Pop-up `?` | Formule de calcul (ex: "sE = 72% * 85% * 0.66 = 40%") |
+| `score_produit_brief_explanation` | `string` | Accordéon 1 | Détail "Adéquation Produit" |
+| `score_fiabilite_explanation` | `string` | Accordéon 2 | Détail "Fiabilité Entreprise" |
+| `score_criteres_explanation` | `string` | Accordéon 3 | Détail "Critères Stricts" |
 
 ## Fichiers Modifiés
 
