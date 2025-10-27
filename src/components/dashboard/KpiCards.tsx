@@ -229,15 +229,7 @@ const KpiCards: React.FC = () => {
               <div className="flex-1">
                 <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide group-hover:text-gray-800 transition-colors duration-300">{card.title}</h3>
                 <p className="text-3xl font-bold mt-2 text-gray-900 group-hover:scale-105 transform transition-transform duration-300">{card.value}</p>
-                {!card.customContent && (
-                  <p className={`text-sm mt-2 font-medium ${
-                    card.changeType === 'positive' ? 'text-green-600' : 
-                    card.changeType === 'negative' ? 'text-red-600' : 
-                    'text-gray-500'
-                  }`}>
-                    {card.change}
-                  </p>
-                )}
+                {/* Change info hidden as per user request - not important */}
               </div>
               <div className={`ml-4 p-3 rounded-xl shadow-md bg-gradient-to-br from-white to-gray-50 backdrop-blur-sm border ${card.borderColor} transform transition-all duration-300 group-hover:rotate-3 group-hover:scale-110 group-hover:shadow-lg`}>
                 {card.icon}
