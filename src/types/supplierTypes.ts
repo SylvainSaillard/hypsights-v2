@@ -70,6 +70,8 @@ export interface SupplierGroup {
     score_produit_brief_explanation?: string;
     score_fiabilite_explanation?: string;
     score_criteres_explanation?: string;
+    // Transparence du calcul du score global
+    scoring_reasoning?: string;
   };
   ai_explanation?: string;
   total_products: number;

@@ -1,11 +1,13 @@
-import React from 'react';
-import { Star, MessageCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface StarRatingProps {
   score: number; // Score en pourcentage (0-100) ou décimal (0-1)
   maxStars: number; // 3 ou 5 étoiles
   label: string;
   explanation?: string; // Texte d'explication IA
+  learnMoreLabel?: string; // Label du bouton "En savoir plus"
+  hideLabel?: string; // Label du bouton "Masquer"
 }
 
 /**
@@ -14,7 +16,15 @@ interface StarRatingProps {
  * - Pour 5 étoiles (score 0-100): 1-20%=1★, 21-40%=2★, 41-60%=3★, 61-80%=4★, 81-100%=5★
  * - Pour 3 étoiles (score 0-1): <0.4=1★, 0.4-0.8=2★, >0.8=3★
  */
-const StarRating: React.FC<StarRatingProps> = ({ score, maxStars, label, explanation }) => {
+const StarRating: React.FC<StarRatingProps> = ({ 
+  score, 
+  maxStars, 
+  label, 
+  explanation,
+  learnMoreLabel = 'En savoir plus',
+  hideLabel = 'Masquer'
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   
   const getStarCount = (): number => {
     if (maxStars === 5) {
@@ -55,13 +65,38 @@ const StarRating: React.FC<StarRatingProps> = ({ score, maxStars, label, explana
         </div>
       </div>
       
-      {/* Explication IA sous forme de citation */}
+      {/* Accordéon "En savoir plus" */}
       {explanation && (
-        <div className="flex items-start gap-2 bg-blue-50/50 border-l-3 border-blue-400 pl-3 pr-2 py-2 rounded-r">
-          <MessageCircle size={14} className="text-blue-500 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-gray-600 italic leading-relaxed">
-            "{explanation}"
-          </p>
+        <div className="space-y-2">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-2 text-xs text-indigo-600 hover:text-indigo-800 font-medium transition-colors"
+          >
+            {isExpanded ? (
+              <>
+                <ChevronUp size={14} />
+                <span>{hideLabel}</span>
+              </>
+            ) : (
+              <>
+                <ChevronDown size={14} />
+                <span>{learnMoreLabel}</span>
+              </>
+            )}
+          </button>
+          
+          {/* Contenu de l'accordéon avec animation */}
+          <div 
+            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+              isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+            }`}
+          >
+            <div className="bg-blue-50/50 border-l-4 border-indigo-400 pl-4 pr-3 py-3 rounded-r">
+              <p className="text-xs text-gray-700 leading-relaxed">
+                {explanation}
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </div>

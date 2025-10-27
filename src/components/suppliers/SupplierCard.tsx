@@ -2,11 +2,12 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { SupplierGroup } from '../../types/supplierTypes';
 import { useSupplierProducts } from '../../hooks/useSupplierProducts';
-import { FileDown } from 'lucide-react';
+import { FileDown, HelpCircle } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { useToast } from '../../hooks/use-toast';
 import { useI18n } from '../../contexts/I18nContext';
 import StarRating from './StarRating';
+import ScoringTransparencyModal from './ScoringTransparencyModal';
 
 interface SupplierCardProps {
   supplierGroup: SupplierGroup;
@@ -23,6 +24,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   const navigate = useNavigate();
   const { briefId } = useParams<{ briefId: string }>();
   const [isExporting, setIsExporting] = React.useState(false);
+  const [isTransparencyModalOpen, setIsTransparencyModalOpen] = React.useState(false);
   const { toast } = useToast();
   const { t } = useI18n();
   
@@ -260,9 +262,21 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
 
         {/* Analyse Détaillée - Section unifiée avec scores et explications IA */}
         <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-5 mb-6 border border-gray-200">
-          <div className="text-sm font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <div className="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
-            <span>{t('supplier.detailed_analysis', 'Analyse Détaillée')}</span>
+          <div className="text-sm font-bold text-gray-800 mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-6 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
+              <span>{t('supplier.detailed_analysis', 'Analyse Détaillée')}</span>
+            </div>
+            {/* Icône de transparence */}
+            {scores.scoring_reasoning && (
+              <button
+                onClick={() => setIsTransparencyModalOpen(true)}
+                className="p-1.5 hover:bg-indigo-100 rounded-full transition-colors group"
+                title={t('supplier.scoring_transparency', 'Transparence du Score')}
+              >
+                <HelpCircle size={18} className="text-indigo-600 group-hover:text-indigo-800" />
+              </button>
+            )}
           </div>
           
           <div className="space-y-4">
@@ -274,6 +288,8 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                   maxStars={5} 
                   label={t('supplier.product_fit', 'Adéquation Produit')}
                   explanation={scores.score_produit_brief_explanation}
+                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
+                  hideLabel={t('supplier.hide', 'Masquer')}
                 />
               </div>
             )}
@@ -286,6 +302,8 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                   maxStars={5} 
                   label={t('supplier.company_reliability', 'Fiabilité Entreprise')}
                   explanation={scores.score_fiabilite_explanation}
+                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
+                  hideLabel={t('supplier.hide', 'Masquer')}
                 />
               </div>
             )}
@@ -298,11 +316,21 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                   maxStars={3} 
                   label={t('supplier.strict_criteria', 'Critères Stricts')}
                   explanation={scores.score_criteres_explanation}
+                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
+                  hideLabel={t('supplier.hide', 'Masquer')}
                 />
               </div>
             )}
           </div>
         </div>
+        
+        {/* Modal de transparence du scoring */}
+        <ScoringTransparencyModal
+          isOpen={isTransparencyModalOpen}
+          onClose={() => setIsTransparencyModalOpen(false)}
+          scoringReasoning={scores.scoring_reasoning}
+          title={t('supplier.scoring_transparency', 'Transparence du Score')}
+        />
 
 
         {/* Résumé des produits - Design amélioré */}
