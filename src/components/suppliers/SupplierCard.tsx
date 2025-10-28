@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { SupplierGroup } from '../../types/supplierTypes';
 import { useSupplierProducts } from '../../hooks/useSupplierProducts';
-import { FileDown, HelpCircle } from 'lucide-react';
+import { FileDown, HelpCircle, Sparkles } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { useToast } from '../../hooks/use-toast';
 import { useI18n } from '../../contexts/I18nContext';
@@ -282,6 +282,17 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
           {/* Résumé IA - Visible en permanence */}
           {ai_explanation && (
             <div className="mb-4 pb-4 border-b border-gray-300">
+              {/* Badge AI Hypsights Analysis */}
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-100 to-indigo-100 border border-purple-200 rounded-full px-3 py-1">
+                  <Sparkles size={14} className="text-purple-600" />
+                  <span className="text-xs font-semibold text-purple-700">
+                    AI Hypsights Analysis
+                  </span>
+                </div>
+              </div>
+              
+              {/* Texte de l'analyse */}
               <p className="text-sm text-gray-700 italic leading-relaxed">
                 {ai_explanation}
               </p>

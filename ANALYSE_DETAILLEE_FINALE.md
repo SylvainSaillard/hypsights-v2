@@ -16,6 +16,8 @@ La section "Analyse Détaillée" combine maintenant:
 │ Analyse Détaillée                               [?]     │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
+│ ✨ AI Hypsights Analysis                                │
+│                                                         │
 │ "Ce fournisseur correspond bien à vos besoins grâce    │
 │  à sa gamme de produits et son expertise..."           │
 │ (résumé IA en italique - toujours visible)             │
@@ -75,6 +77,17 @@ La section "Analyse Détaillée" combine maintenant:
 ```tsx
 {ai_explanation && (
   <div className="mb-4 pb-4 border-b border-gray-300">
+    {/* Badge AI Hypsights Analysis */}
+    <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-100 to-indigo-100 border border-purple-200 rounded-full px-3 py-1">
+        <Sparkles size={14} className="text-purple-600" />
+        <span className="text-xs font-semibold text-purple-700">
+          AI Hypsights Analysis
+        </span>
+      </div>
+    </div>
+    
+    {/* Texte de l'analyse */}
     <p className="text-sm text-gray-700 italic leading-relaxed">
       {ai_explanation}
     </p>
@@ -83,6 +96,8 @@ La section "Analyse Détaillée" combine maintenant:
 ```
 
 **Caractéristiques:**
+- **Badge "AI Hypsights Analysis"** avec icône Sparkles ✨
+- Gradient purple/indigo pour le badge
 - Texte en italique (`italic`)
 - Séparateur en bas (`border-b`)
 - Espacement généreux (`mb-4 pb-4`)
