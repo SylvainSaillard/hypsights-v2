@@ -135,11 +135,14 @@ Toutes les chaînes de caractères utilisent le système i18n:
 |-----|----------|---------|
 | `supplier.detailed_analysis` | Analyse Détaillée | Detailed Analysis |
 | `supplier.scoring_transparency` | Transparence du Score | Scoring Transparency |
+| `supplier.scoring_explanation` | Cette formule explique comment le score global est calculé à partir des différents critères d'évaluation. | This formula explains how the overall score is calculated from the different evaluation criteria. |
+| `supplier.no_transparency_info` | Aucune information de transparence disponible pour ce fournisseur. | No transparency information available for this supplier. |
 | `supplier.product_fit` | Adéquation Produit | Product Fit |
 | `supplier.company_reliability` | Fiabilité Entreprise | Company Reliability |
 | `supplier.strict_criteria` | Critères Stricts | Strict Criteria |
 | `supplier.learn_more` | En savoir plus | Learn more |
 | `supplier.hide` | Masquer | Hide |
+| `common.close` | Fermer | Close |
 
 ---
 

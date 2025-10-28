@@ -1,5 +1,6 @@
 import React from 'react';
 import { X } from 'lucide-react';
+import { useI18n } from '../../contexts/I18nContext';
 
 interface ScoringTransparencyModalProps {
   isOpen: boolean;
@@ -15,8 +16,10 @@ const ScoringTransparencyModal: React.FC<ScoringTransparencyModalProps> = ({
   isOpen,
   onClose,
   scoringReasoning,
-  title = 'Transparence du Score'
+  title
 }) => {
+  const { t } = useI18n();
+  
   if (!isOpen) return null;
 
   return (
@@ -38,11 +41,13 @@ const ScoringTransparencyModal: React.FC<ScoringTransparencyModalProps> = ({
             <button
               onClick={onClose}
               className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors"
-              aria-label="Close"
+              aria-label={t('common.close', 'Close')}
             >
               <X size={20} />
             </button>
-            <h2 className="text-2xl font-bold pr-10">{title}</h2>
+            <h2 className="text-2xl font-bold pr-10">
+              {title || t('supplier.scoring_transparency', 'Transparence du Score')}
+            </h2>
           </div>
           
           {/* Content */}
@@ -56,12 +61,12 @@ const ScoringTransparencyModal: React.FC<ScoringTransparencyModalProps> = ({
                 </div>
                 
                 <div className="text-sm text-gray-500 italic mt-4">
-                  Cette formule explique comment le score global est calculé à partir des différents critères d'évaluation.
+                  {t('supplier.scoring_explanation', 'Cette formule explique comment le score global est calculé à partir des différents critères d\'évaluation.')}
                 </div>
               </div>
             ) : (
               <div className="text-center py-8 text-gray-500">
-                <p>Aucune information de transparence disponible pour ce fournisseur.</p>
+                <p>{t('supplier.no_transparency_info', 'Aucune information de transparence disponible pour ce fournisseur.')}</p>
               </div>
             )}
           </div>
@@ -72,7 +77,7 @@ const ScoringTransparencyModal: React.FC<ScoringTransparencyModalProps> = ({
               onClick={onClose}
               className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
             >
-              Fermer
+              {t('common.close', 'Fermer')}
             </button>
           </div>
         </div>
