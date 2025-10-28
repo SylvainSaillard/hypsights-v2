@@ -135,51 +135,8 @@ const BriefChatPage = () => {
         setBrief(prev => prev ? { ...prev, status: 'active' } : null);
         console.log('DEBUG BriefChatPage - Brief status updated to active');
         
-        // Appeler directement le webhook N8N pour l'initialisation du brief
-        try {
-          console.log('DEBUG BriefChatPage - Calling brief initialization webhook');
-          const webhookPayload = {
-            brief_id: brief.id,
-            user_id: brief.user_id,
-            brief: {
-              ...brief,
-              // Ensure new fields are properly included
-              maturity: brief.maturity || [],
-              organization_types: brief.organization_types || [],
-              capabilities: brief.capabilities || [],
-              geographies: brief.geographies || [],
-              // Add metadata about the new structure
-              structure_version: '2.0',
-              updated_fields: {
-                maturity_options: ['commercial', 'prototype', 'research'],
-                organization_categories: {
-                  commercial_products: ['large_company', 'sme', 'startup'],
-                  outsourced_capabilities: ['cro', 'cmo', 'cdmo', 'cpo'],
-                  research_development: ['research_institute', 'universities'],
-                  consulting: ['consulting']
-                }
-              }
-            },
-            timestamp: new Date().toISOString(),
-            request_id: crypto.randomUUID()
-          };
-          
-          const webhookResponse = await fetch('https://n8n-hypsights.proxiwave.app/webhook/brief_initialisation', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(webhookPayload)
-          });
-          
-          if (!webhookResponse.ok) {
-            throw new Error(`Webhook returned status ${webhookResponse.status}`);
-          }
-          
-          const webhookResult = await webhookResponse.json();
-          console.log('DEBUG BriefChatPage - Webhook response:', webhookResult);
-        } catch (webhookError) {
-          console.error('DEBUG BriefChatPage - Error calling brief initialization webhook:', webhookError);
-          // Ne pas bloquer le flux si l'appel webhook échoue
-        }
+        // NOTE: Le webhook d'initialisation a déjà été appelé lors de la création du brief
+        // dans BriefCreationPage.tsx. Pas besoin de le rappeler ici pour éviter les doublons.
       } catch (error) {
         console.error('DEBUG BriefChatPage - Exception updating brief status:', error);
       }
