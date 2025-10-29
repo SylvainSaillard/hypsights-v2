@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { BriefForm, BriefValidationOverlay } from '../../components/briefs';
+import { BriefForm } from '../../components/briefs';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
 import '../../styles/design-tokens.css';
@@ -11,7 +11,6 @@ const BriefCreationPage: React.FC = () => {
   const isEditing = Boolean(briefId);
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCallingWebhook, setIsCallingWebhook] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useI18n();
   
@@ -59,65 +58,16 @@ const BriefCreationPage: React.FC = () => {
         // submitResponse.data contient la réponse de l'Edge Function (par exemple, { brief: { ... } })
         const createdOrUpdatedBrief = submitResponse.data?.brief;
 
-        if (createdOrUpdatedBrief && createdOrUpdatedBrief.id && createdOrUpdatedBrief.user_id) {
+        if (createdOrUpdatedBrief && createdOrUpdatedBrief.id) {
           const briefIdForWebhook = createdOrUpdatedBrief.id;
           console.log('Brief creation/update successful. Brief ID:', briefIdForWebhook);
-          setIsCallingWebhook(true);
-
-          // Attendre 500ms avant d'appeler le webhook N8N
-          setTimeout(async () => {
-            try {
-              const n8nPayload = {
-                brief_id: briefIdForWebhook,
-                user_id: createdOrUpdatedBrief.user_id,
-                brief: {
-                  ...createdOrUpdatedBrief,
-                  // Ensure new fields are properly included
-                  maturity: createdOrUpdatedBrief.maturity || [],
-                  organization_types: createdOrUpdatedBrief.organization_types || [],
-                  capabilities: createdOrUpdatedBrief.capabilities || [],
-                  geographies: createdOrUpdatedBrief.geographies || [],
-                  // Add metadata about the new structure
-                  structure_version: '2.0',
-                  updated_fields: {
-                    maturity_options: ['commercial', 'prototype', 'research'],
-                    organization_categories: {
-                      commercial_products: ['large_company', 'sme', 'startup'],
-                      outsourced_capabilities: ['cro', 'cmo', 'cdmo', 'cpo'],
-                      research_development: ['research_institute', 'universities'],
-                      consulting: ['consulting']
-                    }
-                  }
-                },
-                timestamp: new Date().toISOString(),
-                request_id: self.crypto.randomUUID(),
-              };
-
-              console.log('Calling N8N brief_initialisation webhook with payload:', n8nPayload);
-              const n8nResponse = await fetch('https://n8n-hypsights.proxiwave.app/webhook/brief_initialisation', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(n8nPayload),
-              });
-
-              if (!n8nResponse.ok) {
-                const errorText = await n8nResponse.text();
-                throw new Error(`N8N webhook brief_initialisation failed: ${n8nResponse.status} ${errorText}`);
-              }
-              
-              const n8nResult = await n8nResponse.json();
-              console.log('N8N webhook brief_initialisation successful:', n8nResult);
-
-            } catch (err: unknown) {
-              console.error('Error calling N8N webhook:', err);
-              const errorMessage = err instanceof Error ? err.message : String(err);
-              setError(`Erreur lors de l'appel au webhook N8N: ${errorMessage}`);
-            } finally {
-              setIsCallingWebhook(false);
-              setIsSubmitting(false); // Assurez-vous que isSubmitting est géré correctement
-              navigate(`/dashboard/briefs/${briefIdForWebhook}/chat`);
-            }
-          }, 500);
+          
+          // NOTE: Le webhook N8n est déjà appelé par l'Edge Function brief-operations
+          // lors de la création du brief (webhook/brief-interpretation).
+          // Pas besoin de l'appeler à nouveau ici pour éviter les doublons.
+          
+          // Rediriger directement vers la page de chat
+          navigate(`/dashboard/briefs/${briefIdForWebhook}/chat`);
         } else {
           console.error('Brief data not found in submitResponse or missing id/user_id:', submitResponse.data);
           setError('Erreur: Les données du brief sont incomplètes après la création/mise à jour.');
@@ -210,14 +160,11 @@ const BriefCreationPage: React.FC = () => {
       )}
       
 
-      {/* Overlay de validation avec animation de chargement */}
-      {isCallingWebhook && <BriefValidationOverlay isLoading={isCallingWebhook} />}
-
       {/* Brief Form */}
       <BriefForm 
         initialData={isEditing ? existingBrief : undefined}
         onSubmit={handleFormSubmit}
-        isSubmitting={isSubmitting || submitting || isCallingWebhook}
+        isSubmitting={isSubmitting || submitting}
       />
     </div>
   );
