@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { BriefForm } from '../../components/briefs';
+import { BriefForm, BriefValidationOverlay } from '../../components/briefs';
 import useEdgeFunction from '../../hooks/useEdgeFunction';
 import { useI18n } from '../../contexts/I18nContext';
 import '../../styles/design-tokens.css';
@@ -11,6 +11,7 @@ const BriefCreationPage: React.FC = () => {
   const isEditing = Boolean(briefId);
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCallingWebhook, setIsCallingWebhook] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useI18n();
   
@@ -61,23 +62,22 @@ const BriefCreationPage: React.FC = () => {
         if (createdOrUpdatedBrief && createdOrUpdatedBrief.id) {
           const briefIdForWebhook = createdOrUpdatedBrief.id;
           console.log('Brief creation/update successful. Brief ID:', briefIdForWebhook);
-          
-          // NOTE: Le webhook N8n est déjà appelé par l'Edge Function brief-operations
-          // lors de la création du brief (webhook/brief-interpretation).
-          // Pas besoin de l'appeler à nouveau ici pour éviter les doublons.
-          
-          // Rediriger directement vers la page de chat
-          navigate(`/dashboard/briefs/${briefIdForWebhook}/chat`);
+
+          // Afficher l'animation pendant que N8n travaille (même si c'est synchrone côté Edge Function)
+          setIsCallingWebhook(true);
+
+          // Attendre un peu pour que l'animation s'affiche, puis rediriger
+          setTimeout(() => {
+            navigate(`/dashboard/briefs/${briefIdForWebhook}/chat`);
+          }, 1500); // Délai pour voir l'animation
         } else {
           console.error('Brief data not found in submitResponse or missing id/user_id:', submitResponse.data);
           setError('Erreur: Les données du brief sont incomplètes après la création/mise à jour.');
           setIsSubmitting(false);
-          // Optionnel: rediriger vers une page d'erreur ou le dashboard si briefId n'est pas disponible
         }
       }
     }
   }, [submitResponse, submitting, navigate]);
-
 
   // Gestion des erreurs de soumission
   useEffect(() => {
@@ -166,6 +166,9 @@ const BriefCreationPage: React.FC = () => {
         onSubmit={handleFormSubmit}
         isSubmitting={isSubmitting || submitting}
       />
+
+      {/* Overlay de validation avec animation de chargement */}
+      {isCallingWebhook && <BriefValidationOverlay isLoading={isCallingWebhook} />}
     </div>
   );
 };
