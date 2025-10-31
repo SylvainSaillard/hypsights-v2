@@ -298,8 +298,8 @@ async function createBrief(supabaseAdmin: SupabaseClient, briefData: any, userId
       request_id: crypto.randomUUID()
     };
     
-    // Appeler le webhook N8N de manière asynchrone
-    fetch('https://n8n-hypsights.proxiwave.app/webhook/brief-interpretation', {
+    // Appeler le webhook N8N de manière asynchrone pour l'initialisation du brief
+    fetch('https://n8n-hypsights.proxiwave.app/webhook/brief_initialisation', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(webhookPayload)
