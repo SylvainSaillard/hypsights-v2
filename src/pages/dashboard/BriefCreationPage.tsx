@@ -170,7 +170,7 @@ const BriefCreationPage: React.FC = () => {
       />
 
       {/* Overlay de validation avec animation de chargement */}
-      {isCallingWebhook && <BriefValidationOverlay isLoading={isCallingWebhook} />}
+      {(isSubmitting || isCallingWebhook) && <BriefValidationOverlay isLoading={true} />}
     </div>
   );
 };
