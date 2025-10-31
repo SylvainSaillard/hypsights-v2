@@ -11,7 +11,7 @@ const BriefCreationPage: React.FC = () => {
   const isEditing = Boolean(briefId);
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isCallingWebhook, setIsCallingWebhook] = useState(false);
+  const [showAnimation, setShowAnimation] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useI18n();
   
@@ -89,8 +89,11 @@ const BriefCreationPage: React.FC = () => {
   const handleFormSubmit = async (briefData: any) => {
     if (isSubmitting) return;
     
+    // AFFICHER L'ANIMATION IMMÉDIATEMENT - AVANT TOUT LE RESTE
+    setShowAnimation(true);
+    console.log('🎬 Animation démarrée immédiatement');
+    
     setIsSubmitting(true);
-    setIsCallingWebhook(true); // Afficher l'animation immédiatement
     setError(null);
     
     try {
@@ -109,7 +112,7 @@ const BriefCreationPage: React.FC = () => {
     } catch (err) {
       setError((err as Error).message);
       setIsSubmitting(false);
-      setIsCallingWebhook(false);
+      setShowAnimation(false);
     }
   };
 
@@ -170,7 +173,7 @@ const BriefCreationPage: React.FC = () => {
       />
 
       {/* Overlay de validation avec animation de chargement */}
-      {(isSubmitting || isCallingWebhook) && <BriefValidationOverlay isLoading={true} />}
+      {showAnimation && <BriefValidationOverlay isLoading={true} />}
     </div>
   );
 };
