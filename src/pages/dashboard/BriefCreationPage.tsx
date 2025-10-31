@@ -63,15 +63,11 @@ const BriefCreationPage: React.FC = () => {
           const briefIdForWebhook = createdOrUpdatedBrief.id;
           console.log('Brief creation/update successful. Brief ID:', briefIdForWebhook);
 
-          // Afficher l'animation pendant que N8n travaille (même si c'est synchrone côté Edge Function)
-          console.log('Setting isCallingWebhook to true');
-          setIsCallingWebhook(true);
-
-          // Attendre que N8n finisse son travail (environ 30-60 secondes)
-          setTimeout(() => {
-            console.log('Animation timeout reached, navigating to chat');
-            navigate(`/dashboard/briefs/${briefIdForWebhook}/chat`);
-          }, 30000); // 30 secondes pour laisser N8n travailler
+          // L'Edge Function attend le code 200 de N8n avant de retourner
+          // Donc quand on arrive ici, N8n a déjà fini son travail
+          // On peut rediriger directement
+          console.log('N8n workflow completed, navigating to chat');
+          navigate(`/dashboard/briefs/${briefIdForWebhook}/chat`);
         } else {
           console.error('Brief data not found in submitResponse or missing id/user_id:', submitResponse.data);
           setError('Erreur: Les données du brief sont incomplètes après la création/mise à jour.');
@@ -94,6 +90,7 @@ const BriefCreationPage: React.FC = () => {
     if (isSubmitting) return;
     
     setIsSubmitting(true);
+    setIsCallingWebhook(true); // Afficher l'animation immédiatement
     setError(null);
     
     try {
@@ -105,11 +102,14 @@ const BriefCreationPage: React.FC = () => {
       });
       
       // L'appel sera déclenché automatiquement quand submitParams change grâce au useEffect du hook
+      // L'Edge Function attend le code 200 de N8n avant de retourner
+      // L'animation tournera pendant tout ce temps
       
       // La redirection est gérée par l'useEffect sur submitResponse
     } catch (err) {
       setError((err as Error).message);
       setIsSubmitting(false);
+      setIsCallingWebhook(false);
     }
   };
 
