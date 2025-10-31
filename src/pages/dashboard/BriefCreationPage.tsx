@@ -71,7 +71,7 @@ const BriefCreationPage: React.FC = () => {
           setTimeout(() => {
             console.log('Animation timeout reached, navigating to chat');
             navigate(`/dashboard/briefs/${briefIdForWebhook}/chat`);
-          }, 3000); // Délai plus long pour voir l'animation
+          }, 5000); // 5 secondes pour voir le début de l'animation
         } else {
           console.error('Brief data not found in submitResponse or missing id/user_id:', submitResponse.data);
           setError('Erreur: Les données du brief sont incomplètes après la création/mise à jour.');
