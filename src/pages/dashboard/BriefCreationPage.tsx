@@ -67,11 +67,11 @@ const BriefCreationPage: React.FC = () => {
           console.log('Setting isCallingWebhook to true');
           setIsCallingWebhook(true);
 
-          // Attendre un peu pour que l'animation s'affiche, puis rediriger
+          // Attendre que N8n finisse son travail (environ 30-60 secondes)
           setTimeout(() => {
             console.log('Animation timeout reached, navigating to chat');
             navigate(`/dashboard/briefs/${briefIdForWebhook}/chat`);
-          }, 5000); // 5 secondes pour voir le début de l'animation
+          }, 30000); // 30 secondes pour laisser N8n travailler
         } else {
           console.error('Brief data not found in submitResponse or missing id/user_id:', submitResponse.data);
           setError('Erreur: Les données du brief sont incomplètes après la création/mise à jour.');
@@ -170,7 +170,7 @@ const BriefCreationPage: React.FC = () => {
       />
 
       {/* Overlay de validation avec animation de chargement */}
-      {isCallingWebhook && console.log('Rendering BriefValidationOverlay') && <BriefValidationOverlay isLoading={isCallingWebhook} />}
+      {isCallingWebhook && <BriefValidationOverlay isLoading={isCallingWebhook} />}
     </div>
   );
 };

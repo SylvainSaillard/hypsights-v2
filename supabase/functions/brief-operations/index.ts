@@ -298,26 +298,16 @@ async function createBrief(supabaseAdmin: SupabaseClient, briefData: any, userId
       request_id: crypto.randomUUID()
     };
     
-    // Appeler le webhook N8N de manière synchrone pour l'initialisation du brief
-    console.log('Calling N8N webhook for brief initialization...');
-    try {
-      const webhookResponse = await fetch('https://n8n-hypsights.proxiwave.app/webhook/brief_initialisation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(webhookPayload)
-      });
-
-      if (!webhookResponse.ok) {
-        const errorText = await webhookResponse.text();
-        console.error('N8N webhook error:', errorText);
-        // Ne pas bloquer la création du brief si l'appel webhook échoue
-      } else {
-        console.log('N8N webhook completed successfully');
-      }
-    } catch (webhookError) {
-      console.error('Error calling N8N webhook:', webhookError);
+    // Appeler le webhook N8N de manière asynchrone (ne pas bloquer la création du brief)
+    // L'animation sera gérée côté frontend
+    fetch('https://n8n-hypsights.proxiwave.app/webhook/brief_initialisation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(webhookPayload)
+    }).catch(err => {
+      console.error('Error calling N8N webhook:', err);
       // Ne pas bloquer la création du brief si l'appel webhook échoue
-    }
+    });
     
     console.log('Initial chat message created successfully');
   } catch (chatError) {
