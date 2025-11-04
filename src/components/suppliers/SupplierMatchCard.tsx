@@ -60,10 +60,11 @@ const SupplierMatchCard: React.FC<SupplierMatchCardProps> = ({ match }) => {
             </div>
             <p className="text-gray-500 font-medium">{match.description}</p>
           </div>
-          <div className="text-center bg-gray-800 text-white rounded-lg px-5 py-3">
+          {/* Overall Match Score - Masqué temporairement */}
+          {/* <div className="text-center bg-gray-800 text-white rounded-lg px-5 py-3">
             <div className="text-4xl font-bold">{match.overall_match_score}%</div>
             <div className="text-xs font-semibold tracking-wider">MATCH SCORE</div>
-          </div>
+          </div> */}
         </div>
 
         <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
