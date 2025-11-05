@@ -216,12 +216,13 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                 {supplier.overview || supplier.description || 'No description available'}
               </p>
             </div>
-            <div className="ml-4 text-right">
+            {/* Overall Match Score - Masqué temporairement */}
+            {/* <div className="ml-4 text-right">
               <div className="bg-white bg-opacity-20 rounded-lg px-3 py-2 backdrop-blur-sm">
                 <div className="text-2xl font-bold">{scores.score_entreprise ?? scores.overall}%</div>
                 <div className="text-xs opacity-90">Match Score</div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           {/* Informations entreprise */}
