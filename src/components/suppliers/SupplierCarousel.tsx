@@ -8,7 +8,6 @@ interface SupplierCarouselProps {
   error?: string | null;
   onViewDetails?: (supplierId: string) => void;
   onSolutionSelect?: (solutionNumber: number) => void;
-  maxResults?: number;
 }
 
 const SupplierCarousel: React.FC<SupplierCarouselProps> = ({
@@ -16,15 +15,14 @@ const SupplierCarousel: React.FC<SupplierCarouselProps> = ({
   isLoading = false,
   error = null,
   onViewDetails,
-  onSolutionSelect,
-  maxResults = 10
+  onSolutionSelect
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
-  // Limiter les résultats selon maxResults
-  const limitedGroups = supplierGroups.slice(0, maxResults);
+  // Afficher tous les résultats (limite retirée)
+  const limitedGroups = supplierGroups;
 
   const checkScrollButtons = () => {
     if (scrollContainerRef.current) {
@@ -129,13 +127,6 @@ const SupplierCarousel: React.FC<SupplierCarouselProps> = ({
           <p className="text-gray-500 text-xs mt-1">
             Only showing suppliers with {'>'}70% match score
           </p>
-          {supplierGroups.length > maxResults && (
-            <p className="text-gray-600 text-sm mt-1">
-              <span className="text-orange-600 font-medium ml-1">
-                (showing top {maxResults})
-              </span>
-            </p>
-          )}
         </div>
 
         {/* Navigation buttons */}
@@ -199,18 +190,6 @@ const SupplierCarousel: React.FC<SupplierCarouselProps> = ({
           <div className="absolute right-0 top-0 bottom-4 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none z-10"></div>
         )}
       </div>
-
-      {/* Indicateur de limitation */}
-      {supplierGroups.length > maxResults && (
-        <div className="text-center py-4 bg-orange-50 rounded-lg border border-orange-200">
-          <p className="text-orange-700 text-sm">
-            <span className="font-semibold">Free tier limit:</span> Showing {maxResults} of {supplierGroups.length} suppliers.
-            <button className="ml-2 text-orange-600 hover:text-orange-800 font-medium underline">
-              Upgrade to see all results
-            </button>
-          </p>
-        </div>
-      )}
     </div>
   );
 };

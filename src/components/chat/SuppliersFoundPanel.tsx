@@ -15,7 +15,8 @@ export function SuppliersFoundPanel({ briefId, maxResults = 10, briefTitle }: Su
 
   // Transformer les données existantes en format groupé par fournisseur
   const supplierGroups = transformToSupplierGroups(suppliers, solutionGroups);
-  const limitedGroups = supplierGroups.slice(0, maxResults);
+  // Afficher tous les résultats (limite retirée)
+  const limitedGroups = supplierGroups;
 
   const handleExportCSV = async () => {
     try {
@@ -167,17 +168,6 @@ export function SuppliersFoundPanel({ briefId, maxResults = 10, briefTitle }: Su
         </div>
       </div>
 
-      {/* Indicateur de limitation */}
-      {supplierGroups.length > maxResults && (
-        <div className="text-center py-4 bg-orange-50 rounded-lg border border-orange-200">
-          <p className="text-orange-700 text-sm">
-            <span className="font-semibold">Free tier limit:</span> Showing {maxResults} of {supplierGroups.length} suppliers.
-            <button className="ml-2 text-orange-600 hover:text-orange-800 font-medium underline">
-              Upgrade to see all results
-            </button>
-          </p>
-        </div>
-      )}
     </div>
   );
 }
