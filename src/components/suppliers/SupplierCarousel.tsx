@@ -124,9 +124,6 @@ const SupplierCarousel: React.FC<SupplierCarouselProps> = ({
           <p className="text-gray-600 text-sm mt-1">
             {limitedGroups.length} supplier{limitedGroups.length !== 1 ? 's' : ''} found
           </p>
-          <p className="text-gray-500 text-xs mt-1">
-            Only showing suppliers with {'>'}70% match score
-          </p>
         </div>
 
         {/* Navigation buttons */}

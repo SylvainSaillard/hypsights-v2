@@ -6,11 +6,10 @@ import { FastSearchLoadingAnimation } from '../animations/FastSearchLoadingAnima
 
 interface SuppliersFoundPanelProps {
   briefId: string;
-  maxResults?: number;
   briefTitle?: string;
 }
 
-export function SuppliersFoundPanel({ briefId, maxResults = 10, briefTitle }: SuppliersFoundPanelProps) {
+export function SuppliersFoundPanel({ briefId, briefTitle }: SuppliersFoundPanelProps) {
   const { suppliers, solutionGroups, isLoading, error, refresh } = useSuppliers(briefId);
 
   // Transformer les données existantes en format groupé par fournisseur
@@ -119,14 +118,6 @@ export function SuppliersFoundPanel({ briefId, maxResults = 10, briefTitle }: Su
           <p className="text-gray-600 text-sm mt-1">
             {limitedGroups.length} supplier{limitedGroups.length !== 1 ? 's' : ''} found
           </p>
-          <p className="text-gray-500 text-xs mt-1">
-            Only showing suppliers with {'>'}70% match score
-          </p>  
-          {supplierGroups.length > maxResults && (
-              <span className="text-orange-600 font-medium ml-1">
-                (showing top {maxResults})
-              </span>
-            )}
         </div>
 
         <div className="flex gap-2">

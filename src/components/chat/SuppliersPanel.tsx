@@ -53,9 +53,6 @@ export function SuppliersPanel({ briefId }: SuppliersPanelProps) {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold text-white">Recommended Suppliers ({suppliers.length})</h2>
-          <p className="text-gray-400 text-sm mt-1">
-            Only showing suppliers with {'>'}70% match score
-          </p>
         </div>
         <button 
           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

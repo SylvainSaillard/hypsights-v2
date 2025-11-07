@@ -40,6 +40,9 @@ Suppression du bloc conditionnel qui affichait le nombre limité.
 - Retiré de l'interface `SupplierCarouselProps`
 - Retiré des props du composant
 
+#### Suppression de la mention "Only showing suppliers with >70% match score"
+Suppression du texte informatif dans le header (lignes 127-129)
+
 ### 2. SuppliersFoundPanel.tsx
 
 #### Retrait de la limite (ligne 18)
@@ -53,6 +56,27 @@ const limitedGroups = supplierGroups.slice(0, maxResults);
 const limitedGroups = supplierGroups;
 ```
 
+#### Suppression de la bannière "Free tier limit"
+Suppression complète du bloc identique à celui de SupplierCarousel.
+
+#### Suppression du texte "(showing top 10)" dans le header
+Suppression du bloc conditionnel qui affichait le nombre limité.
+
+#### Suppression de la mention "Only showing suppliers with >70% match score"
+Suppression du texte informatif dans le header.
+
+#### Retrait du paramètre maxResults
+- Retiré de l'interface `SuppliersFoundPanelProps`
+- Retiré des props du composant
+
+### 3. SuppliersPanel.tsx
+
+#### Suppression de la mention "Only showing suppliers with >70% match score"
+Suppression du texte informatif sous le titre "Recommended Suppliers".
+```tsx
+const limitedGroups = supplierGroups;
+```
+
 #### Suppression de la bannière "Free tier limit" (lignes 170-180)
 Suppression complète du bloc identique à celui de SupplierCarousel.
 
@@ -62,6 +86,7 @@ Suppression complète du bloc identique à celui de SupplierCarousel.
 - ✅ Tous les suppliers sont maintenant affichés (pas de limite à 10)
 - ✅ La bannière orange "Free tier limit" n'apparaît plus
 - ✅ Le texte "(showing top 10)" n'apparaît plus dans le header
+- ✅ La mention "Only showing suppliers with >70% match score" n'apparaît plus
 
 ### Comportement
 - Quand plusieurs solutions sont lancées, tous les suppliers de toutes les solutions sont affichés
@@ -82,4 +107,4 @@ Cette modification permet d'afficher tous les suppliers trouvés lors d'une Fast
 
 ---
 **Date**: 7 novembre 2025
-**Statut**: ✅ Implémenté dans les 2 composants
+**Statut**: ✅ Implémenté dans les 3 composants (SupplierCarousel, SuppliersFoundPanel, SuppliersPanel)
