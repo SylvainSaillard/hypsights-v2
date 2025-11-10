@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ExternalLink, MapPin, Users, Package, Star } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Package, Sparkles, HelpCircle } from 'lucide-react';
 import type { SupplierGroup } from '../../types/supplierTypes';
 import { useSupplierGroups } from '../../hooks/useSupplierGroups';
 import { useSupplierProducts } from '../../hooks/useSupplierProducts';
+import StarRating from '../../components/suppliers/StarRating';
+import ScoringTransparencyModal from '../../components/suppliers/ScoringTransparencyModal';
+import { useI18n } from '../../contexts/I18nContext';
 
 const SupplierDetailPage: React.FC = () => {
   const { supplierId, briefId } = useParams<{ supplierId: string; briefId: string }>();
   const navigate = useNavigate();
   const { supplierGroups, isLoading } = useSupplierGroups({ briefId: briefId || '' });
   const [supplier, setSupplier] = useState<SupplierGroup | null>(null);
+  const [isTransparencyModalOpen, setIsTransparencyModalOpen] = useState(false);
+  const { t } = useI18n();
   
   // Récupérer les vrais produits depuis la table products
   const { products, isLoading: productsLoading } = useSupplierProducts({
@@ -91,76 +96,59 @@ const SupplierDetailPage: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Hero Section */}
-        <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 rounded-3xl p-8 mb-8 overflow-hidden">
+        {/* Hero Section - Aligned with SupplierCard */}
+        <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 rounded-3xl p-8 mb-8 overflow-hidden">
           {/* Effet de brillance */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent transform -skew-x-12"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
           
           <div className="relative z-10">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
               {/* Informations principales */}
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center text-2xl font-bold text-white">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-2xl flex items-center justify-center text-2xl font-bold text-white shadow-lg">
                     {supplier.supplier.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <h1 className="text-3xl font-bold text-white mb-2">
                       {supplier.supplier.name}
                     </h1>
-                    <div className="flex flex-wrap items-center gap-3 text-sm">
-                      <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
-                        <span>{getRegionFlag(supplier.supplier.region)}</span>
-                        <span className="text-white">{supplier.supplier.country || supplier.supplier.region || 'Global'}</span>
-                      </div>
-                      <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
-                        <span>{getCompanySizeIcon(supplier.supplier.company_size)}</span>
-                        <span className="text-white">{supplier.supplier.company_size || 'Company'}</span>
-                      </div>
-                      <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
-                        <Package className="w-4 h-4 text-white" />
-                        <span className="text-white">{supplier.total_products} Products</span>
-                      </div>
-                    </div>
                   </div>
                 </div>
                 
-                <p className="text-blue-100 text-lg leading-relaxed max-w-3xl">
+                <p className="text-blue-100 text-lg leading-relaxed max-w-3xl mb-4">
                   {supplier.supplier.overview || supplier.supplier.description || 'No description available'}
                 </p>
                 
-                {supplier.supplier.url && (
-                  <a
-                    href={supplier.supplier.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg text-white transition-colors"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    <span>Visit Website</span>
-                  </a>
-                )}
-              </div>
-
-              {/* Score global */}
-              <div className="lg:text-right">
-                <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-6 border border-white/30">
-                  <div className="text-4xl font-black text-transparent bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text mb-2">
-                    {supplier.scores.overall}%
+                {/* Badges d'informations */}
+                <div className="flex flex-wrap items-center gap-3 text-sm mb-4">
+                  <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
+                    <span>{getRegionFlag(supplier.supplier.region)}</span>
+                    <span className="text-white">{supplier.supplier.country || supplier.supplier.region || 'Global'}</span>
                   </div>
-                  <div className="text-white/90 font-medium">Overall Match</div>
-                  <div className="flex items-center justify-center gap-1 mt-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`w-4 h-4 ${
-                          i < Math.floor(supplier.scores.overall / 20) 
-                            ? 'text-yellow-400 fill-current' 
-                            : 'text-white/30'
-                        }`} 
-                      />
-                    ))}
+                  <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
+                    <span>{getCompanySizeIcon(supplier.supplier.company_size)}</span>
+                    <span className="text-white">{supplier.supplier.company_size || supplier.supplier.company_type || 'N/A'}</span>
                   </div>
+                  <div className="flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
+                    <span>📋</span>
+                    <span className="text-white">{supplier.total_products} {supplier.total_products === 1 ? 'Product' : 'Products'}</span>
+                  </div>
+                  {supplier.supplier.url && (
+                    <a
+                      href={supplier.supplier.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-300/30 rounded-full px-4 py-1.5 hover:from-blue-500/30 hover:to-indigo-500/30 hover:border-blue-300/50 transition-all duration-200 shadow-sm hover:shadow-md"
+                    >
+                      <span className="text-blue-200">🌐</span>
+                      <span className="font-medium text-blue-100">Visit Website</span>
+                      <svg className="w-3 h-3 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                      </svg>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
@@ -226,118 +214,97 @@ const SupplierDetailPage: React.FC = () => {
           </div>
         )}
 
-        {/* Scores détaillés */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Solution Fit */}
-          {supplier.scores.solution_fit && (
-            <div className="relative bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 rounded-2xl p-6 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-x-12"></div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-8 bg-gradient-to-b from-blue-400 to-cyan-400 rounded-full"></div>
-                    <h3 className="text-xl font-bold text-white">Solution Fit</h3>
-                  </div>
-                </div>
-                
-                <div className="h-3 bg-gray-800 rounded-full overflow-hidden mb-4">
-                  <div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full transition-all duration-1000 ease-out"
-                    style={{ width: `${supplier.scores.solution_fit}%` }}
-                  ></div>
-                </div>
-                
-                <div className="bg-black/20 rounded-lg p-4 border border-blue-500/20">
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-blue-400 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-black text-xs font-bold">AI</span>
-                    </div>
-                    <p className="text-gray-300 text-sm leading-relaxed">
-                      {supplier.scores.solution_fit_explanation || 'This supplier demonstrates exceptional alignment with your solution requirements. Their capabilities directly address your core needs with proven expertise and innovative approaches in this domain.'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Brief Fit */}
-          {supplier.scores.brief_fit && (
-            <div className="relative bg-gradient-to-r from-slate-900 via-emerald-900 to-slate-900 rounded-2xl p-6 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-x-12"></div>
-              
-              <div className="relative z-10">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-3 h-8 bg-gradient-to-b from-emerald-400 to-green-400 rounded-full"></div>
-                    <h3 className="text-xl font-bold text-white">Brief Fit</h3>
-                  </div>
-                </div>
-                
-                <div className="h-3 bg-gray-800 rounded-full overflow-hidden mb-4">
-                  <div 
-                    className="h-full bg-gradient-to-r from-emerald-500 to-green-500 rounded-full transition-all duration-1000 ease-out"
-                    style={{ width: `${supplier.scores.brief_fit}%` }}
-                  ></div>
-                </div>
-                
-                <div className="bg-black/20 rounded-lg p-4 border border-emerald-500/20">
-                  <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 bg-emerald-400 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-black text-xs font-bold">AI</span>
-                    </div>
-                    <p className="text-gray-300 text-sm leading-relaxed">
-                      {supplier.scores.brief_fit_explanation || 'Outstanding match with your original brief specifications. This supplier meets your stated requirements and project scope with remarkable precision and understanding.'}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Critères d'évaluation */}
-        {supplier.scores.criteria_match && (
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6 mb-8">
-            <div className="flex items-center gap-3 mb-6">
+        {/* AI Analysis Section - Aligned with SupplierCard */}
+        <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl shadow-xl border border-gray-200 p-6 mb-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
               <div className="w-2 h-8 bg-gradient-to-b from-indigo-500 to-purple-500 rounded-full"></div>
-              <h3 className="text-2xl font-bold text-gray-800">Criteria Assessment</h3>
+              <h3 className="text-2xl font-bold text-gray-800">{t('supplier.detailed_analysis', 'Analyse Détaillée')}</h3>
             </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Geography */}
-              <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-blue-600" />
-                    <span className="font-semibold text-gray-800">Geography</span>
-                  </div>
-                  <div className={`w-4 h-4 rounded-full ${
-                    supplier.scores.geography_score === 2 ? 'bg-green-500' : 
-                    supplier.scores.geography_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <p className="text-sm text-gray-600">{supplier.supplier.region || supplier.supplier.country || 'Global presence'}</p>
-              </div>
-
-              {/* Organization */}
-              <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-4 border border-orange-100">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-orange-600" />
-                    <span className="font-semibold text-gray-800">Organization</span>
-                  </div>
-                  <div className={`w-4 h-4 rounded-full ${
-                    supplier.scores.organization_score === 2 ? 'bg-green-500' : 
-                    supplier.scores.organization_score === 1 ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                </div>
-                <p className="text-sm text-gray-600">{supplier.supplier.company_type || 'Private'}</p>
-              </div>
-            </div>
+            {/* Icône de transparence */}
+            {supplier.scores.scoring_reasoning && (
+              <button
+                onClick={() => setIsTransparencyModalOpen(true)}
+                className="p-2 hover:bg-indigo-100 rounded-full transition-colors group"
+                title={t('supplier.scoring_transparency', 'Transparence du Score')}
+              >
+                <HelpCircle size={20} className="text-indigo-600 group-hover:text-indigo-800" />
+              </button>
+            )}
           </div>
-        )}
+          
+          {/* AI Hypsights Analysis */}
+          {supplier.ai_explanation && (
+            <div className="mb-6 pb-6 border-b border-gray-300">
+              {/* Badge AI Hypsights Analysis */}
+              <div className="flex items-center gap-2 mb-4">
+                <div className="flex items-center gap-2 bg-gradient-to-r from-purple-100 to-indigo-100 border border-purple-200 rounded-full px-4 py-2">
+                  <Sparkles size={16} className="text-purple-600" />
+                  <span className="text-sm font-semibold text-purple-700">
+                    AI Hypsights Analysis
+                  </span>
+                </div>
+              </div>
+              
+              {/* Texte de l'analyse */}
+              <p className="text-base text-gray-700 italic leading-relaxed">
+                {supplier.ai_explanation}
+              </p>
+            </div>
+          )}
+          
+          <div className="space-y-4">
+            {/* Adéquation Produit/Brief - 5 étoiles avec explication */}
+            {supplier.scores.score_produit_brief !== undefined && (
+              <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+                <StarRating 
+                  score={supplier.scores.score_produit_brief} 
+                  maxStars={5} 
+                  label={t('supplier.product_fit', 'Adéquation Produit')}
+                  explanation={supplier.scores.score_produit_brief_explanation}
+                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
+                  hideLabel={t('supplier.hide', 'Masquer')}
+                />
+              </div>
+            )}
+            
+            {/* Fiabilité Entreprise - 5 étoiles avec explication */}
+            {supplier.scores.score_fiabilite !== undefined && (
+              <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+                <StarRating 
+                  score={supplier.scores.score_fiabilite} 
+                  maxStars={5} 
+                  label={t('supplier.company_reliability', 'Fiabilité Entreprise')}
+                  explanation={supplier.scores.score_fiabilite_explanation}
+                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
+                  hideLabel={t('supplier.hide', 'Masquer')}
+                />
+              </div>
+            )}
+            
+            {/* Critères Stricts - 3 étoiles avec explication */}
+            {supplier.scores.score_criteres !== undefined && (
+              <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+                <StarRating 
+                  score={supplier.scores.score_criteres} 
+                  maxStars={3} 
+                  label={t('supplier.strict_criteria', 'Critères Stricts')}
+                  explanation={supplier.scores.score_criteres_explanation}
+                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
+                  hideLabel={t('supplier.hide', 'Masquer')}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        
+        {/* Modal de transparence du scoring */}
+        <ScoringTransparencyModal
+          isOpen={isTransparencyModalOpen}
+          onClose={() => setIsTransparencyModalOpen(false)}
+          scoringReasoning={supplier.scores.scoring_reasoning}
+          title={t('supplier.scoring_transparency', 'Transparence du Score')}
+        />
 
         {/* Section Produits */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-6">
