@@ -199,7 +199,7 @@ export function FastSearchLoadingAnimation({ briefTitle }: FastSearchLoadingAnim
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-full">
             <span className="text-2xl animate-bounce">⚡</span>
             <p className="text-amber-800 font-medium">
-              This usually takes 30-60 seconds
+              First finding usually takes a few minutes
             </p>
           </div>
         </div>
@@ -208,23 +208,23 @@ export function FastSearchLoadingAnimation({ briefTitle }: FastSearchLoadingAnim
         <div className="mt-8 grid grid-cols-3 gap-4">
           <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200 text-center">
             <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              <span className="animate-pulse">15,000+</span>
+              <span className="animate-pulse">🔍</span>
             </div>
-            <div className="text-xs text-gray-600 mt-1">Companies Scanned</div>
+            <div className="text-xs text-gray-600 mt-1">Scanning the Internet For Companies</div>
           </div>
           
           <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200 text-center">
             <div className="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-              <span className="animate-pulse">500+</span>
+              <span className="animate-pulse">📦</span>
             </div>
-            <div className="text-xs text-gray-600 mt-1">Products Analyzed</div>
+            <div className="text-xs text-gray-600 mt-1">Identifying Matching Products</div>
           </div>
           
           <div className="bg-white rounded-xl p-4 shadow-md border border-gray-200 text-center">
             <div className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-              <span className="animate-pulse">10+</span>
+              <span className="animate-pulse">🎯</span>
             </div>
-            <div className="text-xs text-gray-600 mt-1">Matches Found</div>
+            <div className="text-xs text-gray-600 mt-1">Recommending 10+ Best Companies</div>
           </div>
         </div>
       </div>
