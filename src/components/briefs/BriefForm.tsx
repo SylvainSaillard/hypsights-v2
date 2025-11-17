@@ -516,6 +516,9 @@ const BriefForm: React.FC<BriefFormProps> = ({ initialData, onSubmit, isSubmitti
           <label className="form-label mb-3 text-gray-700 font-medium">
             {t('brief.form.preferred_geographies', 'Preferred Geographies')} <span className="text-red-500">*</span>
           </label>
+          <p className="text-sm text-gray-500 mb-4">
+            {t('brief.form.preferred_geographies_help', 'Select the geographies you would like your future suppliers to come from')}
+          </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg">
             {geographyOptions.map(option => (
