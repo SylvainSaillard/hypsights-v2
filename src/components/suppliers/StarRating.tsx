@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Star, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface StarRatingProps {
-  score: number; // Score en pourcentage (0-100) ou décimal (0-1)
+  score: number; // Score en pourcentage (0-100)
   maxStars: number; // 3 ou 5 étoiles
   label: string;
   explanation?: string; // Texte d'explication IA
@@ -14,7 +14,7 @@ interface StarRatingProps {
  * Composant StarRating pour afficher les scores sous forme d'étoiles
  * Conversion selon la spec:
  * - Pour 5 étoiles (score 0-100): 1-20%=1★, 21-40%=2★, 41-60%=3★, 61-80%=4★, 81-100%=5★
- * - Pour 3 étoiles (score 0-1): <0.4=1★, 0.4-0.8=2★, >0.8=3★
+ * - Pour 3 étoiles (score 0-100): 0-33%=1★, 34-66%=2★, 67-100%=3★
  */
 const StarRating: React.FC<StarRatingProps> = ({ 
   score, 
@@ -35,9 +35,9 @@ const StarRating: React.FC<StarRatingProps> = ({
       if (score <= 80) return 4;
       return 5;
     } else if (maxStars === 3) {
-      // Score de 0-1 (décimal)
-      if (score < 0.4) return 1;
-      if (score < 0.8) return 2;
+      // Score de 0-100 (converti en 3 étoiles)
+      if (score <= 33) return 1;
+      if (score <= 66) return 2;
       return 3;
     }
     return 0;

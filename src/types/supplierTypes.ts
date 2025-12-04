@@ -65,7 +65,7 @@ export interface SupplierGroup {
     score_entreprise?: number; // Nouveau score global (0-100)
     score_produit_brief?: number; // Score pertinence produit/brief (0-100)
     score_fiabilite?: number; // Score fiabilité entreprise (0-100)
-    score_criteres?: number; // Score critères stricts (0-1, ex: 0.33, 0.66, 1.0)
+    score_criteres?: number; // Score critères stricts (0-100)
     // Explications détaillées pour chaque score
     score_produit_brief_explanation?: string;
     score_fiabilite_explanation?: string;
