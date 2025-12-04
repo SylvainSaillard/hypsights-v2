@@ -325,8 +325,10 @@ const SupplierDetailPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {products
                 .sort((a, b) => {
-                  const avgScoreA = Math.round(((a.ai_solution_fit_score || 0) + (a.ai_brief_fit_score || 0)) / 2);
-                  const avgScoreB = Math.round(((b.ai_solution_fit_score || 0) + (b.ai_brief_fit_score || 0)) / 2);
+                  // Normaliser les scores : si <= 1, c'est l'ancien format (0-1), sinon c'est le nouveau (0-100)
+                  const normalizeScore = (score: number) => score <= 1 ? Math.round(score * 100) : Math.round(score);
+                  const avgScoreA = Math.round((normalizeScore(a.ai_solution_fit_score || 0) + normalizeScore(a.ai_brief_fit_score || 0)) / 2);
+                  const avgScoreB = Math.round((normalizeScore(b.ai_solution_fit_score || 0) + normalizeScore(b.ai_brief_fit_score || 0)) / 2);
                   return avgScoreB - avgScoreA;
                 })
                 .map((product) => (
@@ -442,8 +444,10 @@ const SupplierDetailPage: React.FC = () => {
                   
                   {/* Encarts IA avec affichage intelligent */}
                   {(() => {
-                    const solutionScore = product.ai_solution_fit_score || 0;
-                    const briefScore = product.ai_brief_fit_score || 0;
+                    // Normaliser les scores : si <= 1, c'est l'ancien format (0-1), sinon c'est le nouveau (0-100)
+                    const normalizeScore = (score: number) => score <= 1 ? Math.round(score * 100) : Math.round(score);
+                    const solutionScore = normalizeScore(product.ai_solution_fit_score || 0);
+                    const briefScore = normalizeScore(product.ai_brief_fit_score || 0);
                     const scoreDifference = Math.abs(solutionScore - briefScore);
                     const showBothScores = scoreDifference >= 15; // Seuil de 15% d'écart
                     
