@@ -22,6 +22,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   const navigate = useNavigate();
   const { briefId } = useParams<{ briefId: string }>();
   const [isTransparencyModalOpen, setIsTransparencyModalOpen] = React.useState(false);
+  const [showPdfTooltip, setShowPdfTooltip] = React.useState(false);
   const { t } = useI18n();
   
   // Récupérer le vrai nombre de produits depuis la table products
@@ -342,25 +343,27 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
               </svg>
             </a>
           )}
-          <div className="relative group">
+          <div className="relative">
             <button
-              disabled={true}
-              className="px-4 py-3 border-2 border-gray-200 bg-gray-50 text-gray-400 rounded-xl font-semibold cursor-not-allowed transition-all duration-200 flex items-center justify-center"
+              onClick={() => setShowPdfTooltip(!showPdfTooltip)}
+              className="px-4 py-3 border-2 border-gray-200 bg-gray-50 text-gray-400 rounded-xl font-semibold cursor-pointer hover:bg-gray-100 transition-all duration-200 flex items-center justify-center"
               title="PDF Export - Coming Soon"
             >
               <FileDown className="w-5 h-5" />
             </button>
             {/* Tooltip élégant */}
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-medium rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none shadow-lg">
-              <div className="flex items-center gap-2">
-                <span>📄</span>
-                <span>PDF Export - Coming Soon!</span>
+            {showPdfTooltip && (
+              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-medium rounded-lg shadow-lg whitespace-nowrap z-50 animate-in fade-in duration-200">
+                <div className="flex items-center gap-2">
+                  <span>📄</span>
+                  <span>PDF Export - Coming Soon!</span>
+                </div>
+                {/* Flèche du tooltip */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                  <div className="border-4 border-transparent border-t-indigo-600"></div>
+                </div>
               </div>
-              {/* Flèche du tooltip */}
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                <div className="border-4 border-transparent border-t-indigo-600"></div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
