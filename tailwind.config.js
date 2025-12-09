@@ -98,6 +98,16 @@ export default {
   		boxShadow: {
   			md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
   			lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
+  		},
+  		keyframes: {
+  			shake: {
+  				'0%, 100%': { transform: 'translateX(0)' },
+  				'10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-4px)' },
+  				'20%, 40%, 60%, 80%': { transform: 'translateX(4px)' }
+  			}
+  		},
+  		animation: {
+  			shake: 'shake 0.5s ease-in-out'
   		}
   	}
   },

@@ -10,15 +10,38 @@ const LoginPage = () => {
   const { login } = useAuth(); // Use login from AuthContext
   const navigate = useNavigate();
 
+  // Map Supabase error messages to user-friendly messages
+  const getErrorMessage = (error: Error): string => {
+    const message = error.message?.toLowerCase() || '';
+    
+    if (message.includes('invalid login credentials') || message.includes('invalid_credentials')) {
+      return 'Invalid email or password. Please check your credentials and try again.';
+    }
+    if (message.includes('email not confirmed')) {
+      return 'Your email has not been confirmed. Please check your inbox for the confirmation link.';
+    }
+    if (message.includes('too many requests') || message.includes('rate limit')) {
+      return 'Too many login attempts. Please wait a few minutes before trying again.';
+    }
+    if (message.includes('user not found')) {
+      return 'No account found with this email address.';
+    }
+    if (message.includes('network') || message.includes('fetch')) {
+      return 'Connection error. Please check your internet connection and try again.';
+    }
+    
+    return error.message || 'An error occurred during login. Please try again.';
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await login(email, password); // Call the actual login function
-      navigate('/dashboard'); // Navigate to dashboard on successful login
+      await login(email, password);
+      navigate('/dashboard');
     } catch (err) {
-      setError((err as Error).message || 'Failed to login. Please check your credentials.');
+      setError(getErrorMessage(err as Error));
     } finally {
       setLoading(false);
     } 
@@ -129,12 +152,26 @@ const LoginPage = () => {
             </div>
 
             {error && (
-              <div className="bg-red-50 border-2 border-red-200 p-4 rounded-lg">
-                <div className="flex items-center">
-                  <svg className="h-5 w-5 text-red-400 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                  <p className="text-sm text-red-700">{error}</p>
+              <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-shake shadow-sm">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">Login failed</h3>
+                    <p className="mt-1 text-sm text-red-700">{error}</p>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={() => setError(null)}
+                    className="ml-auto -mx-1.5 -my-1.5 bg-red-50 text-red-500 rounded-lg p-1.5 hover:bg-red-100 transition-colors"
+                  >
+                    <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </button>
                 </div>
               </div>
             )}
