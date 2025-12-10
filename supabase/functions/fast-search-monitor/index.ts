@@ -73,7 +73,7 @@ serve(async (req: Request) => {
 
     // Récupérer les paramètres
     const url = new URL(req.url);
-    const checkDelayMinutes = parseInt(url.searchParams.get('delay') || '10');
+    const checkDelayMinutes = parseInt(url.searchParams.get('delay') || '90');
     const action = url.searchParams.get('action') || 'check_all';
 
     console.log(`Action: ${action}, Délai: ${checkDelayMinutes} minutes`);

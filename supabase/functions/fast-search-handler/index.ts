@@ -393,21 +393,16 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     console.error('Exception lors de la récupération de la langue utilisateur:', error);
   }
   
-  // Données pour le webhook, enrichies avec les informations de la solution
+  // Données essentielles pour le webhook (les détails sont récupérés côté N8n via les IDs)
   const webhookData = {
     search_id: searchId,
-    brief_id,  // Important: Ce brief_id doit être utilisé par le webhook pour associer les fournisseurs
+    brief_id,
     user_id: user.id,
-    user_locale: userLocale, // Ajout de la langue utilisateur
-    solution_id,
-    solution_title: solutionData?.title || 'Titre non disponible',
-    solution_description: solutionData?.description || 'Description non disponible',
-    solution_status: solutionData?.status || 'unknown',
-    // Ajout d'un champ explicite pour indiquer au webhook qu'il doit associer les fournisseurs à ce brief
-    associate_suppliers_to_brief: true
+    user_locale: userLocale,
+    solution_id
   };
   
-  console.log('Appel du webhook searchsupplier avec les données:', webhookData);
+  console.log('Appel du webhook web-research-agents avec les données:', webhookData);
   
   // 1. Initialiser le monitoring de la Fast Search
   try {
@@ -437,7 +432,7 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
     
-    const webhookUrl = 'https://n8n-hypsights.proxiwave.app/webhook/searchsupplier';
+    const webhookUrl = 'https://n8n-hypsights.proxiwave.app/webhook/web-research-agents';
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
