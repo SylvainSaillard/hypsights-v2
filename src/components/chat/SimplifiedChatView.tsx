@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { ChatMessage } from './ChatInterface';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../../lib/supabaseClient';
 
 /**
  * Formate le contenu d'un message en nettoyant les caractères d'échappement JSON
@@ -94,11 +94,6 @@ const FormattedMessageContent: React.FC<{ content: string }> = ({ content }) => 
     </div>
   );
 };
-
-// Initialisation du client Supabase pour les appels authentifiés
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Utiliser un nom de channel simple et constant
 const REALTIME_CHANNEL_NAME = 'chat_messages';
@@ -297,7 +292,8 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
       });
       
       // Appel direct avec token explicite
-      const response = await fetch(`${SUPABASE_URL}/functions/v1/ai-chat-handler`, {
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const response = await fetch(`${supabaseUrl}/functions/v1/ai-chat-handler`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

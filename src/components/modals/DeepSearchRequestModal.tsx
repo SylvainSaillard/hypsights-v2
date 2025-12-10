@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../../lib/supabaseClient';
 
 interface DeepSearchRequestModalProps {
   isOpen: boolean;
@@ -31,11 +31,6 @@ const DeepSearchRequestModal: React.FC<DeepSearchRequestModalProps> = ({
     
     try {
       // Get user session for authentication
-      const supabase = createClient(
-        import.meta.env.VITE_SUPABASE_URL!,
-        import.meta.env.VITE_SUPABASE_ANON_KEY!
-      );
-      
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 

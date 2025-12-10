@@ -53,24 +53,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (!email || !password) {
       throw new Error('Email and password are required.');
     }
-    setIsLoading(true);
+    // Don't set global isLoading to true, as it unmounts the App component
+    // Let individual components handle their loading state
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
     if (error) {
-      setIsLoading(false);
       throw error;
     }
     // The onAuthStateChange listener will handle setting user and session
-    // setIsLoading(false); // onAuthStateChange will set loading to false
   };
 
   const signup = async (email?: string, password?: string) => {
     if (!email || !password) {
       throw new Error('Email and password are required for signup.');
     }
-    setIsLoading(true);
+    
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -85,7 +85,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // console.log('Signup response:', { data, error });
 
     if (error) {
-      setIsLoading(false);
       throw error;
     }
 
@@ -94,7 +93,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Check if user needs to confirm email
     if (data.user && !data.session) {
       // Email confirmation is required
-      setIsLoading(false);
       return {
         user: data.user,
         needsEmailConfirmation: true,
@@ -105,11 +103,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // If we reach here, either email confirmation is disabled or there was an issue
     if (data.user && data.user.identities && data.user.identities.length === 0) {
       // This can happen if "Confirm email" is ON but the email is already in use (but not confirmed)
-      setIsLoading(false);
       throw new Error('This email is already registered but not confirmed. Please check your email for the confirmation link.');
     }
 
-    setIsLoading(false);
     return {
       user: data.user,
       needsEmailConfirmation: false,
@@ -119,10 +115,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const logout = async () => {
-    setIsLoading(true);
     const { error } = await supabase.auth.signOut();
     if (error) {
-      setIsLoading(false);
       throw error;
     }
     // The onAuthStateChange listener will handle setting user to null and session to null

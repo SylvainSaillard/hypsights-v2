@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../../lib/supabaseClient';
 import { useI18n } from '../../contexts/I18nContext';
 
 interface FastSearchQuotaModalProps {
@@ -29,11 +29,6 @@ const FastSearchQuotaModal: React.FC<FastSearchQuotaModalProps> = ({
     
     try {
       // Get user session for authentication
-      const supabase = createClient(
-        import.meta.env.VITE_SUPABASE_URL!,
-        import.meta.env.VITE_SUPABASE_ANON_KEY!
-      );
-      
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 

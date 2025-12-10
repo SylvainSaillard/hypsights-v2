@@ -1,11 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '../lib/supabaseClient';
 import type { ChatMessage } from '../components/chat/ChatInterface';
 import type { Solution } from '../components/chat/types';
-
-// Initialisation du client Supabase pour les appels authentifiés
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /**
  * Service API pour les appels aux Edge Functions
