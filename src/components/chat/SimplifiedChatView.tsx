@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import type { ChatMessage } from './ChatInterface';
 import { supabase } from '../../lib/supabaseClient';
+import { useI18n } from '../../contexts/I18nContext';
 
 /**
  * Formate le contenu d'un message en nettoyant les caractères d'échappement JSON
@@ -111,6 +112,9 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
   briefId,
   onMessageSent
 }) => {
+  // Contexte i18n
+  const { locale } = useI18n();
+
   // États locaux
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -359,7 +363,8 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
         body: { 
           action: 'send_message', 
           brief_id: briefId, 
-          message_content: userMessage.content 
+          message_content: userMessage.content,
+          language: locale
         }
       });
 
@@ -383,7 +388,7 @@ const SimplifiedChatView: React.FC<SimplifiedChatViewProps> = ({
     } finally {
       setIsSending(false);
     }
-  }, [briefId, inputValue, isSending, onMessageSent]);
+  }, [briefId, inputValue, isSending, onMessageSent, locale]);
   
   // Styles Tailwind à utiliser selon le design system
   const styles = {

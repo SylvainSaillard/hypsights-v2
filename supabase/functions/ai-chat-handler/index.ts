@@ -255,7 +255,7 @@ function getPlaceholderSolutions() {
 }
 
 // Fonction pour envoyer un message
-async function sendMessage(supabaseAdmin: SupabaseClient, briefId: string, userId: string, messageContent: string) {
+async function sendMessage(supabaseAdmin: SupabaseClient, briefId: string, userId: string, messageContent: string, language: string = 'en') {
   console.log(`[${FUNCTION_NAME}] Storing user message for brief ${briefId}`);
   
   try {
@@ -292,13 +292,15 @@ async function sendMessage(supabaseAdmin: SupabaseClient, briefId: string, userI
     const webhookPayload = {
       brief: briefData,
       user: {
-        id: userId
+        id: userId,
+        language: language
       },
       message: {
         id: userMessageData.id,
         content: messageContent.trim(),
         timestamp: new Date().toISOString()
       },
+      language: language,
       requestId: crypto ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15)
     };
     
@@ -375,7 +377,7 @@ serve(async (req: Request) => {
       throw new HttpError('Invalid request body', 400);
     }
     
-    const { action, brief_id, message_content, solution_id } = requestBody;
+    const { action, brief_id, message_content, solution_id, language } = requestBody;
     
     if (!action) {
       throw new HttpError('Missing required parameter: action', 400);
@@ -415,13 +417,14 @@ serve(async (req: Request) => {
         
         console.log(`[${FUNCTION_NAME}] Processing message for brief:`, brief_id);
         
-        result = await sendMessage(supabaseAdmin, brief_id, user.id, message_content);
+        result = await sendMessage(supabaseAdmin, brief_id, user.id, message_content, language);
         
         // Track analytics
         await trackAnalytics(supabaseAdmin, 'send_message', user.id, { 
           brief_id,
           message_length: message_content.trim().length,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          language
         });
         break;
       }
