@@ -449,7 +449,7 @@ const SupplierDetailPage: React.FC = () => {
                     const solutionScore = normalizeScore(product.ai_solution_fit_score || 0);
                     const briefScore = normalizeScore(product.ai_brief_fit_score || 0);
                     const scoreDifference = Math.abs(solutionScore - briefScore);
-                    const showBothScores = scoreDifference >= 15; // Seuil de 15% d'écart
+                    const showBothScores = scoreDifference >= 50; // Seuil de 50% d'écart
                     
                     if (showBothScores) {
                       // Afficher les deux encarts avec un indicateur d'écart
