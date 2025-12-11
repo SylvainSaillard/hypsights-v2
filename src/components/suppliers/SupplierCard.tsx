@@ -119,36 +119,53 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
       
       {/* Effet de brillance sur toute la carte */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-x-12 translate-x-full group-hover:translate-x-[-100%] transition-transform duration-1000 ease-out pointer-events-none"></div>
-      {/* Barre de solution intégrée avec couleurs distinctes */}
+      {/* Barre de solutions - Design moderne avec badges */}
       {solutions.length > 0 && (
         <div 
-          className="w-full py-3 px-6 text-white relative overflow-hidden"
+          className="w-full py-2.5 px-4 text-white relative overflow-hidden"
           style={getHeaderStyle()}
         >
-          <div className="flex items-center justify-between relative z-10">
-            <div className="flex flex-wrap items-center gap-3">
-              {solutionColors.map((solution, index) => (
-                <div 
+          <div className="flex items-center gap-2 relative z-10">
+            {/* Indicateur du nombre de solutions */}
+            {solutions.length > 1 && (
+              <div className="flex items-center gap-1.5 bg-white/25 backdrop-blur-sm rounded-full px-2.5 py-1 mr-1">
+                <span className="text-xs font-bold">{solutions.length}</span>
+                <span className="text-xs opacity-90">solutions</span>
+              </div>
+            )}
+            
+            {/* Badges des solutions */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              {solutionColors.slice(0, 3).map((solution, index) => (
+                <button 
                   key={index}
-                  className="flex flex-col cursor-pointer rounded-lg py-2 px-3 hover:bg-white/20 transition-all duration-200"
-                  title={`Filter by: ${solution.title}`}
+                  className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full px-3 py-1 transition-all duration-200 group"
+                  title={solution.title || `Solution ${solution.number}`}
                   onClick={() => onSolutionSelect?.(solution.number)}
                 >
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-sm">✓</span>
-                    <span className="text-sm font-semibold">
-                      Solution {solution.number}
-                    </span>
-                  </div>
-                  <span className="text-xs opacity-80 mt-0.5 leading-tight">
-                    {solution.title && solution.title.length > 35 ? `${solution.title.substring(0, 35)}...` : (solution.title || 'No title')}
+                  <span className="w-4 h-4 rounded-full bg-white/30 flex items-center justify-center text-[10px] font-bold">
+                    {solution.number}
                   </span>
-                </div>
+                  <span className="text-xs font-medium max-w-[120px] truncate">
+                    {solution.title || `Solution ${solution.number}`}
+                  </span>
+                </button>
               ))}
+              
+              {/* Indicateur "+N" si plus de 3 solutions */}
+              {solutionColors.length > 3 && (
+                <div 
+                  className="flex items-center bg-white/20 backdrop-blur-sm rounded-full px-2.5 py-1 cursor-default"
+                  title={solutionColors.slice(3).map(s => s.title || `Solution ${s.number}`).join(', ')}
+                >
+                  <span className="text-xs font-semibold">+{solutionColors.length - 3}</span>
+                </div>
+              )}
             </div>
           </div>
-          {/* Effet de brillance subtil - gardé car très sympa */}
-          <div className="absolute top-0 right-0 w-32 h-full bg-white opacity-10 transform skew-x-12"></div>
+          
+          {/* Effet de brillance subtil */}
+          <div className="absolute top-0 right-0 w-24 h-full bg-white opacity-10 transform skew-x-12"></div>
         </div>
       )}
       {/* Header avec gradient */}

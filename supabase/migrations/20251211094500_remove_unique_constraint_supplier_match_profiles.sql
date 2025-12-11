@@ -1,0 +1,1 @@
+ALTER TABLE supplier_match_profiles DROP CONSTRAINT IF EXISTS supplier_match_profiles_supplier_id_brief_id_key;
