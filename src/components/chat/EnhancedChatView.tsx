@@ -178,7 +178,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   };
   
   // Gestionnaire de confirmation du modal - lance réellement la Fast Search
-  const handleConfirmFastSearch = async (notifyByEmail: boolean) => {
+  // stayOnPage: true = reste sur la page (Launch & Watch), false = redirige vers dashboard (Launch & Leave)
+  const handleConfirmFastSearch = async (notifyByEmail: boolean, stayOnPage: boolean) => {
     if (!pendingSolutionForSearch) return;
     
     const solutionId = pendingSolutionForSearch.id;
@@ -188,8 +189,10 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     setPendingSolutionForSearch(null);
     
     try {
-      // Suivre quelle solution spécifique est en cours de chargement
-      setStartingSolutionId(solutionId);
+      // Suivre quelle solution spécifique est en cours de chargement (seulement si on reste sur la page)
+      if (stayOnPage) {
+        setStartingSolutionId(solutionId);
+      }
       
       // Appeler l'Edge Function pour lancer la recherche avec une solution spécifique
       const result = await startFastSearchFromSolution(briefId, solutionId);
@@ -200,25 +203,30 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
         // Future implémentation: appel à un endpoint N8N pour enregistrer la demande d'email
       }
       
-      // Mettre à jour le quota
-      if (result.quota) {
-        setFastSearchQuota({
-          used: result.quota.used,
-          total: result.quota.total
-        });
-      } else {
-        // Fallback si le quota n'est pas retourné
-        setFastSearchQuota(prev => ({ ...prev, used: prev.used + 1 }));
+      // Mettre à jour le quota (seulement si on reste sur la page)
+      if (stayOnPage) {
+        if (result.quota) {
+          setFastSearchQuota({
+            used: result.quota.used,
+            total: result.quota.total
+          });
+        } else {
+          // Fallback si le quota n'est pas retourné
+          setFastSearchQuota(prev => ({ ...prev, used: prev.used + 1 }));
+        }
+        
+        // Recharger les solutions pour mettre à jour les dates fast_search_launched_at
+        loadSolutions();
       }
-      
-      // Recharger les solutions pour mettre à jour les dates fast_search_launched_at
-      loadSolutions();
+      // Note: Si stayOnPage est false, le modal redirige vers /dashboard via navigate()
       
     } catch (error) {
       console.error('Failed to launch Fast Search from solution:', error);
     } finally {
-      // Réinitialiser l'état de chargement
-      setStartingSolutionId(null);
+      // Réinitialiser l'état de chargement (seulement si on reste sur la page)
+      if (stayOnPage) {
+        setStartingSolutionId(null);
+      }
     }
   };
   
