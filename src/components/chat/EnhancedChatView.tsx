@@ -8,6 +8,7 @@ import type { EnhancedChatViewProps } from './types';
 import { supabase } from '../../lib/supabaseClient';
 import { useFastSearchRefundNotifications } from '../../hooks/useFastSearchRefundNotifications';
 import { FastSearchRefundNotification } from '../notifications/FastSearchRefundNotification';
+import FastSearchLaunchModal from './FastSearchLaunchModal';
 
 /**
  * Composant de chat amélioré avec affichage des solutions et des fournisseurs
@@ -27,6 +28,14 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   const [briefTitle, setBriefTitle] = useState<string>('');
   const [userId, setUserId] = useState<string | null>(null);
   const [userLocale, setUserLocale] = useState<'en' | 'fr'>('en');
+  
+  // État pour le modal de lancement Fast Search
+  const [fastSearchModalOpen, setFastSearchModalOpen] = useState(false);
+  const [pendingSolutionForSearch, setPendingSolutionForSearch] = useState<{
+    id: string;
+    title: string;
+    solutionNumber?: number;
+  } | null>(null);
   
   // Utilisation des hooks personnalisés pour la logique métier
   const {
@@ -150,11 +159,33 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     }
   };
   
-  // Gestionnaire de lancement de Fast Search depuis une solution spécifique
-  const handleStartFastSearchFromSolution = async (solutionId: string) => {
+  // Gestionnaire d'ouverture du modal Fast Search
+  const handleOpenFastSearchModal = (solutionId: string) => {
     if (fastSearchQuota.used >= fastSearchQuota.total) {
       return;
     }
+    
+    // Trouver la solution pour afficher ses infos dans le modal
+    const solution = solutions.find(s => s.id === solutionId);
+    if (solution) {
+      setPendingSolutionForSearch({
+        id: solutionId,
+        title: solution.title,
+        solutionNumber: solution.solution_number
+      });
+      setFastSearchModalOpen(true);
+    }
+  };
+  
+  // Gestionnaire de confirmation du modal - lance réellement la Fast Search
+  const handleConfirmFastSearch = async (notifyByEmail: boolean) => {
+    if (!pendingSolutionForSearch) return;
+    
+    const solutionId = pendingSolutionForSearch.id;
+    
+    // Fermer le modal
+    setFastSearchModalOpen(false);
+    setPendingSolutionForSearch(null);
     
     try {
       // Suivre quelle solution spécifique est en cours de chargement
@@ -162,6 +193,12 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
       
       // Appeler l'Edge Function pour lancer la recherche avec une solution spécifique
       const result = await startFastSearchFromSolution(briefId, solutionId);
+      
+      // TODO: Si notifyByEmail est true, déclencher le workflow N8N pour l'email
+      if (notifyByEmail) {
+        console.log('User requested email notification for solution:', solutionId);
+        // Future implémentation: appel à un endpoint N8N pour enregistrer la demande d'email
+      }
       
       // Mettre à jour le quota
       if (result.quota) {
@@ -185,8 +222,23 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
     }
   };
   
+  // Gestionnaire d'annulation du modal
+  const handleCancelFastSearchModal = () => {
+    setFastSearchModalOpen(false);
+    setPendingSolutionForSearch(null);
+  };
+  
   return (
     <div className="flex flex-col h-full p-6">
+      {/* Modal de lancement Fast Search */}
+      <FastSearchLaunchModal
+        isOpen={fastSearchModalOpen}
+        solutionTitle={pendingSolutionForSearch?.title || ''}
+        solutionNumber={pendingSolutionForSearch?.solutionNumber}
+        onConfirm={handleConfirmFastSearch}
+        onCancel={handleCancelFastSearchModal}
+      />
+      
       {/* Notifications de remboursement Fast Search */}
       {notifications.map((notification) => (
         <FastSearchRefundNotification
@@ -225,7 +277,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
               error={solutionsError}
               onValidate={validateSolution}
               onRefresh={loadSolutions}
-              onStartFastSearch={handleStartFastSearchFromSolution}
+              onStartFastSearch={handleOpenFastSearchModal}
               startingSolutionId={startingSolutionId}
               briefHasActiveSearch={true}
               showFastSearchDirectly={true}
