@@ -85,8 +85,9 @@ serve(async (req: Request) => {
     console.log(`Callback pour solution ${payload.solution_id}: status=${payload.status}`);
 
     // Mettre à jour la solution
+    // IMPORTANT: Ne pas modifier le champ 'status' de la solution (validated/proposed/etc.)
+    // Seul fast_search_status doit être mis à jour pour le monitoring
     const updateData: Record<string, unknown> = {
-      status: payload.status,
       fast_search_status: payload.status === 'finished' ? 'success' : 'failed',
       fast_search_checked_at: new Date().toISOString()
     };
