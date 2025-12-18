@@ -188,7 +188,27 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
               
               {/* Actions et statuts */}
               <div className="flex flex-col gap-3">
-                {solution.status === 'validated' ? (
+                {/* Priorité 1: Fast Search en cours (pending ou in_progress) */}
+                {['pending', 'in_progress'].includes(solution.fast_search_status || '') ? (
+                  <div className="flex items-center justify-center text-blue-600 text-sm font-medium py-2">
+                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
+                    {t('solutions_panel.status.in_progress', 'Search in progress...')}
+                    {solution.search_progress && (
+                      <span className="ml-2 bg-blue-100 px-2 py-1 rounded-full text-xs">
+                        {solution.search_progress}%
+                      </span>
+                    )}
+                  </div>
+                ) : solution.fast_search_status === 'success' ? (
+                  /* Priorité 2: Fast Search terminée avec succès */
+                  <div className="flex items-center justify-center text-indigo-600 text-sm font-medium py-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                    {t('solutions_panel.status.finished', 'Search completed')}
+                  </div>
+                ) : solution.status === 'validated' ? (
+                  /* Priorité 3: Solution validée, prête pour Fast Search */
                   <>
                     <div className="flex items-center text-green-600 text-sm font-medium">
                       <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
@@ -196,7 +216,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                     </div>
                     
                     {/* Reminder pour la consommation de token */}
-                    {onStartFastSearch && !['pending', 'in_progress', 'success'].includes(solution.fast_search_status || '') && (
+                    {onStartFastSearch && (
                       <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
                         <div className="flex items-start gap-2">
                           <div className="flex-shrink-0 mt-0.5">
@@ -222,7 +242,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                       </div>
                     )}
                     
-                    {onStartFastSearch && !['pending', 'in_progress', 'success'].includes(solution.fast_search_status || '') && (
+                    {onStartFastSearch && (
                       <div className="relative group">
                         <button
                           onClick={() => onStartFastSearch(solution.id)}
@@ -257,24 +277,8 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                     </div>
                     )}
                   </>
-                ) : ['pending', 'in_progress'].includes(solution.fast_search_status || '') ? (
-                  <div className="flex items-center justify-center text-blue-600 text-sm font-medium py-2">
-                    <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
-                    {t('solutions_panel.status.in_progress', 'Search in progress...')}
-                    {solution.search_progress && (
-                      <span className="ml-2 bg-blue-100 px-2 py-1 rounded-full text-xs">
-                        {solution.search_progress}%
-                      </span>
-                    )}
-                  </div>
-                ) : solution.fast_search_status === 'success' ? (
-                  <div className="flex items-center justify-center text-indigo-600 text-sm font-medium py-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                    {t('solutions_panel.status.finished', 'Search completed')}
-                  </div>
                 ) : (
+                  /* Priorité 4: Solution non validée */
                   <button
                     onClick={() => onValidate(solution.id)}
                     className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-indigo-500 text-white font-semibold rounded-xl hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105"
