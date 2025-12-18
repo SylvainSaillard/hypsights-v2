@@ -39,12 +39,15 @@ export interface Solution {
   description: string;
   ai_confidence: number;
   keywords: string[];
-  status: 'proposed' | 'validated' | 'rejected' | 'in_progress' | 'finished';
+  status: 'proposed' | 'validated' | 'rejected';
   created_at: string;
   updated_at: string;
   metadata?: any;
   type?: string;
   fast_search_launched_at?: string | null;
+  fast_search_status?: 'pending' | 'in_progress' | 'success' | 'failed' | 'refunded' | null;
+  fast_search_checked_at?: string | null;
+  fast_search_refunded?: boolean;
   search_progress?: number; // Optionnel: pourcentage de progression (0-100)
   solution_number?: number;
 }

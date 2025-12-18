@@ -132,12 +132,14 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
           <div 
             key={solution.id} 
             className={`bg-white rounded-xl shadow-md border-2 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 ${
-              solution.status === 'validated' 
+              solution.status === 'validated' && !solution.fast_search_status
                 ? 'border-green-200 bg-gradient-to-br from-green-50 to-emerald-50' 
-                : solution.status === 'in_progress'
+                : ['pending', 'in_progress'].includes(solution.fast_search_status || '')
                 ? 'border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50'
-                : solution.status === 'finished'
+                : solution.fast_search_status === 'success'
                 ? 'border-indigo-200 bg-gradient-to-br from-indigo-50 to-purple-50'
+                : solution.status === 'validated'
+                ? 'border-green-200 bg-gradient-to-br from-green-50 to-emerald-50'
                 : 'border-gray-200 hover:border-purple-300'
             }`}
           >
@@ -194,7 +196,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                     </div>
                     
                     {/* Reminder pour la consommation de token */}
-                    {onStartFastSearch && !['in_progress', 'finished'].includes(solution.status) && (
+                    {onStartFastSearch && !['pending', 'in_progress', 'success'].includes(solution.fast_search_status || '') && (
                       <div className="p-3 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-lg">
                         <div className="flex items-start gap-2">
                           <div className="flex-shrink-0 mt-0.5">
@@ -220,7 +222,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                       </div>
                     )}
                     
-                    {onStartFastSearch && !['in_progress', 'finished'].includes(solution.status) && (
+                    {onStartFastSearch && !['pending', 'in_progress', 'success'].includes(solution.fast_search_status || '') && (
                       <div className="relative group">
                         <button
                           onClick={() => onStartFastSearch(solution.id)}
@@ -255,7 +257,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                     </div>
                     )}
                   </>
-                ) : solution.status === 'in_progress' ? (
+                ) : ['pending', 'in_progress'].includes(solution.fast_search_status || '') ? (
                   <div className="flex items-center justify-center text-blue-600 text-sm font-medium py-2">
                     <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mr-2"></div>
                     {t('solutions_panel.status.in_progress', 'Search in progress...')}
@@ -265,7 +267,7 @@ const SolutionsPanel: React.FC<SolutionsPanelProps> = ({
                       </span>
                     )}
                   </div>
-                ) : solution.status === 'finished' ? (
+                ) : solution.fast_search_status === 'success' ? (
                   <div className="flex items-center justify-center text-indigo-600 text-sm font-medium py-2">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />

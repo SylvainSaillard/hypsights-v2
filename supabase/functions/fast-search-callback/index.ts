@@ -84,11 +84,29 @@ serve(async (req: Request) => {
 
     console.log(`Callback pour solution ${payload.solution_id}: status=${payload.status}`);
 
+    // Compter les vrais suppliers trouvés dans la base
+    const { count: actualSupplierCount, error: countError } = await supabase
+      .from('supplier_match_profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('solution_id', payload.solution_id);
+
+    if (countError) {
+      console.error('Erreur lors du comptage des suppliers:', countError);
+    }
+
+    const realSupplierCount = actualSupplierCount || 0;
+    console.log(`Suppliers réellement trouvés: ${realSupplierCount}`);
+
+    // Déterminer si on doit rembourser
+    // Rembourser si: erreur N8n OU (finished mais 0 suppliers)
+    const shouldRefund = payload.status === 'error' || (payload.status === 'finished' && realSupplierCount === 0);
+    const finalStatus = shouldRefund ? 'failed' : 'success';
+
     // Mettre à jour la solution
     // IMPORTANT: Ne pas modifier le champ 'status' de la solution (validated/proposed/etc.)
     // Seul fast_search_status doit être mis à jour pour le monitoring
     const updateData: Record<string, unknown> = {
-      fast_search_status: payload.status === 'finished' ? 'success' : 'failed',
+      fast_search_status: finalStatus,
       fast_search_checked_at: new Date().toISOString()
     };
 
@@ -102,16 +120,20 @@ serve(async (req: Request) => {
       throw updateError;
     }
 
-    console.log('✓ Solution mise à jour avec succès');
+    console.log(`✓ Solution mise à jour: status=${finalStatus}, suppliers=${realSupplierCount}`);
 
-    // Si erreur, rembourser le quota
-    if (payload.status === 'error') {
-      console.log('Statut erreur - tentative de remboursement...');
+    // Rembourser si nécessaire
+    if (shouldRefund) {
+      const refundReason = payload.status === 'error' 
+        ? (payload.error_message || 'N8n workflow failed')
+        : 'No suppliers found after Fast Search completed';
+      
+      console.log(`Remboursement nécessaire - Raison: ${refundReason}`);
       
       const { error: refundError } = await supabase
         .rpc('refund_fast_search', {
           p_solution_id: payload.solution_id,
-          p_reason: payload.error_message || 'N8n workflow failed'
+          p_reason: refundReason
         });
 
       if (refundError) {
@@ -143,10 +165,13 @@ serve(async (req: Request) => {
             brief_id: solutionData.brief_id,
             user_id: briefData.user_id,
             check_type: 'n8n_callback',
-            status: payload.status === 'finished' ? 'success' : 'failed',
-            suppliers_found: payload.suppliers_count || 0,
-            refunded: payload.status === 'error',
+            status: finalStatus,
+            suppliers_found: realSupplierCount,
+            refunded: shouldRefund,
             details: {
+              n8n_status: payload.status,
+              n8n_suppliers_count: payload.suppliers_count,
+              actual_suppliers_count: realSupplierCount,
               error_message: payload.error_message,
               callback_received_at: new Date().toISOString()
             }

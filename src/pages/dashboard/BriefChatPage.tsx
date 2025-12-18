@@ -158,8 +158,10 @@ const BriefChatPage = () => {
     setSolutions(newSolutions);
   };
 
-  // Détecter si un Fast Search est en cours
-  const isFastSearchInProgress = solutions.some(solution => solution.status === 'in_progress');
+  // Détecter si un Fast Search est en cours (utilise fast_search_status, pas status)
+  const isFastSearchInProgress = solutions.some(solution => 
+    ['pending', 'in_progress'].includes((solution as any).fast_search_status || '')
+  );
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
