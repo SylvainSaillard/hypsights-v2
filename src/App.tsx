@@ -28,6 +28,7 @@ import CorsTest from './components/debug/CorsTest';
 
 // Other placeholder components
 import NotificationSystem from './components/layout/NotificationSystem';
+import HelpContactDropdown from './components/layout/HelpContactDropdown';
 import UserProfileDropdown from './components/common/UserProfileDropdown';
 import LanguageSelector from './components/layout/LanguageSelector';
 import { useI18n } from './contexts/I18nContext';
@@ -58,6 +59,7 @@ const DashboardLayout = () => {
           </Link>
           <div className="flex items-center gap-4 space-x-4">
             <LanguageSelector />
+            <HelpContactDropdown />
             <NotificationSystem />
             <UserProfileDropdown user={user} onSignOut={handleLogout} />
           </div>
