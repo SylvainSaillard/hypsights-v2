@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Routes, Route, Navigate, Outlet, Link } from 'react-router-dom';
+import { Routes, Route, Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext'; // Import useAuth
 import LoginPage from './pages/auth/LoginPage'; // Import the new LoginPage
 import SignupPage from './pages/auth/SignupPage'; // Import the new SignupPage
@@ -36,6 +36,12 @@ import { useI18n } from './contexts/I18nContext';
 const DashboardLayout = () => {
   const { t } = useI18n(); // Added for translations
   const { user, logout } = useAuth();
+  const location = useLocation();
+
+  // Scroll to top on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
   
   const handleLogout = async () => {
     try {
