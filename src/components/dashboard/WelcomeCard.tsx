@@ -80,16 +80,6 @@ const WelcomeCard: React.FC = () => {
       <div className="relative p-8 md:p-12">
         {/* Welcome header with entrance animation */}
         <div className={`text-center mb-10 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-          <div className="relative inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-600 rounded-2xl shadow-xl mb-6 group">
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity animate-pulse"></div>
-            {/* Icon with sparkle animation */}
-            <svg xmlns="http://www.w3.org/2000/svg" className="relative h-10 w-10 text-white animate-pulse" style={{ animationDuration: '2s' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-            </svg>
-            {/* Orbiting dot */}
-            <div className="absolute w-3 h-3 bg-yellow-400 rounded-full shadow-lg animate-spin" style={{ animationDuration: '4s', top: '-4px', right: '-4px' }}></div>
-          </div>
           <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent mb-3">
             {firstName 
               ? t('welcome.title.personalized', `Welcome to Hypsights, ${firstName}!`, { name: firstName })
