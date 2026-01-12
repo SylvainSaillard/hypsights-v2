@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useI18n } from '../../contexts/I18nContext';
 import { useEdgeFunction } from '@/hooks/useEdgeFunction';
 import { supabase } from '@/lib/supabaseClient';
 import ConfirmationModal from '../common/ConfirmationModal';
+import WelcomeCard from './WelcomeCard';
 
 type Brief = {
   id: string;
@@ -162,28 +162,7 @@ const BriefManagementGrid: React.FC = () => {
       </div>
       
       {filteredBriefs.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {t('brief.empty.no_briefs', 'No briefs yet')}
-          </h3>
-          <p className="text-gray-600 mb-8 max-w-md mx-auto">
-            {t('brief.empty.description', 'Create your first brief to start finding suppliers and products for your business needs.')}
-          </p>
-          <Link
-            to="/dashboard/briefs/new"
-            className="inline-flex items-center px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            {t('brief.empty.create_button', 'Create Brief')}
-          </Link>
-        </div>
+        <WelcomeCard />
       ) : (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
