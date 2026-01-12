@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../../contexts/I18nContext';
-import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Welcome Card component for new users with no briefs
@@ -10,7 +9,6 @@ import { useAuth } from '../../contexts/AuthContext';
  */
 const WelcomeCard: React.FC = () => {
   const { t } = useI18n();
-  const { user } = useAuth();
   const [isVisible, setIsVisible] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   
@@ -26,11 +24,7 @@ const WelcomeCard: React.FC = () => {
     return () => clearInterval(stepInterval);
   }, []);
   
-  // Extract first name from user metadata or email
-  const firstName = user?.user_metadata?.first_name 
-    || user?.email?.split('@')[0] 
-    || '';
-
+  
   const steps = [
     {
       number: 1,
@@ -81,10 +75,7 @@ const WelcomeCard: React.FC = () => {
         {/* Welcome header with entrance animation */}
         <div className={`text-center mb-10 transition-all duration-700 delay-200 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
           <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-900 bg-clip-text text-transparent mb-3">
-            {firstName 
-              ? t('welcome.title.personalized', `Welcome to Hypsights, ${firstName}!`, { name: firstName })
-              : t('welcome.title.default', 'Welcome to Hypsights!')
-            }
+            {t('welcome.title.default', 'Welcome to Hypsights!')}
           </h2>
           <p className="text-gray-600 text-lg max-w-2xl mx-auto">
             {t('welcome.subtitle', 'Start your journey to find the perfect suppliers and products for your business needs.')}
