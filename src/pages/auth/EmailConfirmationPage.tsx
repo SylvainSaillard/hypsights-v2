@@ -119,22 +119,7 @@ const EmailConfirmationPage = () => {
         </div>
       </div>
 
-      {/* Mini KPI highlights for consistency */}
-      <div className="mt-8 grid grid-cols-3 gap-4 text-center z-10 relative">
-        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-sm">
-          <div className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">5k+</div>
-          <div className="text-xs text-gray-600">Suppliers</div>
-        </div>
-        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-sm">
-          <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">98%</div>
-          <div className="text-xs text-gray-600">Success Rate</div>
-        </div>
-        <div className="bg-white/80 backdrop-blur-sm rounded-lg p-3 shadow-sm">
-          <div className="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">24h</div>
-          <div className="text-xs text-gray-600">Support</div>
-        </div>
       </div>
-    </div>
   );
 };
 

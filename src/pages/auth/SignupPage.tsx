@@ -195,24 +195,7 @@ const SignupPage = () => {
           </Link>
         </div>
         
-        {/* Features highlight */}
-        <div className="pt-4 border-t border-gray-100">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div className="text-xs text-gray-500">
-              <div className="text-blue-600 font-semibold">3+</div>
-              <div>Free searches</div>
-            </div>
-            <div className="text-xs text-gray-500">
-              <div className="text-purple-600 font-semibold">24/7</div>
-              <div>AI assistance</div>
-            </div>
-            <div className="text-xs text-gray-500">
-              <div className="text-green-600 font-semibold">100%</div>
-              <div>Expert validation</div>
-            </div>
-          </div>
         </div>
-      </div>
     </div>
   );
 };
