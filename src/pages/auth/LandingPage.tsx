@@ -134,181 +134,203 @@ const LandingPage: React.FC = () => {
       </section>
 
       {/* Value Proposition Section - Why Hypsights is Different */}
-      <section className="py-24 bg-white relative overflow-hidden">
-        {/* Background decorative elements */}
-        <div className="absolute inset-0 overflow-hidden z-0">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-l from-indigo-200 to-purple-200 rounded-full opacity-20 transform translate-x-1/2 -translate-y-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-r from-blue-200 to-cyan-200 rounded-full opacity-20 transform -translate-x-1/2 translate-y-1/2"></div>
+      <section className="py-24 bg-gradient-to-b from-gray-50 to-white relative overflow-hidden">
+        {/* Background pattern */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.08)_0%,transparent_50%)]"></div>
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,rgba(168,85,247,0.08)_0%,transparent_50%)]"></div>
         </div>
         
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           {/* Section Header */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-100 to-purple-100 border border-indigo-200 rounded-full text-indigo-700 text-sm font-medium mb-4 shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+          <div className="text-center mb-20">
+            <div className="inline-flex items-center px-4 py-2 bg-white border border-indigo-200 rounded-full text-indigo-700 text-sm font-medium mb-6 shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 text-indigo-500" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
               </svg>
-              ⚡ Our Difference
+              Why choose Hypsights
             </div>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              From <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">1,000 tabs</span> to <span className="bg-gradient-to-r from-green-500 to-emerald-500 bg-clip-text text-transparent">10 strategic prospects</span>
+            <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-6 leading-tight">
+              The intelligence your<br />
+              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">sourcing deserves</span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Our AI doesn't just search. It <span className="font-semibold text-indigo-600">analyzes</span>, <span className="font-semibold text-purple-600">qualifies</span>, and <span className="font-semibold text-pink-600">justifies</span> — so you can focus on what matters.
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
+              Stop guessing. Start knowing exactly <span className="font-semibold">who</span> to contact, <span className="font-semibold">why</span> they matter, and <span className="font-semibold">how</span> to engage them.
             </p>
           </div>
 
-          {/* 4 Key Differentiators */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          {/* 3 Key Differentiators */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-10">
             
-            {/* Differentiator 1: Augmented Search */}
-            <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-200 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-blue-400">
-              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">🔍 Augmented Search</h3>
-              <p className="text-sm font-semibold text-blue-600 mb-3">Beyond Google</p>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Our technology queries <span className="font-semibold">multiple search engines and AI sources simultaneously</span> to create a 360° market view. Then, it intelligently filters out 90%+ of noise (blogs, marketplaces, directories...).
-              </p>
-              <div className="bg-white rounded-xl p-4 border border-blue-200 shadow-sm">
-                <div className="flex items-center text-sm text-blue-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            {/* Block 1: AI-Powered Discovery */}
+            <div className="group relative bg-white rounded-3xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl hover:border-indigo-200 transition-all duration-500 overflow-hidden">
+              {/* Decorative gradient */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-indigo-100 to-transparent rounded-bl-full opacity-60"></div>
+              
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-indigo-500 to-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                   </svg>
-                  <span className="font-medium">Access hidden gems invisible to your competitors</span>
                 </div>
-              </div>
-            </div>
-
-            {/* Differentiator 2: 360° Analysis */}
-            <div className="group bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border border-purple-200 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-purple-400 lg:translate-y-4">
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
-                  <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">📊 360° Analysis</h3>
-              <p className="text-sm font-semibold text-purple-600 mb-3">More than a simple "Match"</p>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Each supplier is evaluated by our AI using a <span className="font-semibold">unique 3-dimension scoring model</span>:
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center bg-white rounded-lg p-3 border border-purple-200 shadow-sm">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-3">
-                    <span className="text-white text-xs font-bold">P</span>
+                
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">AI-Powered Discovery</h3>
+                <p className="text-indigo-600 font-semibold text-sm mb-4">Beyond traditional search</p>
+                
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  Our AI queries <span className="font-semibold">multiple sources simultaneously</span>—search engines, specialized databases, and AI assistants—then filters 90% of noise to surface only relevant suppliers.
+                </p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Multi-source intelligence</p>
+                      <p className="text-gray-500 text-sm">Google, Perplexity, specialized databases</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Product Relevance</p>
-                    <p className="text-xs text-gray-500">Does it solve your technical need?</p>
-                  </div>
-                </div>
-                <div className="flex items-center bg-white rounded-lg p-3 border border-purple-200 shadow-sm">
-                  <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mr-3">
-                    <span className="text-white text-xs font-bold">R</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Company Reliability</p>
-                    <p className="text-xs text-gray-500">Is it a credible, stable partner?</p>
-                  </div>
-                </div>
-                <div className="flex items-center bg-white rounded-lg p-3 border border-purple-200 shadow-sm">
-                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
-                    <span className="text-white text-xs font-bold">O</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Operational Fit</p>
-                    <p className="text-xs text-gray-500">Does it match your constraints?</p>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Smart noise filtering</p>
+                      <p className="text-gray-500 text-sm">No blogs, marketplaces, or directories</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Differentiator 3: Total Transparency */}
-            <div className="group bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-200 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-green-400">
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">🔓 Total Transparency</h3>
-              <p className="text-sm font-semibold text-green-600 mb-3">Trust first</p>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                Hypsights is <span className="font-semibold">not a black box</span>. Every score comes with a detailed AI-written analysis explaining exactly why this rating was given. You can even see the exact calculation.
-              </p>
-              <div className="bg-white rounded-xl p-4 border border-green-200 shadow-sm space-y-3">
-                <div className="flex items-center text-sm text-green-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            {/* Block 2: 360° Scoring & Transparency */}
+            <div className="group relative bg-white rounded-3xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl hover:border-purple-200 transition-all duration-500 overflow-hidden lg:-translate-y-4">
+              {/* Decorative gradient */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-100 to-transparent rounded-bl-full opacity-60"></div>
+              
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-purple-200 group-hover:scale-110 transition-transform duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z" />
+                    <path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z" />
                   </svg>
-                  <span className="font-medium">Absolute confidence in results</span>
                 </div>
-                <div className="flex items-center text-sm text-green-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <span className="font-medium">Defend your choices with data</span>
+                
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">360° Scoring</h3>
+                <p className="text-purple-600 font-semibold text-sm mb-4">Transparent & actionable</p>
+                
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  Each supplier is evaluated with a <span className="font-semibold">unique 3-dimension model</span>. Every score includes detailed AI explanations—no black box, full transparency.
+                </p>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-xl p-3 border border-blue-100">
+                    <div className="w-9 h-9 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                      <span className="text-white text-xs font-bold">P</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Product Fit</p>
+                      <p className="text-gray-500 text-xs">Technical relevance to your need</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center bg-gradient-to-r from-green-50 to-green-100/50 rounded-xl p-3 border border-green-100">
+                    <div className="w-9 h-9 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                      <span className="text-white text-xs font-bold">R</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Reliability</p>
+                      <p className="text-gray-500 text-xs">Company credibility & stability</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center bg-gradient-to-r from-orange-50 to-orange-100/50 rounded-xl p-3 border border-orange-100">
+                    <div className="w-9 h-9 bg-gradient-to-br from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3 shadow-sm">
+                      <span className="text-white text-xs font-bold">O</span>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Operational Fit</p>
+                      <p className="text-gray-500 text-xs">Geography, size & constraints</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center text-sm text-green-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                  <span className="font-medium">Export results to Excel/CSV</span>
+                
+                <div className="mt-6 pt-4 border-t border-gray-100">
+                  <div className="flex items-center text-sm text-purple-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                    <span className="font-medium">Export to Excel/CSV</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Differentiator 4: Deep Search */}
-            <div className="group bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 border border-orange-200 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-orange-400">
-              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" viewBox="0 0 20 20" fill="currentColor">
-                  <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
-                </svg>
+            {/* Block 3: Expert Deep Search */}
+            <div className="group relative bg-white rounded-3xl p-8 shadow-xl border border-gray-100 hover:shadow-2xl hover:border-orange-200 transition-all duration-500 overflow-hidden">
+              {/* Decorative gradient */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-100 to-transparent rounded-bl-full opacity-60"></div>
+              
+              {/* Premium badge */}
+              <div className="absolute top-6 right-6">
+                <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
+                  Premium
+                </span>
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">🎯 Deep Search</h3>
-              <p className="text-sm font-semibold text-orange-600 mb-3">Human expertise when data isn't enough</p>
-              <p className="text-gray-600 mb-6 leading-relaxed">
-                When data isn't enough, <span className="font-semibold">20+ years of expertise</span> makes the difference. Our experts transform your shortlist into concrete opportunities through human validation and strategic analysis.
-              </p>
-              <div className="space-y-3">
-                <div className="flex items-center bg-white rounded-lg p-3 border border-orange-200 shadow-sm">
-                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
-                    <span className="text-white text-xs font-bold">✓</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Human Validation</p>
-                    <p className="text-xs text-gray-500">Network verification & reputation check</p>
-                  </div>
+              
+              <div className="relative">
+                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-orange-200 group-hover:scale-110 transition-transform duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                  </svg>
                 </div>
-                <div className="flex items-center bg-white rounded-lg p-3 border border-orange-200 shadow-sm">
-                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
-                    <span className="text-white text-xs font-bold">🎯</span>
+                
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Expert Deep Search</h3>
+                <p className="text-orange-600 font-semibold text-sm mb-4">When AI needs human expertise</p>
+                
+                <p className="text-gray-600 mb-8 leading-relaxed">
+                  Our consultants with <span className="font-semibold">20+ years of sourcing expertise</span> validate your shortlist, activate their network, and support you all the way to signature.
+                </p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Human validation</p>
+                      <p className="text-gray-500 text-sm">Network check & reputation verification</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Strategic Alignment</p>
-                    <p className="text-xs text-gray-500">Cultural fit & vision matching</p>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Strategic alignment</p>
+                      <p className="text-gray-500 text-sm">Cultural fit & vision matching</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center bg-white rounded-lg p-3 border border-orange-200 shadow-sm">
-                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
-                    <span className="text-white text-xs font-bold">🤝</span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Deal Support</p>
-                    <p className="text-xs text-gray-500">From first contact to signature</p>
+                  <div className="flex items-start">
+                    <div className="flex-shrink-0 w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center mr-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-orange-600" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 text-sm">Deal support</p>
+                      <p className="text-gray-500 text-sm">From first contact to signature</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Bottom tagline */}
-          <div className="mt-16 text-center">
-            <div className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 rounded-full shadow-md">
-              <span className="text-gray-700 font-medium">⏱️ Hours of manual research → <span className="font-bold text-indigo-600">Minutes with Hypsights</span></span>
             </div>
           </div>
         </div>
