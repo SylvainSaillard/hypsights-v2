@@ -158,8 +158,8 @@ const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          {/* 3 Key Differentiators */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* 4 Key Differentiators */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             
             {/* Differentiator 1: Augmented Search */}
             <div className="group bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-8 border border-blue-200 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-blue-400">
@@ -251,6 +251,55 @@ const LandingPage: React.FC = () => {
                     <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                   </svg>
                   <span className="font-medium">Defend your choices with data</span>
+                </div>
+                <div className="flex items-center text-sm text-green-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-green-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                  <span className="font-medium">Export results to Excel/CSV</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Differentiator 4: Deep Search */}
+            <div className="group bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 border border-orange-200 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 hover:border-orange-400">
+              <div className="w-14 h-14 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-3">🎯 Deep Search</h3>
+              <p className="text-sm font-semibold text-orange-600 mb-3">Human expertise when data isn't enough</p>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                When data isn't enough, <span className="font-semibold">20+ years of expertise</span> makes the difference. Our experts transform your shortlist into concrete opportunities through human validation and strategic analysis.
+              </p>
+              <div className="space-y-3">
+                <div className="flex items-center bg-white rounded-lg p-3 border border-orange-200 shadow-sm">
+                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
+                    <span className="text-white text-xs font-bold">✓</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Human Validation</p>
+                    <p className="text-xs text-gray-500">Network verification & reputation check</p>
+                  </div>
+                </div>
+                <div className="flex items-center bg-white rounded-lg p-3 border border-orange-200 shadow-sm">
+                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
+                    <span className="text-white text-xs font-bold">🎯</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Strategic Alignment</p>
+                    <p className="text-xs text-gray-500">Cultural fit & vision matching</p>
+                  </div>
+                </div>
+                <div className="flex items-center bg-white rounded-lg p-3 border border-orange-200 shadow-sm">
+                  <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
+                    <span className="text-white text-xs font-bold">🤝</span>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">Deal Support</p>
+                    <p className="text-xs text-gray-500">From first contact to signature</p>
+                  </div>
                 </div>
               </div>
             </div>
