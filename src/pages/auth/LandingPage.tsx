@@ -274,13 +274,7 @@ const LandingPage: React.FC = () => {
               {/* Decorative gradient */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-100 to-transparent rounded-bl-full opacity-60"></div>
               
-              {/* Premium badge */}
-              <div className="absolute top-6 right-6">
-                <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-semibold rounded-full shadow-lg">
-                  Premium
-                </span>
-              </div>
-              
+                            
               <div className="relative">
                 <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-orange-200 group-hover:scale-110 transition-transform duration-300">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" viewBox="0 0 20 20" fill="currentColor">
