@@ -8,14 +8,10 @@ interface SignupResult {
   message: string;
 }
 
-type UserRole = 'user' | 'admin';
-
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   isLoading: boolean;
-  userRole: UserRole;
-  isAdmin: boolean;
   login: (email?: string, password?: string) => Promise<void>;
   signup: (email?: string, password?: string) => Promise<SignupResult>;
   logout: () => Promise<void>;
@@ -26,34 +22,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userRole, setUserRole] = useState<UserRole>('user');
-
-  // Fetch user role from users_metadata (resilient to missing column)
-  const fetchUserRole = async (userId: string) => {
-    try {
-      // Select all fields to avoid error if 'role' column doesn't exist yet
-      const { data, error } = await supabase
-        .from('users_metadata')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
-      
-      if (error) {
-        // User metadata might not exist yet, default to 'user'
-        console.log('User metadata not found or error, defaulting to user role');
-        setUserRole('user');
-        return;
-      }
-      
-      // Check if role exists in data (column may not exist yet)
-      const role = data?.role as UserRole | undefined;
-      setUserRole(role || 'user');
-    } catch (err) {
-      console.log('Error fetching user role, defaulting to user:', err);
-      setUserRole('user');
-    }
-  };
+    const [isLoading, setIsLoading] = useState(true);
 
 
   useEffect(() => {
@@ -62,23 +31,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchUserRole(session.user.id);
-      }
       setIsLoading(false);
     };
 
     getSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event: AuthChangeEvent, session: Session | null) => {
+      (_event: AuthChangeEvent, session: Session | null) => {
         setSession(session);
         setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchUserRole(session.user.id);
-        } else {
-          setUserRole('user');
-        }
         setIsLoading(false);
       }
     );
@@ -161,14 +122,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // The onAuthStateChange listener will handle setting user to null and session to null
   };
 
-  const isAdmin = userRole === 'admin';
-
   const value = {
     user,
     session,
     isLoading,
-    userRole,
-    isAdmin,
     login,
     signup,
     logout
