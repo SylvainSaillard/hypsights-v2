@@ -31,6 +31,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Fetch user role from users_metadata
   const fetchUserRole = async (userId: string) => {
+    console.log('[AuthContext] Fetching user role for:', userId);
     try {
       const { data, error } = await supabase
         .from('users_metadata')
@@ -39,37 +40,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         .single();
       
       if (error) {
-        console.error('Error fetching user role:', error);
+        console.error('[AuthContext] Error fetching user role:', error);
         setUserRole('user');
         return;
       }
       
+      console.log('[AuthContext] User role fetched:', data?.role);
       setUserRole(data?.role || 'user');
     } catch (err) {
-      console.error('Error fetching user role:', err);
+      console.error('[AuthContext] Exception fetching user role:', err);
       setUserRole('user');
     }
   };
 
 
   useEffect(() => {
+    console.log('[AuthContext] Initializing auth...');
     setIsLoading(true);
+    
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        await fetchUserRole(session.user.id);
+      try {
+        console.log('[AuthContext] Getting session...');
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('[AuthContext] Error getting session:', error);
+          throw error;
+        }
+
+        console.log('[AuthContext] Session retrieved:', session ? 'Found' : 'Null');
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          await fetchUserRole(session.user.id);
+        }
+      } catch (error) {
+        console.error('[AuthContext] Error during initialization:', error);
+      } finally {
+        console.log('[AuthContext] Initialization complete, setting isLoading to false');
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
 
     getSession();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event: AuthChangeEvent, session: Session | null) => {
+      async (event: AuthChangeEvent, session: Session | null) => {
+        console.log(`[AuthContext] Auth state change: ${event}`);
         setSession(session);
         setUser(session?.user ?? null);
+        
         if (session?.user) {
           await fetchUserRole(session.user.id);
         } else {
