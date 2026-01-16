@@ -22,6 +22,7 @@ import SimplifiedBriefPage from './pages/dashboard/SimplifiedBriefPage';
 import SupplierDetailPage from './pages/dashboard/SupplierDetailPage';
 import ProfilePage from './pages/account/ProfilePage';
 import SearchResultsPage from './pages/dashboard/SearchResultsPage';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 // Debug components
 import CorsTest from './components/debug/CorsTest';
@@ -35,7 +36,7 @@ import { useI18n } from './contexts/I18nContext';
 
 const DashboardLayout = () => {
   const { t } = useI18n(); // Added for translations
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const location = useLocation();
 
   // Scroll to top on route change
@@ -64,6 +65,17 @@ const DashboardLayout = () => {
             <span className="ml-1 text-sm text-primary font-semibold">Beta</span>
           </Link>
           <div className="flex items-center gap-4 space-x-4">
+            {isAdmin && (
+              <Link 
+                to="/dashboard/admin" 
+                className="flex items-center gap-2 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-200 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
+                </svg>
+                Admin
+              </Link>
+            )}
             <LanguageSelector />
             <HelpContactDropdown />
             <NotificationSystem />
@@ -166,6 +178,7 @@ function App() {
         <Route path="briefs/:briefId/search" element={<SearchResultsPage />} />
         <Route path="briefs/:briefId/suppliers/:supplierId" element={<SupplierDetailPage />} />
         <Route path="profile" element={<ProfilePage />} />
+        <Route path="admin" element={<AdminDashboard />} />
       </Route>
       
       <Route path="*" element={<Navigate to={user ? "/dashboard" : "/"} replace />} />
