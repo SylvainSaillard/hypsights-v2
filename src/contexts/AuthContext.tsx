@@ -29,15 +29,31 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<UserRole>('user');
 
-  // Fetch user role from users_metadata
+  // Fetch user role from users_metadata with timeout
   const fetchUserRole = async (userId: string) => {
     console.log('[AuthContext] Fetching user role for:', userId);
+    
+    // Add a timeout to prevent hanging
+    const timeoutPromise = new Promise<null>((_, reject) => {
+      setTimeout(() => reject(new Error('Timeout fetching user role')), 5000);
+    });
+    
     try {
-      const { data, error } = await supabase
+      const queryPromise = supabase
         .from('users_metadata')
         .select('role')
         .eq('user_id', userId)
         .single();
+      
+      const result = await Promise.race([queryPromise, timeoutPromise]);
+      
+      if (!result) {
+        console.warn('[AuthContext] Timeout - defaulting to user role');
+        setUserRole('user');
+        return;
+      }
+      
+      const { data, error } = result as { data: any; error: any };
       
       if (error) {
         console.error('[AuthContext] Error fetching user role:', error);
