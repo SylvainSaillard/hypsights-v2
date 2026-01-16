@@ -29,24 +29,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [userRole, setUserRole] = useState<UserRole>('user');
 
-  // Fetch user role from users_metadata
+  // Fetch user role from users_metadata (resilient to missing column)
   const fetchUserRole = async (userId: string) => {
     try {
+      // Select all fields to avoid error if 'role' column doesn't exist yet
       const { data, error } = await supabase
         .from('users_metadata')
-        .select('role')
+        .select('*')
         .eq('user_id', userId)
         .single();
       
       if (error) {
-        console.error('Error fetching user role:', error);
+        // User metadata might not exist yet, default to 'user'
+        console.log('User metadata not found or error, defaulting to user role');
         setUserRole('user');
         return;
       }
       
-      setUserRole(data?.role || 'user');
+      // Check if role exists in data (column may not exist yet)
+      const role = data?.role as UserRole | undefined;
+      setUserRole(role || 'user');
     } catch (err) {
-      console.error('Error fetching user role:', err);
+      console.log('Error fetching user role, defaulting to user:', err);
       setUserRole('user');
     }
   };
