@@ -54,26 +54,17 @@ export function useBriefKPIs(briefId: string) {
     setError(null);
     
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token || import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-      const response = await fetch('/functions/v1/brief-header-data', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ 
+      // Use supabase.functions.invoke which handles auth and URL resolution automatically
+      const { data: result, error: invokeError } = await supabase.functions.invoke('brief-header-data', {
+        body: { 
           action: 'get_brief_header_data',
           brief_id: briefId 
-        }),
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch KPIs: ${response.statusText}`);
+      if (invokeError) {
+        throw invokeError;
       }
-      
-      const result = await response.json();
       
       if (result.success && result.data) {
         const newData = {

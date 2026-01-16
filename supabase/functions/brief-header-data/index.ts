@@ -214,7 +214,17 @@ serve(async (req: Request) => {
     const { brief_id: briefId } = await req.json();
 
     const supabaseAdmin = createSupabaseClient(true);
-    const data = await getBriefHeaderData(supabaseAdmin, user.id, briefId);
+    
+    // Check if user is admin
+    const { data: userMetadata } = await supabaseAdmin
+      .from('users_metadata')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+      
+    const isAdmin = userMetadata?.role === 'admin';
+    
+    const data = await getBriefHeaderData(supabaseAdmin, user.id, briefId, isAdmin);
 
     await trackEvent(supabaseAdmin, `${FUNCTION_NAME}_success`, user.id, { briefId });
 
