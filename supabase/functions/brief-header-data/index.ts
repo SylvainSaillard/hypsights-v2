@@ -83,22 +83,31 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
     }
 }
 
-async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string, briefId: string) {
+async function getBriefHeaderData(supabaseAdmin: SupabaseClient, userId: string, briefId: string, isAdmin: boolean = false) {
   if (!briefId) {
     throw new HttpError('Missing briefId parameter', 400);
   }
 
-  // Get Brief Details, including structured filters
+  // Get Brief Details first without user restriction to verify existence
   const { data: brief, error: briefError } = await supabaseAdmin
     .from('briefs')
     .select('*')
     .eq('id', briefId)
-    .eq('user_id', userId)
     .single();
 
   if (briefError) {
-    console.error(`[${FUNCTION_NAME}] Error fetching brief details:`, briefError);
-    throw new HttpError('Failed to fetch brief details or access denied', 404);
+    console.error(`[${FUNCTION_NAME}] Error fetching brief details for briefId ${briefId}:`, briefError);
+    throw new HttpError(`Failed to fetch brief details: ${briefError.message}`, 404);
+  }
+  
+  if (!brief) {
+    throw new HttpError('Brief not found', 404);
+  }
+
+  // Check permissions: Owner OR Admin
+  if (brief.user_id !== userId && !isAdmin) {
+    console.error(`[${FUNCTION_NAME}] Access denied. User ${userId} is not owner of brief ${briefId} (Owner: ${brief.user_id}) and is not admin.`);
+    throw new HttpError('Access denied', 403);
   }
 
   // KPI: Solutions count
@@ -216,13 +225,18 @@ serve(async (req: Request) => {
     const supabaseAdmin = createSupabaseClient(true);
     
     // Check if user is admin
-    const { data: userMetadata } = await supabaseAdmin
+    const { data: userMetadata, error: roleError } = await supabaseAdmin
       .from('users_metadata')
       .select('role')
       .eq('user_id', user.id)
       .single();
+
+    if (roleError) {
+      console.error(`[${FUNCTION_NAME}] Error fetching user role for ${user.id}:`, roleError);
+    }
       
     const isAdmin = userMetadata?.role === 'admin';
+    console.log(`[${FUNCTION_NAME}] User ${user.id} role check: ${userMetadata?.role} (isAdmin=${isAdmin})`);
     
     const data = await getBriefHeaderData(supabaseAdmin, user.id, briefId, isAdmin);
 
