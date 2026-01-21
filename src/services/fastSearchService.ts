@@ -30,21 +30,27 @@ export async function startFastSearch(briefId: string) {
  * 
  * @param briefId - ID du brief pour lequel lancer la recherche
  * @param solutionId - ID de la solution validée à utiliser
+ * @param notifyOnCompletion - Si true, l'utilisateur recevra un email quand la recherche sera terminée
  * @returns Résultat de la recherche avec l'ID de recherche et le statut
  */
-export async function startFastSearchFromSolution(briefId: string, solutionId: string) {
+export async function startFastSearchFromSolution(
+  briefId: string, 
+  solutionId: string, 
+  notifyOnCompletion: boolean = false
+) {
   try {
     // Utiliser le helper standard pour appeler la fonction Edge
     // La logique côté serveur se chargera de vérifier que la solution est validée
     const result = await executeEdgeAction(EDGE_FUNCTION, 'start_fast_search', {
       brief_id: briefId,
-      solution_id: solutionId // L'Edge Function va filtrer pour cette solution spécifique
+      solution_id: solutionId, // L'Edge Function va filtrer pour cette solution spécifique
+      notify_on_completion: notifyOnCompletion // Préférence de notification par email
     });
     
     return result;
   } catch (error) {
     console.error('Error starting fast search from solution:', error);
-    devLog('Fast Search From Solution Error', { briefId, solutionId, error });
+    devLog('Fast Search From Solution Error', { briefId, solutionId, notifyOnCompletion, error });
     throw error;
   }
 }

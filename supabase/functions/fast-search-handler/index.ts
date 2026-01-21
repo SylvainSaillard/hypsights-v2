@@ -253,9 +253,9 @@ function validateInput(action: string, params: any): any {
 
 // Action pour démarrer une recherche rapide avec appel webhook ACTIVÉ
 async function startFastSearch(params: any, user: User, supabase: SupabaseClient): Promise<any> {
-  const { brief_id, solution_id } = params;
+  const { brief_id, solution_id, notify_on_completion = false } = params;
   console.log('Démarrage Fast Search avec appel webhook et données de la solution');
-  console.log('Paramètres reçus:', { brief_id, solution_id, user_id: user.id });
+  console.log('Paramètres reçus:', { brief_id, solution_id, notify_on_completion, user_id: user.id });
   
   // Générer un ID recherche aléatoire 
   const searchId = `real_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -399,21 +399,24 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     brief_id,
     user_id: user.id,
     user_locale: userLocale,
-    solution_id
+    user_email: user.email,
+    solution_id,
+    notify_on_completion
   };
   
   console.log('Appel du webhook web-research-agents avec les données:', webhookData);
   
   // 1. Initialiser le monitoring de la Fast Search
   try {
-    console.log('Initialisation du monitoring pour solution:', solution_id);
+    console.log('Initialisation du monitoring pour solution:', solution_id, 'notify_on_completion:', notify_on_completion);
     const { error: updateError } = await supabase
       .from('solutions')
       .update({
         fast_search_status: 'pending',
         fast_search_launched_at: new Date().toISOString(),
         fast_search_checked_at: null,
-        fast_search_refunded: false
+        fast_search_refunded: false,
+        notify_on_completion: notify_on_completion
       })
       .eq('id', solution_id);
     

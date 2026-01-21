@@ -195,13 +195,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
       }
       
       // Appeler l'Edge Function pour lancer la recherche avec une solution spécifique
-      const result = await startFastSearchFromSolution(briefId, solutionId);
-      
-      // TODO: Si notifyByEmail est true, déclencher le workflow N8N pour l'email
-      if (notifyByEmail) {
-        console.log('User requested email notification for solution:', solutionId);
-        // Future implémentation: appel à un endpoint N8N pour enregistrer la demande d'email
-      }
+      // Le paramètre notifyByEmail est envoyé à l'Edge Function qui le sauvegarde en DB et l'envoie au webhook N8N
+      const result = await startFastSearchFromSolution(briefId, solutionId, notifyByEmail);
       
       // Mettre à jour le quota (seulement si on reste sur la page)
       if (stayOnPage) {
