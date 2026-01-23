@@ -32,11 +32,11 @@ const FastSearchLaunchModal: React.FC<FastSearchLaunchModalProps> = ({
   if (!isOpen) return null;
 
   const handleStayAndWatch = () => {
-    onConfirm(false, true); // No email, stay on page
+    onConfirm(notifyByEmail, true); // Use checkbox value, stay on page
   };
 
   const handleLeave = () => {
-    onConfirm(notifyByEmail, false); // Maybe email, leave page
+    onConfirm(notifyByEmail, false); // Use checkbox value, leave page
     navigate('/dashboard'); // Redirect to dashboard
   };
 
