@@ -48,7 +48,7 @@ export default function PrivacyPage() {
             {/* Last Updated */}
             <div className="mb-10 pb-6 border-b-2 border-gray-200">
               <p className="text-sm text-gray-600 font-semibold">
-                Last Updated: <span className="text-primary">Feb 4, 2025</span>
+                Last Updated: <span className="text-primary">Feb 4, 2026</span>
               </p>
             </div>
 
