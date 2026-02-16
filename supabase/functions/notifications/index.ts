@@ -95,6 +95,47 @@ async function markAllAsRead(supabaseAdmin: SupabaseClient, userId: string) {
   return { success: true };
 }
 
+async function getUnreadCount(supabaseAdmin: SupabaseClient, userId: string) {
+  const { count, error } = await supabaseAdmin
+    .from('notifications')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .eq('is_read', false);
+    
+  if (error) throw new HttpError('Failed to get unread count', 500);
+  
+  return { unread_count: count || 0 };
+}
+
+async function createNotification(
+  supabaseAdmin: SupabaseClient,
+  userId: string,
+  title: string,
+  message: string,
+  notificationType: 'info' | 'success' | 'warning' | 'error' = 'info',
+  actionUrl?: string,
+  metadata?: Record<string, any>,
+  expiresAt?: string
+) {
+  const { data, error } = await supabaseAdmin
+    .from('notifications')
+    .insert({
+      user_id: userId,
+      title,
+      message,
+      notification_type: notificationType,
+      action_url: actionUrl || null,
+      metadata: metadata || {},
+      expires_at: expiresAt || null
+    })
+    .select('id')
+    .single();
+    
+  if (error) throw new HttpError('Failed to create notification', 500);
+  
+  return { notification_id: data.id };
+}
+
 serve(async (req: Request) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -115,7 +156,7 @@ serve(async (req: Request) => {
       throw new HttpError('Invalid request body', 400);
     }
     
-    const { action, notification_id, limit } = requestBody as any;
+    const { action, notification_id, limit, title, message: msg, notification_type, action_url, metadata, expires_at, target_user_id } = requestBody as any;
     
     if (!action) {
       throw new HttpError('Missing required parameter: action', 400);
@@ -139,6 +180,24 @@ serve(async (req: Request) => {
         
       case 'mark_all_as_read':
         result = await markAllAsRead(supabaseAdmin, user.id);
+        break;
+
+      case 'get_unread_count':
+        result = await getUnreadCount(supabaseAdmin, user.id);
+        break;
+
+      case 'create_notification':
+        if (!title || !msg) throw new HttpError('Missing required parameters: title, message', 400);
+        result = await createNotification(
+          supabaseAdmin,
+          target_user_id || user.id,
+          title,
+          msg,
+          notification_type || 'info',
+          action_url,
+          metadata,
+          expires_at
+        );
         break;
         
       default:

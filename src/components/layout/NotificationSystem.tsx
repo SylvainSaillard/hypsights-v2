@@ -1,58 +1,76 @@
-import React, { useState, useRef } from 'react';
-import { useI18n } from '../../contexts/I18nContext';
+import React, { useState, useRef, useEffect } from 'react';
+import { Bell } from 'lucide-react';
+import useNotifications from '../../hooks/useNotifications';
+import NotificationPanel from '../notifications/NotificationPanel';
 
 /**
  * Notification System Component
- * Currently disabled as the service is not yet implemented.
- * Displays a grayed out bell icon with a "Coming Soon" tooltip.
+ * Bell icon with animated unread badge and dropdown notification panel.
  */
 const NotificationSystem: React.FC = () => {
-  const { t } = useI18n();
-  const [showTooltip, setShowTooltip] = useState(false);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const {
+    notifications,
+    unreadCount,
+    loading,
+    markAsRead,
+    markAllAsRead,
+    refresh
+  } = useNotifications();
 
-  const handleMouseEnter = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setShowTooltip(true);
-  };
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  const handleMouseLeave = () => {
-    timeoutRef.current = setTimeout(() => {
-      setShowTooltip(false);
-    }, 100);
+  // Refresh notifications when opening the panel
+  const handleToggle = () => {
+    if (!isOpen) {
+      refresh();
+    }
+    setIsOpen(!isOpen);
   };
 
   return (
-    <div className="relative flex items-center">
-      <div
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-        className="relative p-2 text-gray-400 cursor-not-allowed transition-colors"
-        aria-label="Notifications (Coming Soon)"
+    <div className="relative" ref={dropdownRef}>
+      <button
+        onClick={handleToggle}
+        className={`relative p-2 rounded-lg transition-all duration-200 focus:outline-none ${
+          isOpen
+            ? 'text-indigo-600 bg-indigo-50'
+            : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50'
+        }`}
+        aria-label="Notifications"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-6 w-6 grayscale opacity-60"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-          />
-        </svg>
-      </div>
+        <Bell className={`h-6 w-6 transition-transform duration-200 ${isOpen ? 'scale-110' : ''}`} />
 
-      {showTooltip && (
-        <div className="absolute top-full right-0 mt-2 z-50 animate-in fade-in slide-in-from-top-1 duration-200">
-          <div className="bg-gray-800 text-white text-xs py-1.5 px-3 rounded shadow-lg whitespace-nowrap">
-            {t('notifications.coming_soon', 'Notifications arriving soon')}
-            <div className="absolute -top-1 right-3 w-2 h-2 bg-gray-800 rotate-45" />
-          </div>
-        </div>
+        {/* Unread badge */}
+        {unreadCount > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center">
+            <span className="absolute inline-flex h-5 w-5 rounded-full bg-red-400 opacity-75 animate-ping" />
+            <span className="relative inline-flex items-center justify-center h-5 w-5 rounded-full bg-gradient-to-br from-red-500 to-rose-600 text-white text-[10px] font-bold shadow-sm">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          </span>
+        )}
+      </button>
+
+      {isOpen && (
+        <NotificationPanel
+          notifications={notifications}
+          unreadCount={unreadCount}
+          loading={loading}
+          onMarkAsRead={markAsRead}
+          onMarkAllAsRead={markAllAsRead}
+          onClose={() => setIsOpen(false)}
+        />
       )}
     </div>
   );
