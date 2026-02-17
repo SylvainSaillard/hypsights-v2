@@ -9,6 +9,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { useFastSearchRefundNotifications } from '../../hooks/useFastSearchRefundNotifications';
 import { FastSearchRefundNotification } from '../notifications/FastSearchRefundNotification';
 import FastSearchLaunchModal from './FastSearchLaunchModal';
+import { useAuth } from '../../contexts/AuthContext';
 
 /**
  * Composant de chat amélioré avec affichage des solutions et des fournisseurs
@@ -21,6 +22,9 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   onSolutionValidated,
   onSolutionsChange
 }) => {
+  // Rôle admin
+  const { isAdmin } = useAuth();
+
   // États locaux
   const [inputValue, setInputValue] = useState('');
   const [fastSearchQuota, setFastSearchQuota] = useState({ used: 0, total: 3 });
@@ -31,6 +35,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   
   // État pour le modal de lancement Fast Search
   const [fastSearchModalOpen, setFastSearchModalOpen] = useState(false);
+  const [isTestModeSearch, setIsTestModeSearch] = useState(false);
   const [pendingSolutionForSearch, setPendingSolutionForSearch] = useState<{
     id: string;
     title: string;
@@ -173,6 +178,21 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
         title: solution.title,
         solutionNumber: solution.solution_number
       });
+      setIsTestModeSearch(false);
+      setFastSearchModalOpen(true);
+    }
+  };
+
+  // Gestionnaire d'ouverture du modal Test Fast Search (admin only)
+  const handleOpenTestFastSearchModal = (solutionId: string) => {
+    const solution = solutions.find(s => s.id === solutionId);
+    if (solution) {
+      setPendingSolutionForSearch({
+        id: solutionId,
+        title: solution.title,
+        solutionNumber: solution.solution_number
+      });
+      setIsTestModeSearch(true);
       setFastSearchModalOpen(true);
     }
   };
@@ -196,7 +216,8 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
       
       // Appeler l'Edge Function pour lancer la recherche avec une solution spécifique
       // Le paramètre notifyByEmail est envoyé à l'Edge Function qui le sauvegarde en DB et l'envoie au webhook N8N
-      const result = await startFastSearchFromSolution(briefId, solutionId, notifyByEmail);
+      // isTestModeSearch envoie la requête vers le webhook de test/recette au lieu du webhook de production
+      const result = await startFastSearchFromSolution(briefId, solutionId, notifyByEmail, isTestModeSearch);
       
       // Mettre à jour le quota (seulement si on reste sur la page)
       if (stayOnPage) {
@@ -229,6 +250,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
   const handleCancelFastSearchModal = () => {
     setFastSearchModalOpen(false);
     setPendingSolutionForSearch(null);
+    setIsTestModeSearch(false);
   };
   
   return (
@@ -238,6 +260,7 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
         isOpen={fastSearchModalOpen}
         solutionTitle={pendingSolutionForSearch?.title || ''}
         solutionNumber={pendingSolutionForSearch?.solutionNumber}
+        isTestMode={isTestModeSearch}
         onConfirm={handleConfirmFastSearch}
         onCancel={handleCancelFastSearchModal}
       />
@@ -281,11 +304,13 @@ const EnhancedChatView: React.FC<EnhancedChatViewProps> = ({
               onValidate={validateSolution}
               onRefresh={loadSolutions}
               onStartFastSearch={handleOpenFastSearchModal}
+              onStartTestFastSearch={isAdmin ? handleOpenTestFastSearchModal : undefined}
               startingSolutionId={startingSolutionId}
               briefHasActiveSearch={true}
               showFastSearchDirectly={true}
               fastSearchQuota={fastSearchQuota}
               briefTitle={briefTitle}
+              isAdmin={isAdmin}
             />
           </div>
         </div>

@@ -6,6 +6,7 @@ interface FastSearchLaunchModalProps {
   isOpen: boolean;
   solutionTitle: string;
   solutionNumber?: number;
+  isTestMode?: boolean;
   onConfirm: (notifyByEmail: boolean, stayOnPage: boolean) => void;
   onCancel: () => void;
 }
@@ -22,6 +23,7 @@ const FastSearchLaunchModal: React.FC<FastSearchLaunchModalProps> = ({
   isOpen,
   solutionTitle,
   solutionNumber,
+  isTestMode = false,
   onConfirm,
   onCancel
 }) => {
@@ -55,18 +57,26 @@ const FastSearchLaunchModal: React.FC<FastSearchLaunchModalProps> = ({
       {/* Modal */}
       <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header avec icône */}
-        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-5">
+        <div className={`px-6 py-5 ${isTestMode ? 'bg-gradient-to-r from-orange-500 to-amber-600' : 'bg-gradient-to-r from-blue-500 to-indigo-600'}`}>
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              {isTestMode ? (
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              )}
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">
-                {t('fast_search_modal.title', 'Launch Fast Search')}
+                {isTestMode 
+                  ? t('fast_search_modal.title_test', '🧪 Test Fast Search')
+                  : t('fast_search_modal.title', 'Launch Fast Search')}
               </h2>
-              <p className="text-blue-100 text-sm mt-0.5">
+              <p className={`text-sm mt-0.5 ${isTestMode ? 'text-orange-100' : 'text-blue-100'}`}>
                 {solutionDisplayName}
               </p>
             </div>
@@ -136,7 +146,11 @@ const FastSearchLaunchModal: React.FC<FastSearchLaunchModalProps> = ({
               </button>
               <button
                 onClick={handleStayAndWatch}
-                className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                className={`flex-1 py-3 px-4 text-white rounded-xl transition-all font-medium shadow-md hover:shadow-lg flex items-center justify-center gap-2 ${
+                  isTestMode 
+                    ? 'bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700'
+                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
+                }`}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

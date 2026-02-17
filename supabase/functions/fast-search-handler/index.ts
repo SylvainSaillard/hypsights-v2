@@ -253,9 +253,45 @@ function validateInput(action: string, params: any): any {
 
 // Action pour démarrer une recherche rapide avec appel webhook ACTIVÉ
 async function startFastSearch(params: any, user: User, supabase: SupabaseClient): Promise<any> {
-  const { brief_id, solution_id, notify_on_completion = false } = params;
+  const { brief_id, solution_id, notify_on_completion = false, is_test = false } = params;
   console.log('Démarrage Fast Search avec appel webhook et données de la solution');
-  console.log('Paramètres reçus:', { brief_id, solution_id, notify_on_completion, user_id: user.id });
+  console.log('Paramètres reçus:', { brief_id, solution_id, notify_on_completion, is_test, user_id: user.id });
+  
+  // Si mode test, vérifier que l'utilisateur est admin
+  let testWebhookUrl = '';
+  if (is_test) {
+    console.log('Mode test activé - vérification du rôle admin...');
+    const { data: userMeta, error: roleError } = await supabase
+      .from('users_metadata')
+      .select('role')
+      .eq('user_id', user.id)
+      .single();
+    
+    if (roleError || !userMeta || userMeta.role !== 'admin') {
+      console.error('Utilisateur non admin tente un test fast search:', user.id);
+      throw new HttpError('admin_required', 403);
+    }
+    console.log('✓ Utilisateur admin confirmé');
+    
+    // Récupérer le webhook de test depuis admin_settings
+    const { data: settingData, error: settingError } = await supabase
+      .from('admin_settings')
+      .select('setting_value')
+      .eq('setting_key', 'test_fast_search_webhook_url')
+      .single();
+    
+    if (settingError) {
+      console.error('Erreur récupération webhook test:', settingError);
+    } else if (settingData?.setting_value) {
+      testWebhookUrl = settingData.setting_value;
+      console.log('Webhook test récupéré:', testWebhookUrl);
+    }
+    
+    if (!testWebhookUrl) {
+      console.error('Aucun webhook de test configuré dans admin_settings');
+      throw new HttpError('test_webhook_not_configured', 400);
+    }
+  }
   
   // Générer un ID recherche aléatoire 
   const searchId = `real_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -401,7 +437,9 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     user_locale: userLocale,
     user_email: user.email,
     solution_id,
-    notify_on_completion
+    notify_on_completion,
+    webhookUrl: is_test ? testWebhookUrl : 'https://n8n-hypsights.proxiwave.app/webhook/web-research-agents',
+    executionMode: is_test ? 'test' : 'production'
   };
   
   console.log('Appel du webhook web-research-agents avec les données:', webhookData);
@@ -435,7 +473,8 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
     
-    const webhookUrl = 'https://n8n-hypsights.proxiwave.app/webhook/web-research-agents';
+    const webhookUrl = is_test ? testWebhookUrl : 'https://n8n-hypsights.proxiwave.app/webhook/web-research-agents';
+    console.log(`Utilisation du webhook ${is_test ? 'TEST' : 'PRODUCTION'}:`, webhookUrl);
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

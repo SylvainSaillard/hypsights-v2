@@ -4,7 +4,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabaseClient';
 import { 
   Users, FileText, Search, TrendingUp, RefreshCw, 
-  ChevronDown, ChevronUp, ExternalLink, Calendar, Mail
+  ChevronDown, ChevronUp, ExternalLink, Calendar, Mail,
+  Settings, Save, CheckCircle, AlertCircle
 } from 'lucide-react';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
@@ -64,9 +65,15 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState<UserWithMetadata[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'briefs' | 'users'>('briefs');
+  const [activeTab, setActiveTab] = useState<'briefs' | 'users' | 'settings'>('briefs');
   const [expandedBriefs, setExpandedBriefs] = useState<Set<string>>(new Set());
   const [filterUser, setFilterUser] = useState<string>('');
+  
+  // Settings state
+  const [testWebhookUrl, setTestWebhookUrl] = useState<string>('');
+  const [settingsLoading, setSettingsLoading] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const [settingsError, setSettingsError] = useState<string | null>(null);
 
   const callAdminApi = async (action: string, params: object = {}) => {
     const token = session?.access_token;
@@ -106,9 +113,54 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchSettings = async () => {
+    try {
+      const { data, error: fetchError } = await supabase
+        .from('admin_settings')
+        .select('setting_key, setting_value')
+        .eq('setting_key', 'test_fast_search_webhook_url')
+        .single();
+      
+      if (fetchError) {
+        console.error('Error fetching admin settings:', fetchError);
+      } else if (data) {
+        setTestWebhookUrl(data.setting_value || '');
+      }
+    } catch (err) {
+      console.error('Exception fetching settings:', err);
+    }
+  };
+
+  const saveSettings = async () => {
+    setSettingsLoading(true);
+    setSettingsError(null);
+    setSettingsSaved(false);
+    try {
+      const { error: updateError } = await supabase
+        .from('admin_settings')
+        .update({ 
+          setting_value: testWebhookUrl,
+          updated_by: session?.user?.id
+        })
+        .eq('setting_key', 'test_fast_search_webhook_url');
+      
+      if (updateError) {
+        throw updateError;
+      }
+      setSettingsSaved(true);
+      setTimeout(() => setSettingsSaved(false), 3000);
+    } catch (err) {
+      console.error('Error saving settings:', err);
+      setSettingsError(err instanceof Error ? err.message : 'Failed to save settings');
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (isAdmin) {
       fetchData();
+      fetchSettings();
     }
   }, [isAdmin]);
 
@@ -267,6 +319,17 @@ const AdminDashboard = () => {
           >
             <Users className="w-4 h-4 inline mr-2" />
             Utilisateurs ({users.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'settings'
+                ? 'bg-indigo-600 text-white'
+                : 'bg-white text-gray-700 hover:bg-gray-100'
+            }`}
+          >
+            <Settings className="w-4 h-4 inline mr-2" />
+            Paramétrage
           </button>
         </div>
 
@@ -442,6 +505,84 @@ const AdminDashboard = () => {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            )}
+
+            {/* Settings Tab */}
+            {activeTab === 'settings' && (
+              <div className="space-y-6">
+                {/* Fast Search Test Webhook */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-500 rounded-lg flex items-center justify-center">
+                      <Search className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Fast Search - Webhook de Test</h3>
+                      <p className="text-sm text-gray-500">URL du webhook N8n utilisé pour les tests de Fast Search (environnement de recette)</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        URL du webhook de test
+                      </label>
+                      <input
+                        type="url"
+                        value={testWebhookUrl}
+                        onChange={(e) => setTestWebhookUrl(e.target.value)}
+                        placeholder="https://n8n-hypsights.proxiwave.app/webhook-test/..."
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        Ce webhook sera utilisé à la place du webhook de production lorsqu'un admin lance un "Test Fast Search"
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={saveSettings}
+                        disabled={settingsLoading}
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 font-medium text-sm"
+                      >
+                        <Save className={`w-4 h-4 ${settingsLoading ? 'animate-spin' : ''}`} />
+                        {settingsLoading ? 'Enregistrement...' : 'Enregistrer'}
+                      </button>
+                      
+                      {settingsSaved && (
+                        <span className="flex items-center gap-1 text-green-600 text-sm font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          Paramètres sauvegardés
+                        </span>
+                      )}
+                      
+                      {settingsError && (
+                        <span className="flex items-center gap-1 text-red-600 text-sm">
+                          <AlertCircle className="w-4 h-4" />
+                          {settingsError}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Info box */}
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-4 border border-orange-200">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-orange-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-orange-800">Comment utiliser le Test Fast Search ?</p>
+                      <ul className="text-sm text-orange-700 mt-2 space-y-1 list-disc list-inside">
+                        <li>Configurez l'URL du webhook de test ci-dessus</li>
+                        <li>Sur la page d'un brief, un bouton orange "Test Fast Search" apparaît sous chaque solution validée</li>
+                        <li>Ce bouton est <strong>uniquement visible pour les administrateurs</strong></li>
+                        <li>Le test utilise le webhook configuré ici au lieu du webhook de production</li>
+                        <li>Les données envoyées au webhook sont identiques au mode production</li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
           </>

@@ -36,7 +36,8 @@ export async function startFastSearch(briefId: string) {
 export async function startFastSearchFromSolution(
   briefId: string, 
   solutionId: string, 
-  notifyOnCompletion: boolean = false
+  notifyOnCompletion: boolean = false,
+  isTestMode: boolean = false
 ) {
   try {
     // Utiliser le helper standard pour appeler la fonction Edge
@@ -44,13 +45,14 @@ export async function startFastSearchFromSolution(
     const result = await executeEdgeAction(EDGE_FUNCTION, 'start_fast_search', {
       brief_id: briefId,
       solution_id: solutionId, // L'Edge Function va filtrer pour cette solution spécifique
-      notify_on_completion: notifyOnCompletion // Préférence de notification par email
+      notify_on_completion: notifyOnCompletion, // Préférence de notification par email
+      is_test: isTestMode // Mode test: utilise le webhook de recette au lieu du webhook de production
     });
     
     return result;
   } catch (error) {
     console.error('Error starting fast search from solution:', error);
-    devLog('Fast Search From Solution Error', { briefId, solutionId, notifyOnCompletion, error });
+    devLog('Fast Search From Solution Error', { briefId, solutionId, notifyOnCompletion, isTestMode, error });
     throw error;
   }
 }
