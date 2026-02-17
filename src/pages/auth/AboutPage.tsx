@@ -220,7 +220,7 @@ const AboutPage: React.FC = () => {
                 <span className="ml-1 text-sm text-primary font-semibold">Beta</span>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed">
-                Hypsights is an AI-Assisted Search Service for B2B professionals to find qualified suppliers and technology solution. Hypsights is owned and operated by Hypsous, a French-based boutique consulting company specialized in Open Innovation and Technology Scouting.
+                Hypsights is an AI-Assisted Search Service for B2B professionals to find qualified suppliers and technology solutions. Hypsights is owned and operated by Hypsous, a French-based boutique consulting company specialized in Open Innovation and Technology Scouting.
               </p>
             </div>
           </div>

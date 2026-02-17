@@ -438,8 +438,7 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     user_email: user.email,
     solution_id,
     notify_on_completion,
-    webhookUrl: is_test ? testWebhookUrl : 'https://n8n-hypsights.proxiwave.app/webhook/web-research-agents',
-    executionMode: is_test ? 'test' : 'production'
+    execution_mode: is_test ? 'test' : 'production' // Indique au workflow N8n s'il s'agit d'un test
   };
   
   console.log('Appel du webhook web-research-agents avec les données:', webhookData);
