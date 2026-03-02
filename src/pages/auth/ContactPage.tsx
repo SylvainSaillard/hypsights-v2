@@ -10,7 +10,7 @@ const ContactPage: React.FC = () => {
     <div className="min-h-screen bg-hypsights-background">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto max-w-container px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
             <Link to="/" className="flex-shrink-0 flex items-center">
               <div className="flex items-center">
@@ -40,7 +40,7 @@ const ContactPage: React.FC = () => {
           <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 opacity-15 transform -rotate-12 animate-pulse"></div>
         </div>
         
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="container mx-auto max-w-container px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto">
             <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 border border-blue-200 rounded-full text-blue-700 text-sm font-medium mb-6 shadow-sm">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
@@ -61,7 +61,7 @@ const ContactPage: React.FC = () => {
 
       {/* Contact Information */}
       <section className="py-24 bg-white">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto max-w-container px-4 sm:px-6 lg:px-8">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-16">
               <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-purple-800 bg-clip-text text-transparent mb-4">
@@ -167,7 +167,7 @@ const ContactPage: React.FC = () => {
           <div className="absolute left-0 bottom-0 w-96 h-96 bg-white rounded-full opacity-5 transform -translate-x-1/2 translate-y-1/2"></div>
         </div>
         
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center relative z-10">
+        <div className="container mx-auto max-w-container px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="max-w-3xl mx-auto">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
               Ready to Transform Your Supplier Discovery?
@@ -192,7 +192,7 @@ const ContactPage: React.FC = () => {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto max-w-container px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <div className="mb-8 max-w-2xl">
               <div className="flex items-center mb-4">

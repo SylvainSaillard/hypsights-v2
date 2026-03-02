@@ -84,7 +84,7 @@ const SupplierDetailPage: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
       {/* Header avec navigation */}
       <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-container mx-auto px-6 lg:px-12 py-4">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 text-gray-600 hover:text-gray-800 transition-colors group"
@@ -95,7 +95,7 @@ const SupplierDetailPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
+      <div className="max-w-container mx-auto px-6 lg:px-12 py-8">
         {/* Hero Section - Aligned with SupplierCard */}
         <div className="relative bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 rounded-3xl p-8 mb-8 overflow-hidden">
           {/* Effet de brillance */}

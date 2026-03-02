@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
+        <div className="container mx-auto max-w-container px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Link to="/" className="flex items-center">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" viewBox="0 0 20 20" fill="currentColor">
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
 
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-20">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto max-w-container px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h1 className="text-5xl font-bold mb-4">Privacy Policy</h1>
             <p className="text-xl text-blue-100">Your privacy is important to us</p>
@@ -523,7 +523,7 @@ export default function PrivacyPage() {
 
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-16">
-        <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="container mx-auto max-w-container px-4 sm:px-6 lg:px-8">
           <div className="mb-12">
             <div className="mb-8 max-w-2xl">
               <div className="flex items-center mb-4">

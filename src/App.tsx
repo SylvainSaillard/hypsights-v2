@@ -57,8 +57,8 @@ const DashboardLayout = () => {
   
   return (
     <div className="min-h-screen bg-hypsights-background">
-      <nav className="bg-card shadow-md p-4">
-        <div className="container mx-auto max-w-container flex justify-between items-center">
+      <nav className="bg-card shadow-md px-6 lg:px-12 py-4">
+        <div className="mx-auto max-w-container flex justify-between items-center">
           <Link to="/dashboard" className="flex items-center">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
@@ -85,7 +85,7 @@ const DashboardLayout = () => {
           </div>
         </div>
       </nav>
-      <main className="container mx-auto max-w-container p-4 md:p-6">
+      <main className="mx-auto max-w-container px-6 lg:px-12 py-4 md:py-6">
         <Outlet /> 
       </main>
     </div>

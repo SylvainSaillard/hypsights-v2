@@ -134,10 +134,10 @@ serve(async (req: Request) => {
     
     switch (action) {
       case 'start_fast_search':
-        result = await startFastSearch(params, user, supabase);
+        result = await startFastSearch(params, user, clientSupabase || supabase);
         break;
       case 'get_fast_search_results':
-        result = await getFastSearchResults(validatedParams, user, supabase);
+        result = await getFastSearchResults(validatedParams, user, clientSupabase || supabase);
         break;
       default:
         throw new HttpError(`Action non supportée: ${action}`, 400);

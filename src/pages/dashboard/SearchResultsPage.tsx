@@ -87,7 +87,7 @@ const SearchResultsPage: React.FC = () => {
   const hasResults = suppliers.length > 0;
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="w-full">
       <div className="mb-6 flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Search Results</h1>
