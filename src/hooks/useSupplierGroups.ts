@@ -142,6 +142,7 @@ function groupSuppliersBySupplier(supplierMatches: any[]): SupplierGroup[] {
           // Transparence du calcul du score global
           scoring_reasoning: match.scoring_reasoning
         },
+        match_insights: match.match_insights && Object.keys(match.match_insights).length > 0 ? match.match_insights : undefined,
         ai_explanation: match.match_explanation || 'This supplier matches your requirements based on our analysis.',
         total_products: 0
       });

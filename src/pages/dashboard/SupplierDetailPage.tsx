@@ -4,7 +4,9 @@ import { ArrowLeft, ExternalLink, Package, Sparkles, HelpCircle } from 'lucide-r
 import type { SupplierGroup } from '../../types/supplierTypes';
 import { useSupplierGroups } from '../../hooks/useSupplierGroups';
 import { useSupplierProducts } from '../../hooks/useSupplierProducts';
-import StarRating from '../../components/suppliers/StarRating';
+import ScoreBar from '../../components/suppliers/ScoreBar';
+import SupplierBadges from '../../components/suppliers/SupplierBadges';
+import SupplierInsights from '../../components/suppliers/SupplierInsights';
 import ScoringTransparencyModal from '../../components/suppliers/ScoringTransparencyModal';
 import { useI18n } from '../../contexts/I18nContext';
 
@@ -253,49 +255,44 @@ const SupplierDetailPage: React.FC = () => {
             </div>
           )}
           
-          <div className="space-y-4">
-            {/* Adéquation Produit/Brief - 5 étoiles avec explication */}
+          {/* Score bars */}
+          <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm space-y-4">
             {supplier.scores.score_produit_brief !== undefined && (
-              <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-                <StarRating 
-                  score={supplier.scores.score_produit_brief} 
-                  maxStars={5} 
-                  label={t('supplier.product_fit', 'Adéquation Produit')}
-                  explanation={supplier.scores.score_produit_brief_explanation}
-                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
-                  hideLabel={t('supplier.hide', 'Masquer')}
-                />
-              </div>
+              <ScoreBar 
+                score={supplier.scores.score_produit_brief} 
+                label={t('supplier.product_fit', 'Product Fit')}
+                explanation={supplier.scores.score_produit_brief_explanation}
+                learnMoreLabel={t('supplier.learn_more', 'Learn more')}
+                hideLabel={t('supplier.hide', 'Hide')}
+              />
             )}
-            
-            {/* Fiabilité Entreprise - 5 étoiles avec explication */}
             {supplier.scores.score_fiabilite !== undefined && (
-              <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-                <StarRating 
-                  score={supplier.scores.score_fiabilite} 
-                  maxStars={5} 
-                  label={t('supplier.company_reliability', 'Fiabilité Entreprise')}
-                  explanation={supplier.scores.score_fiabilite_explanation}
-                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
-                  hideLabel={t('supplier.hide', 'Masquer')}
-                />
-              </div>
+              <ScoreBar 
+                score={supplier.scores.score_fiabilite} 
+                label={t('supplier.company_reliability', 'Reliability')}
+                explanation={supplier.scores.score_fiabilite_explanation}
+                learnMoreLabel={t('supplier.learn_more', 'Learn more')}
+                hideLabel={t('supplier.hide', 'Hide')}
+              />
             )}
-            
-            {/* Critères Stricts - 3 étoiles avec explication */}
             {supplier.scores.score_criteres !== undefined && (
-              <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
-                <StarRating 
-                  score={supplier.scores.score_criteres} 
-                  maxStars={3} 
-                  label={t('supplier.strict_criteria', 'Critères Stricts')}
-                  explanation={supplier.scores.score_criteres_explanation}
-                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
-                  hideLabel={t('supplier.hide', 'Masquer')}
-                />
-              </div>
+              <ScoreBar 
+                score={supplier.scores.score_criteres} 
+                label={t('supplier.strict_criteria', 'Criteria')}
+                explanation={supplier.scores.score_criteres_explanation}
+                learnMoreLabel={t('supplier.learn_more', 'Learn more')}
+                hideLabel={t('supplier.hide', 'Hide')}
+              />
             )}
           </div>
+          
+          {/* Badges & Insights */}
+          {supplier.match_insights && (
+            <div className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm">
+              <SupplierBadges matchInsights={supplier.match_insights} />
+              <SupplierInsights matchInsights={supplier.match_insights} />
+            </div>
+          )}
         </div>
         
         {/* Modal de transparence du scoring */}

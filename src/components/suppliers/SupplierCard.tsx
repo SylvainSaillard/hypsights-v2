@@ -4,7 +4,9 @@ import type { SupplierGroup } from '../../types/supplierTypes';
 import { useSupplierProducts } from '../../hooks/useSupplierProducts';
 import { FileDown, HelpCircle, Sparkles } from 'lucide-react';
 import { useI18n } from '../../contexts/I18nContext';
-import StarRating from './StarRating';
+import ScoreBar from './ScoreBar';
+import SupplierBadges from './SupplierBadges';
+import SupplierInsights from './SupplierInsights';
 import ScoringTransparencyModal from './ScoringTransparencyModal';
 
 interface SupplierCardProps {
@@ -18,7 +20,7 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   onViewDetails,
   onSolutionSelect
 }) => {
-  const { supplier, solutions, scores, total_products, ai_explanation } = supplierGroup;
+  const { supplier, solutions, scores, total_products, ai_explanation, match_insights } = supplierGroup;
   const navigate = useNavigate();
   const { briefId } = useParams<{ briefId: string }>();
   const [isTransparencyModalOpen, setIsTransparencyModalOpen] = React.useState(false);
@@ -112,10 +114,26 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
   
 
 
+  const tierBorderClass = match_insights?.ranking?.tier === 'gold' 
+    ? 'border-amber-400 hover:border-amber-500' 
+    : match_insights?.ranking?.tier === 'silver' 
+      ? 'border-gray-300 hover:border-gray-400' 
+      : match_insights?.ranking?.tier === 'bronze' 
+        ? 'border-orange-300 hover:border-orange-400' 
+        : 'border-gray-200 hover:border-indigo-300';
+
+  const tierTopBarClass = match_insights?.ranking?.tier === 'gold'
+    ? 'from-amber-400 via-yellow-300 to-amber-400'
+    : match_insights?.ranking?.tier === 'silver'
+      ? 'from-gray-300 via-gray-200 to-gray-300'
+      : match_insights?.ranking?.tier === 'bronze'
+        ? 'from-orange-400 via-orange-300 to-orange-400'
+        : 'from-blue-500 via-purple-500 to-indigo-500';
+
   return (
-    <div className="bg-white rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-indigo-500/20 transition-all duration-300 transform hover:-translate-y-2 border-2 border-gray-200 hover:border-indigo-300 overflow-hidden relative group">
-      {/* Bordure colorée en haut */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500 group-hover:h-1.5 transition-all duration-300"></div>
+    <div className={`bg-white rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-indigo-500/20 transition-all duration-300 transform hover:-translate-y-2 border-2 ${tierBorderClass} overflow-hidden relative group`}>
+      {/* Bordure colorée en haut - tier-based */}
+      <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${tierTopBarClass} group-hover:h-1.5 transition-all duration-300`}></div>
       
       {/* Effet de brillance sur toute la carte */}
       <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transform -skew-x-12 translate-x-full group-hover:translate-x-[-100%] transition-transform duration-1000 ease-out pointer-events-none"></div>
@@ -172,6 +190,9 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
       <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 p-6 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
         <div className="relative z-10">
+          {/* Badges row */}
+          <SupplierBadges matchInsights={match_insights} />
+          
           <div className="flex justify-between items-start mb-4">
             <div className="flex-1 min-w-0">
               <h3 className="text-xl font-bold mb-2 leading-tight truncate" title={supplier.name}>
@@ -181,13 +202,15 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
                 {supplier.overview || supplier.description || 'No description available'}
               </p>
             </div>
-            {/* Overall Match Score - Masqué temporairement */}
-            {/* <div className="ml-4 text-right">
-              <div className="bg-white bg-opacity-20 rounded-lg px-3 py-2 backdrop-blur-sm">
-                <div className="text-2xl font-bold">{scores.score_entreprise ?? scores.overall}%</div>
-                <div className="text-xs opacity-90">Match Score</div>
+            {/* Overall Match Score */}
+            {scores.score_entreprise != null && (
+              <div className="ml-4 text-right flex-shrink-0">
+                <div className="bg-white bg-opacity-20 rounded-lg px-3 py-2 backdrop-blur-sm">
+                  <div className="text-2xl font-bold">{scores.score_entreprise}</div>
+                  <div className="text-xs opacity-90">/100</div>
+                </div>
               </div>
-            </div> */}
+            )}
           </div>
 
           {/* Informations entreprise */}
@@ -265,49 +288,39 @@ const SupplierCard: React.FC<SupplierCardProps> = ({
             </div>
           )}
           
-          <div className="space-y-4">
-            {/* Adéquation Produit/Brief - 5 étoiles avec explication */}
+          {/* Score bars */}
+          <div className="space-y-3">
             {scores.score_produit_brief !== undefined && (
-              <div className="bg-white rounded-lg p-4 border border-gray-100">
-                <StarRating 
-                  score={scores.score_produit_brief} 
-                  maxStars={5} 
-                  label={t('supplier.product_fit', 'Adéquation Produit')}
-                  explanation={scores.score_produit_brief_explanation}
-                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
-                  hideLabel={t('supplier.hide', 'Masquer')}
-                />
-              </div>
+              <ScoreBar 
+                score={scores.score_produit_brief} 
+                label={t('supplier.product_fit', 'Product Fit')}
+                explanation={scores.score_produit_brief_explanation}
+                learnMoreLabel={t('supplier.learn_more', 'Learn more')}
+                hideLabel={t('supplier.hide', 'Hide')}
+              />
             )}
-            
-            {/* Fiabilité Entreprise - 5 étoiles avec explication */}
             {scores.score_fiabilite !== undefined && (
-              <div className="bg-white rounded-lg p-4 border border-gray-100">
-                <StarRating 
-                  score={scores.score_fiabilite} 
-                  maxStars={5} 
-                  label={t('supplier.company_reliability', 'Fiabilité Entreprise')}
-                  explanation={scores.score_fiabilite_explanation}
-                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
-                  hideLabel={t('supplier.hide', 'Masquer')}
-                />
-              </div>
+              <ScoreBar 
+                score={scores.score_fiabilite} 
+                label={t('supplier.company_reliability', 'Reliability')}
+                explanation={scores.score_fiabilite_explanation}
+                learnMoreLabel={t('supplier.learn_more', 'Learn more')}
+                hideLabel={t('supplier.hide', 'Hide')}
+              />
             )}
-            
-            {/* Critères Stricts - 3 étoiles avec explication */}
             {scores.score_criteres !== undefined && (
-              <div className="bg-white rounded-lg p-4 border border-gray-100">
-                <StarRating 
-                  score={scores.score_criteres} 
-                  maxStars={3} 
-                  label={t('supplier.strict_criteria', 'Critères Stricts')}
-                  explanation={scores.score_criteres_explanation}
-                  learnMoreLabel={t('supplier.learn_more', 'En savoir plus')}
-                  hideLabel={t('supplier.hide', 'Masquer')}
-                />
-              </div>
+              <ScoreBar 
+                score={scores.score_criteres} 
+                label={t('supplier.strict_criteria', 'Criteria')}
+                explanation={scores.score_criteres_explanation}
+                learnMoreLabel={t('supplier.learn_more', 'Learn more')}
+                hideLabel={t('supplier.hide', 'Hide')}
+              />
             )}
           </div>
+          
+          {/* Strength / Limitation insights */}
+          <SupplierInsights matchInsights={match_insights} />
         </div>
         
         {/* Modal de transparence du scoring */}

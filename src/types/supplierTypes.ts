@@ -46,6 +46,35 @@ export interface SupplierProduct {
   metadata?: any;
 }
 
+// Match insights computed by compute_supplier_rankings()
+export interface MatchInsightsRanking {
+  position: number;
+  total: number;
+  percentile: number;
+  tier: 'gold' | 'silver' | 'bronze' | 'standard';
+}
+
+export interface MatchInsightsBadge {
+  type: string;
+  label: string;
+  priority: number;
+}
+
+export interface MatchInsightsDimension {
+  dimension: string;
+  type: string;
+  score: number;
+  gap?: number;
+}
+
+export interface MatchInsights {
+  ranking?: MatchInsightsRanking;
+  badges?: MatchInsightsBadge[];
+  key_strength?: MatchInsightsDimension;
+  key_limitation?: MatchInsightsDimension | null;
+  computed_at?: string;
+}
+
 export interface SupplierGroup {
   supplier: EnrichedSupplier;
   solutions: SupplierSolution[];
@@ -73,6 +102,7 @@ export interface SupplierGroup {
     // Transparence du calcul du score global
     scoring_reasoning?: string;
   };
+  match_insights?: MatchInsights;
   ai_explanation?: string;
   total_products: number;
 }
