@@ -71,9 +71,13 @@ const AdminDashboard = () => {
   
   // Settings state
   const [testWebhookUrl, setTestWebhookUrl] = useState<string>('');
+  const [prodWebhookUrl, setProdWebhookUrl] = useState<string>('');
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [settingsSaved, setSettingsSaved] = useState(false);
   const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [prodSettingsLoading, setProdSettingsLoading] = useState(false);
+  const [prodSettingsSaved, setProdSettingsSaved] = useState(false);
+  const [prodSettingsError, setProdSettingsError] = useState<string | null>(null);
 
   const callAdminApi = async (action: string, params: object = {}) => {
     const token = session?.access_token;
@@ -118,13 +122,18 @@ const AdminDashboard = () => {
       const { data, error: fetchError } = await supabase
         .from('admin_settings')
         .select('setting_key, setting_value')
-        .eq('setting_key', 'test_fast_search_webhook_url')
-        .single();
+        .in('setting_key', ['test_fast_search_webhook_url', 'prod_fast_search_webhook_url']);
       
       if (fetchError) {
         console.error('Error fetching admin settings:', fetchError);
       } else if (data) {
-        setTestWebhookUrl(data.setting_value || '');
+        data.forEach((row: any) => {
+          if (row.setting_key === 'test_fast_search_webhook_url') {
+            setTestWebhookUrl(row.setting_value || '');
+          } else if (row.setting_key === 'prod_fast_search_webhook_url') {
+            setProdWebhookUrl(row.setting_value || '');
+          }
+        });
       }
     } catch (err) {
       console.error('Exception fetching settings:', err);
@@ -154,6 +163,32 @@ const AdminDashboard = () => {
       setSettingsError(err instanceof Error ? err.message : 'Failed to save settings');
     } finally {
       setSettingsLoading(false);
+    }
+  };
+
+  const saveProdSettings = async () => {
+    setProdSettingsLoading(true);
+    setProdSettingsError(null);
+    setProdSettingsSaved(false);
+    try {
+      const { error: updateError } = await supabase
+        .from('admin_settings')
+        .update({ 
+          setting_value: prodWebhookUrl,
+          updated_by: session?.user?.id
+        })
+        .eq('setting_key', 'prod_fast_search_webhook_url');
+      
+      if (updateError) {
+        throw updateError;
+      }
+      setProdSettingsSaved(true);
+      setTimeout(() => setProdSettingsSaved(false), 3000);
+    } catch (err) {
+      console.error('Error saving prod settings:', err);
+      setProdSettingsError(err instanceof Error ? err.message : 'Failed to save settings');
+    } finally {
+      setProdSettingsLoading(false);
     }
   };
 
@@ -561,6 +596,62 @@ const AdminDashboard = () => {
                         <span className="flex items-center gap-1 text-red-600 text-sm">
                           <AlertCircle className="w-4 h-4" />
                           {settingsError}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Fast Search Production Webhook */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                      <Search className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Fast Search - Webhook de Production</h3>
+                      <p className="text-sm text-gray-500">URL du webhook N8n utilisé pour les Fast Search en production</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        URL du webhook de production
+                      </label>
+                      <input
+                        type="url"
+                        value={prodWebhookUrl}
+                        onChange={(e) => setProdWebhookUrl(e.target.value)}
+                        placeholder="https://n8n-hypsights.proxiwave.app/webhook/..."
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                      />
+                      <p className="text-xs text-gray-400 mt-1">
+                        Ce webhook est utilisé par défaut lorsqu'un utilisateur lance une Fast Search
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={saveProdSettings}
+                        disabled={prodSettingsLoading}
+                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 font-medium text-sm"
+                      >
+                        <Save className={`w-4 h-4 ${prodSettingsLoading ? 'animate-spin' : ''}`} />
+                        {prodSettingsLoading ? 'Enregistrement...' : 'Enregistrer'}
+                      </button>
+                      
+                      {prodSettingsSaved && (
+                        <span className="flex items-center gap-1 text-green-600 text-sm font-medium">
+                          <CheckCircle className="w-4 h-4" />
+                          Paramètres sauvegardés
+                        </span>
+                      )}
+                      
+                      {prodSettingsError && (
+                        <span className="flex items-center gap-1 text-red-600 text-sm">
+                          <AlertCircle className="w-4 h-4" />
+                          {prodSettingsError}
                         </span>
                       )}
                     </div>

@@ -472,7 +472,25 @@ async function startFastSearch(params: any, user: User, supabase: SupabaseClient
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 secondes timeout
     
-    const webhookUrl = is_test ? testWebhookUrl : 'https://n8n-hypsights.proxiwave.app/webhook/web-research-agents';
+    // Récupérer le webhook de production depuis admin_settings (avec fallback)
+    let prodWebhookUrl = 'https://n8n-hypsights.proxiwave.app/webhook/web-research-agents';
+    if (!is_test) {
+      const { data: prodSettingData, error: prodSettingError } = await supabase
+        .from('admin_settings')
+        .select('setting_value')
+        .eq('setting_key', 'prod_fast_search_webhook_url')
+        .single();
+      
+      if (prodSettingError) {
+        console.error('Erreur récupération webhook prod:', prodSettingError);
+        console.log('Utilisation du webhook de production par défaut (fallback)');
+      } else if (prodSettingData?.setting_value) {
+        prodWebhookUrl = prodSettingData.setting_value;
+        console.log('Webhook prod récupéré depuis admin_settings:', prodWebhookUrl);
+      }
+    }
+    
+    const webhookUrl = is_test ? testWebhookUrl : prodWebhookUrl;
     console.log(`Utilisation du webhook ${is_test ? 'TEST' : 'PRODUCTION'}:`, webhookUrl);
     const webhookResponse = await fetch(webhookUrl, {
       method: 'POST',
