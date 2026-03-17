@@ -99,40 +99,28 @@ async function trackEvent(supabaseAdmin: SupabaseClient, eventName: string, user
 }
 
 interface ExportRow {
-  // Supplier information
+  // Supplier information (1 row per supplier)
   supplier_id: string;
   supplier_name: string;
-  supplier_description: string;
   supplier_overview: string;
   supplier_country: string;
-  supplier_region: string;
   supplier_company_size: string;
-  supplier_company_type: string;
   supplier_website: string;
-  supplier_maturity: string;
   
-  // Scores
+  // Best match scores
   overall_match_score: number;
-  solution_fit_score: number;
-  brief_fit_score: number;
-  geography_score: number;
-  company_size_score: number;
-  maturity_score: number;
-  organization_score: number;
   match_explanation: string;
   
-  // Solution information
-  solution_id: string;
+  // Solution information (from best match)
   solution_title: string;
-  solution_number: number;
   
-  // Product information (one row per product)
-  product_id: string;
-  product_name: string;
-  product_description: string;
-  product_url: string;
-  product_features: string; // JSON stringified
-  product_price_range: string; // JSON stringified
+  // Best product information
+  best_product_name: string;
+  best_product_url: string;
+  
+  // Aggregated info
+  products_found: number;
+  hypsights_supplier_link: string;
 }
 
 async function getSupplierExportData(briefId: string): Promise<{ exportRows: ExportRow[], briefTitle: string }> {
@@ -152,7 +140,7 @@ async function getSupplierExportData(briefId: string): Promise<{ exportRows: Exp
 
   const briefTitle = briefData?.title || 'Unknown Brief';
   
-  // Get all supplier matches for this brief
+  // Get all supplier matches for this brief, ordered by best score first
   const { data: matchData, error: matchError } = await supabaseAdmin
     .from('supplier_match_profiles')
     .select(`
@@ -160,12 +148,6 @@ async function getSupplierExportData(briefId: string): Promise<{ exportRows: Exp
       supplier_id,
       solution_id,
       overall_match_score,
-      solution_fit_score,
-      brief_fit_score,
-      geography_score,
-      company_size_score,
-      maturity_score,
-      organization_score,
       match_explanation
     `)
     .eq('brief_id', briefId)
@@ -196,7 +178,7 @@ async function getSupplierExportData(briefId: string): Promise<{ exportRows: Exp
   const solutionIds = [...new Set(matchData.map(m => m.solution_id).filter(Boolean))];
   const { data: solutionsData, error: solutionsError } = await supabaseAdmin
     .from('solutions')
-    .select('*')
+    .select('id, title, solution_number')
     .in('id', solutionIds);
 
   if (solutionsError) {
@@ -213,191 +195,175 @@ async function getSupplierExportData(briefId: string): Promise<{ exportRows: Exp
 
   if (productsError) {
     console.error('Error fetching products:', productsError);
-    // Don't throw error for products, just continue with empty array
   }
 
   // Create lookup maps
   const suppliersMap = new Map(suppliersData?.map(s => [s.id, s]) || []);
   const solutionsMap = new Map(solutionsData?.map(s => [s.id, s]) || []);
-  const productsBySupplier = new Map();
+  const productsBySupplier = new Map<string, any[]>();
   
   productsData?.forEach(product => {
     if (!productsBySupplier.has(product.supplier_id)) {
       productsBySupplier.set(product.supplier_id, []);
     }
-    productsBySupplier.get(product.supplier_id).push(product);
+    productsBySupplier.get(product.supplier_id)!.push(product);
   });
 
-  const data = matchData.map(match => ({
-    ...match,
-    suppliers: suppliersMap.get(match.supplier_id),
-    solutions: solutionsMap.get(match.solution_id),
-    products: productsBySupplier.get(match.supplier_id) || []
-  })).filter(item => item.suppliers); // Only include matches with valid suppliers
-
-  if (!data || data.length === 0) {
-    return { exportRows: [], briefTitle };
-  }
-
-  // Transform data into export format - one row per product
-  const exportRows: ExportRow[] = [];
-  
-  for (const match of data) {
-    const supplier = match.suppliers;
-    const solution = match.solutions;
-    const products = match.products || [];
-    
-    // If no products, create one row with empty product data
-    if (products.length === 0) {
-      exportRows.push({
-        // Supplier info
-        supplier_id: supplier.id,
-        supplier_name: supplier.name,
-        supplier_description: supplier.description || '',
-        supplier_overview: supplier.company_overview || supplier.description || '',
-        supplier_country: supplier.country || 'N/A',
-        supplier_region: supplier.region || getRegionFromCountry(supplier.country),
-        supplier_company_size: supplier.company_size || 'N/A',
-        supplier_company_type: supplier.company_type || 'N/A',
-        supplier_website: supplier.url || supplier.website || '',
-        supplier_maturity: supplier.maturity || 'N/A',
-        
-        // Scores
-        overall_match_score: match.overall_match_score || 0,
-        solution_fit_score: match.solution_fit_score || 0,
-        brief_fit_score: match.brief_fit_score || 0,
-        geography_score: match.geography_score || 0,
-        company_size_score: match.company_size_score || 0,
-        maturity_score: match.maturity_score || 0,
-        organization_score: match.organization_score || 0,
-        match_explanation: match.match_explanation || '',
-        
-        // Solution info
-        solution_id: solution.id,
-        solution_title: solution.title,
-        solution_number: solution.solution_number || 0,
-        
-        // Empty product info
-        product_id: '',
-        product_name: '',
-        product_description: '',
-        product_url: '',
-        product_features: '',
-        product_price_range: ''
-      });
-    } else {
-      // Create one row per product
-      for (const product of products) {
-        exportRows.push({
-          // Supplier info (repeated for each product)
-          supplier_id: supplier.id,
-          supplier_name: supplier.name,
-          supplier_description: supplier.description || '',
-          supplier_overview: supplier.company_overview || supplier.description || '',
-          supplier_country: supplier.country || 'N/A',
-          supplier_region: supplier.region || getRegionFromCountry(supplier.country),
-          supplier_company_size: supplier.company_size || 'N/A',
-          supplier_company_type: supplier.company_type || 'N/A',
-          supplier_website: supplier.url || supplier.website || '',
-          supplier_maturity: supplier.maturity || 'N/A',
-          
-          // Scores (repeated for each product)
-          overall_match_score: match.overall_match_score || 0,
-          solution_fit_score: match.solution_fit_score || 0,
-          brief_fit_score: match.brief_fit_score || 0,
-          geography_score: match.geography_score || 0,
-          company_size_score: match.company_size_score || 0,
-          maturity_score: match.maturity_score || 0,
-          organization_score: match.organization_score || 0,
-          match_explanation: match.match_explanation || '',
-          
-          // Solution info (repeated for each product)
-          solution_id: solution.id,
-          solution_title: solution.title,
-          solution_number: solution.solution_number || 0,
-          
-          // Product info (unique per row)
-          product_id: product.id,
-          product_name: product.name,
-          product_description: product.product_description || '',
-          product_url: product.url || '',
-          product_features: JSON.stringify(product.features || {}),
-          product_price_range: JSON.stringify(product.price_range || {})
-        });
-      }
+  // Deduplicate: keep only the best match per supplier (highest overall_match_score)
+  // matchData is already sorted by overall_match_score DESC, so first occurrence wins
+  const bestMatchBySupplier = new Map<string, any>();
+  for (const match of matchData) {
+    if (!bestMatchBySupplier.has(match.supplier_id)) {
+      bestMatchBySupplier.set(match.supplier_id, match);
     }
   }
+
+  // Hypsights base URL for supplier links
+  const hypsightsBaseUrl = 'https://hypsights.com';
+
+  // Build 1 row per supplier
+  const exportRows: ExportRow[] = [];
+  
+  for (const [supplierId, match] of bestMatchBySupplier) {
+    const supplier = suppliersMap.get(supplierId);
+    if (!supplier) continue;
+    
+    const solution = solutionsMap.get(match.solution_id);
+    const products = productsBySupplier.get(supplierId) || [];
+    
+    // Find the best product (by name presence + url presence as quality heuristic)
+    let bestProduct: any = null;
+    if (products.length > 0) {
+      // Prefer products that have both a name and a URL
+      bestProduct = products.find((p: any) => p.name && p.url) 
+        || products.find((p: any) => p.name) 
+        || products[0];
+    }
+    
+    exportRows.push({
+      supplier_id: supplierId,
+      supplier_name: supplier.name || '',
+      supplier_overview: supplier.company_overview || supplier.description || '',
+      supplier_country: supplier.country || 'N/A',
+      supplier_company_size: supplier.company_size || 'N/A',
+      supplier_website: supplier.url || supplier.website || '',
+      
+      overall_match_score: match.overall_match_score || 0,
+      match_explanation: match.match_explanation || '',
+      
+      solution_title: solution?.title || '',
+      
+      best_product_name: bestProduct?.name || '',
+      best_product_url: bestProduct?.url || '',
+      
+      products_found: products.length,
+      hypsights_supplier_link: `${hypsightsBaseUrl}/dashboard/brief/${briefId}?supplier=${supplierId}`
+    });
+  }
+  
+  // Sort by overall_match_score descending (already mostly sorted, but ensure after dedup)
+  exportRows.sort((a, b) => b.overall_match_score - a.overall_match_score);
   
   return { exportRows, briefTitle };
-}
-
-function getRegionFromCountry(country?: string): string {
-  if (!country) return 'N/A';
-  
-  const countryLower = country.toLowerCase();
-  
-  if (countryLower.includes('usa') || countryLower.includes('united states') || countryLower.includes('canada')) {
-    return 'North America';
-  }
-  if (countryLower.includes('france') || countryLower.includes('germany') || countryLower.includes('uk') || 
-      countryLower.includes('spain') || countryLower.includes('italy') || countryLower.includes('europe')) {
-    return 'Europe';
-  }
-  if (countryLower.includes('china') || countryLower.includes('japan') || countryLower.includes('korea') || 
-      countryLower.includes('singapore') || countryLower.includes('asia')) {
-    return 'Asia';
-  }
-  
-  return 'Other';
 }
 
 async function convertToXLSX(data: ExportRow[]): Promise<Uint8Array> {
   const workbook = new (ExcelJS as any).Workbook();
   const worksheet = workbook.addWorksheet('Suppliers');
 
-  // Headers
-  const headers = [
-    'Supplier Name', 'Supplier Description', 'Supplier Overview',
-    'Country', 'Region', 'Company Size', 'Company Type', 'Website',
-    'Overall Match Score', 'Hypsights AI Evaluation', 'Solution Title', 'Product Name',
-    'Product Description', 'Product URL', 'Product Features', 'Product Price Range'
+  // Column definitions with widths
+  const columns = [
+    { header: 'Supplier Name', key: 'supplier_name', width: 30 },
+    { header: 'Overview', key: 'supplier_overview', width: 50 },
+    { header: 'Country', key: 'supplier_country', width: 18 },
+    { header: 'Company Size', key: 'supplier_company_size', width: 16 },
+    { header: 'Website', key: 'supplier_website', width: 35 },
+    { header: 'Match Score', key: 'overall_match_score', width: 14 },
+    { header: 'AI Evaluation', key: 'match_explanation', width: 50 },
+    { header: 'Solution', key: 'solution_title', width: 30 },
+    { header: 'Best Product', key: 'best_product_name', width: 30 },
+    { header: 'Product URL', key: 'best_product_url', width: 35 },
+    { header: 'Products Found', key: 'products_found', width: 16 },
+    { header: 'Hypsights Link', key: 'hypsights_supplier_link', width: 35 }
   ];
 
+  // Header row styling
   const headerRow = worksheet.getRow(1);
-  headerRow.values = headers;
-  headerRow.font = { bold: true };
+  headerRow.values = columns.map(c => c.header);
+  headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
   headerRow.eachCell(cell => {
-    cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
+    cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF4F46E5' } };
+    cell.border = {
+      bottom: { style: 'thin', color: { argb: 'FF000000' } }
+    };
   });
+
+  // Set column widths
+  columns.forEach((col, i) => {
+    worksheet.getColumn(i + 1).width = col.width;
+  });
+
+  // Indices for hyperlink columns (1-based)
+  const websiteCol = 5;
+  const productUrlCol = 10;
+  const hypsightsLinkCol = 12;
 
   // Add data rows
   data.forEach((row, index) => {
     const rowIndex = index + 2;
-    const rowData = [
-      row.supplier_name, row.supplier_description, row.supplier_overview,
-      row.supplier_country, row.supplier_region, row.supplier_company_size, row.supplier_company_type,
-      row.supplier_website, row.overall_match_score, row.match_explanation, row.solution_title,
-      row.product_name, row.product_description, row.product_url,
-      row.product_features, row.product_price_range
-    ];
     const dataRow = worksheet.getRow(rowIndex);
-    dataRow.values = rowData;
+    dataRow.values = [
+      row.supplier_name,
+      row.supplier_overview,
+      row.supplier_country,
+      row.supplier_company_size,
+      row.supplier_website,
+      row.overall_match_score,
+      row.match_explanation,
+      row.solution_title,
+      row.best_product_name,
+      row.best_product_url,
+      row.products_found,
+      row.hypsights_supplier_link
+    ];
+
+    // Default alignment
     dataRow.eachCell({ includeEmpty: true }, cell => {
       cell.alignment = { vertical: 'top', horizontal: 'left', wrapText: true };
     });
+
+    // Make Website clickable
+    if (row.supplier_website) {
+      const cell = dataRow.getCell(websiteCol);
+      cell.value = { text: row.supplier_website, hyperlink: row.supplier_website };
+      cell.font = { color: { argb: 'FF0563C1' }, underline: true };
+    }
+
+    // Make Product URL clickable
+    if (row.best_product_url) {
+      const cell = dataRow.getCell(productUrlCol);
+      cell.value = { text: row.best_product_url, hyperlink: row.best_product_url };
+      cell.font = { color: { argb: 'FF0563C1' }, underline: true };
+    }
+
+    // Make Hypsights Link clickable
+    if (row.hypsights_supplier_link) {
+      const cell = dataRow.getCell(hypsightsLinkCol);
+      cell.value = { text: 'View on Hypsights', hyperlink: row.hypsights_supplier_link };
+      cell.font = { color: { argb: 'FF0563C1' }, underline: true };
+    }
+
+    // Alternate row shading for readability
+    if (index % 2 === 1) {
+      dataRow.eachCell({ includeEmpty: true }, cell => {
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } };
+      });
+    }
   });
 
-  // Set column widths
-  worksheet.columns.forEach(column => {
-    let maxLength = 0;
-    column.eachCell({ includeEmpty: true }, cell => {
-      const columnLength = cell.value ? cell.value.toString().length : 10;
-      if (columnLength > maxLength) {
-        maxLength = columnLength;
-      }
-    });
-    column.width = maxLength < 20 ? 20 : (maxLength > 50 ? 50 : maxLength);
-  });
+  // Freeze header row
+  worksheet.views = [{ state: 'frozen', ySplit: 1 }];
 
   const buffer = await workbook.xlsx.writeBuffer();
   return new Uint8Array(buffer);
@@ -408,24 +374,20 @@ function convertToCSV(data: ExportRow[]): string {
     return 'No data available';
   }
   
-  // Headers
+  // Headers matching the new 1-row-per-supplier structure
   const headers = [
     'Supplier Name',
-    'Supplier Description',
-    'Supplier Overview',
+    'Overview',
     'Country',
-    'Region',
     'Company Size',
-    'Company Type',
     'Website',
-    'Overall Match Score',
-    'Hypsights AI Evaluation',
-    'Solution Title',
-    'Product Name',
-    'Product Description',
+    'Match Score',
+    'AI Evaluation',
+    'Solution',
+    'Best Product',
     'Product URL',
-    'Product Features',
-    'Product Price Range'
+    'Products Found',
+    'Hypsights Link'
   ];
   
   // Convert data to CSV rows
@@ -434,21 +396,17 @@ function convertToCSV(data: ExportRow[]): string {
   for (const row of data) {
     const csvRow = [
       escapeCSV(row.supplier_name),
-      escapeCSV(row.supplier_description),
       escapeCSV(row.supplier_overview),
       escapeCSV(row.supplier_country),
-      escapeCSV(row.supplier_region),
       escapeCSV(row.supplier_company_size),
-      escapeCSV(row.supplier_company_type),
       escapeCSV(row.supplier_website),
       row.overall_match_score.toString(),
       escapeCSV(row.match_explanation),
       escapeCSV(row.solution_title),
-      escapeCSV(row.product_name),
-      escapeCSV(row.product_description),
-      escapeCSV(row.product_url),
-      escapeCSV(row.product_features),
-      escapeCSV(row.product_price_range)
+      escapeCSV(row.best_product_name),
+      escapeCSV(row.best_product_url),
+      row.products_found.toString(),
+      escapeCSV(row.hypsights_supplier_link)
     ];
     csvRows.push(csvRow.join(','));
   }
