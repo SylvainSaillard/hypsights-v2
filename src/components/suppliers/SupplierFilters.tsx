@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import {
   Trophy, Target, ShieldCheck, CheckCircle, Building2, Globe,
-  SlidersHorizontal, X, ChevronDown, ChevronUp, MapPin, Building, Package,
+  SlidersHorizontal, X, ChevronDown, ChevronUp, MapPin, Building,
   Filter, Sparkles
 } from 'lucide-react';
 import type { SupplierGroup } from '../../types/supplierTypes';
@@ -12,7 +12,6 @@ export interface SupplierFilters {
   badgeTypes: string[];
   countries: string[];
   companySizes: string[];
-  hasProducts: boolean;
   minOverallScore: number;
   minProductFit: number;
   minReliability: number;
@@ -24,7 +23,6 @@ export const DEFAULT_FILTERS: SupplierFilters = {
   badgeTypes: [],
   countries: [],
   companySizes: [],
-  hasProducts: false,
   minOverallScore: 0,
   minProductFit: 0,
   minReliability: 0,
@@ -44,12 +42,12 @@ interface SupplierFiltersBarProps {
 // ── Badge config (shared with SupplierBadges) ──────────────────────────────────
 
 const badgeConfig: Record<string, { icon: React.ElementType; label: string; color: string; activeColor: string }> = {
-  best_overall:     { icon: Trophy,      label: 'Best Match',          color: 'bg-amber-50 text-amber-600/70 border-amber-200/60 hover:bg-amber-100/80',       activeColor: 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-800 border-amber-300 shadow-sm shadow-amber-100' },
-  best_product_fit: { icon: Target,      label: 'Best Product Fit',    color: 'bg-emerald-50 text-emerald-600/70 border-emerald-200/60 hover:bg-emerald-100/80', activeColor: 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-800 border-emerald-300 shadow-sm shadow-emerald-100' },
-  best_reliability: { icon: ShieldCheck, label: 'Most Reliable',       color: 'bg-blue-50 text-blue-600/70 border-blue-200/60 hover:bg-blue-100/80',           activeColor: 'bg-gradient-to-r from-blue-100 to-sky-100 text-blue-800 border-blue-300 shadow-sm shadow-blue-100' },
-  best_criteria:    { icon: CheckCircle, label: 'Best Criteria Match', color: 'bg-violet-50 text-violet-600/70 border-violet-200/60 hover:bg-violet-100/80',     activeColor: 'bg-gradient-to-r from-violet-100 to-purple-100 text-violet-800 border-violet-300 shadow-sm shadow-violet-100' },
-  best_company:     { icon: Building2,   label: 'Strongest Company',   color: 'bg-rose-50 text-rose-600/70 border-rose-200/60 hover:bg-rose-100/80',           activeColor: 'bg-gradient-to-r from-rose-100 to-pink-100 text-rose-800 border-rose-300 shadow-sm shadow-rose-100' },
-  best_geography:   { icon: Globe,       label: 'Best Geographic Fit', color: 'bg-cyan-50 text-cyan-600/70 border-cyan-200/60 hover:bg-cyan-100/80',           activeColor: 'bg-gradient-to-r from-cyan-100 to-sky-100 text-cyan-800 border-cyan-300 shadow-sm shadow-cyan-100' },
+  best_overall:     { icon: Trophy,      label: 'Best Match',          color: 'bg-amber-50 text-amber-700 border-amber-300 hover:bg-amber-100',       activeColor: 'bg-gradient-to-r from-amber-100 to-yellow-100 text-amber-900 border-amber-400 shadow-sm shadow-amber-100' },
+  best_product_fit: { icon: Target,      label: 'Best Product Fit',    color: 'bg-emerald-50 text-emerald-700 border-emerald-300 hover:bg-emerald-100', activeColor: 'bg-gradient-to-r from-emerald-100 to-green-100 text-emerald-900 border-emerald-400 shadow-sm shadow-emerald-100' },
+  best_reliability: { icon: ShieldCheck, label: 'Most Reliable',       color: 'bg-blue-50 text-blue-700 border-blue-300 hover:bg-blue-100',           activeColor: 'bg-gradient-to-r from-blue-100 to-sky-100 text-blue-900 border-blue-400 shadow-sm shadow-blue-100' },
+  best_criteria:    { icon: CheckCircle, label: 'Best Criteria Match', color: 'bg-violet-50 text-violet-700 border-violet-300 hover:bg-violet-100',     activeColor: 'bg-gradient-to-r from-violet-100 to-purple-100 text-violet-900 border-violet-400 shadow-sm shadow-violet-100' },
+  best_company:     { icon: Building2,   label: 'Strongest Company',   color: 'bg-rose-50 text-rose-700 border-rose-300 hover:bg-rose-100',           activeColor: 'bg-gradient-to-r from-rose-100 to-pink-100 text-rose-900 border-rose-400 shadow-sm shadow-rose-100' },
+  best_geography:   { icon: Globe,       label: 'Best Geographic Fit', color: 'bg-cyan-50 text-cyan-700 border-cyan-300 hover:bg-cyan-100',           activeColor: 'bg-gradient-to-r from-cyan-100 to-sky-100 text-cyan-900 border-cyan-400 shadow-sm shadow-cyan-100' },
 };
 
 const companySizeLabels: Record<string, string> = {
@@ -110,7 +108,6 @@ const SupplierFiltersBar: React.FC<SupplierFiltersBarProps> = ({
     if (filters.badgeTypes.length > 0) count++;
     if (filters.countries.length > 0) count++;
     if (filters.companySizes.length > 0) count++;
-    if (filters.hasProducts) count++;
     if (filters.minOverallScore > 0) count++;
     if (filters.minProductFit > 0) count++;
     if (filters.minReliability > 0) count++;
@@ -240,8 +237,8 @@ const SupplierFiltersBar: React.FC<SupplierFiltersBarProps> = ({
               onClick={() => toggleSize(size)}
               className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 cursor-pointer ${
                 active
-                  ? 'bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-800 border-indigo-300 shadow-sm shadow-indigo-100'
-                  : 'bg-indigo-50/60 text-indigo-500/70 border-indigo-200/50 hover:bg-indigo-100/80'
+                  ? 'bg-gradient-to-r from-indigo-100 to-blue-100 text-indigo-900 border-indigo-400 shadow-sm shadow-indigo-100'
+                  : 'bg-indigo-50 text-indigo-700 border-indigo-300 hover:bg-indigo-100'
               }`}
             >
               <Building size={13} />
@@ -251,26 +248,13 @@ const SupplierFiltersBar: React.FC<SupplierFiltersBarProps> = ({
           );
         })}
 
-        {/* Has products toggle */}
-        <button
-          onClick={() => update({ hasProducts: !filters.hasProducts })}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 cursor-pointer ${
-            filters.hasProducts
-              ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border-green-300 shadow-sm shadow-green-100'
-              : 'bg-green-50/60 text-green-500/70 border-green-200/50 hover:bg-green-100/80'
-          }`}
-        >
-          <Package size={13} />
-          Has Products
-        </button>
-
         {/* Advanced filters toggle */}
         <button
           onClick={() => setShowAdvanced(!showAdvanced)}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-200 cursor-pointer ${
             showAdvanced || hasAdvancedActive
-              ? 'bg-gradient-to-r from-purple-100 to-fuchsia-100 text-purple-800 border-purple-300 shadow-sm shadow-purple-100'
-              : 'bg-purple-50/60 text-purple-500/70 border-purple-200/50 hover:bg-purple-100/80'
+              ? 'bg-gradient-to-r from-purple-100 to-fuchsia-100 text-purple-900 border-purple-400 shadow-sm shadow-purple-100'
+              : 'bg-purple-50 text-purple-700 border-purple-300 hover:bg-purple-100'
           }`}
         >
           <SlidersHorizontal size={13} />
@@ -296,8 +280,8 @@ const SupplierFiltersBar: React.FC<SupplierFiltersBarProps> = ({
                 onClick={() => toggleCountry(country)}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all duration-200 cursor-pointer ${
                   active
-                    ? 'bg-gradient-to-r from-sky-100 to-blue-100 text-sky-800 border-sky-300 shadow-sm'
-                    : 'bg-sky-50/50 text-sky-600/60 border-sky-200/40 hover:bg-sky-100/70 hover:text-sky-700'
+                    ? 'bg-gradient-to-r from-sky-100 to-blue-100 text-sky-900 border-sky-400 shadow-sm'
+                    : 'bg-sky-50 text-sky-700 border-sky-300 hover:bg-sky-100'
                 }`}
               >
                 {country}
@@ -426,9 +410,6 @@ export function applySupplierFilters(
     if (filters.companySizes.length > 0) {
       if (!filters.companySizes.includes(g.supplier.company_size || '')) return false;
     }
-
-    // Has products
-    if (filters.hasProducts && g.total_products === 0) return false;
 
     // Score filters
     if (filters.minOverallScore > 0 && (g.scores.score_entreprise ?? g.scores.overall ?? 0) < filters.minOverallScore) return false;
