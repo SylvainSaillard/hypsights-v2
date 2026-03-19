@@ -1,8 +1,8 @@
-// Imports supprimés pour le test simple
-
 import { useState, useMemo } from 'react';
 import { useSupplierGroups } from '../../hooks/useSupplierGroups';
 import SupplierCarousel from '../suppliers/SupplierCarousel';
+import SupplierFiltersBar, { DEFAULT_FILTERS, applySupplierFilters } from '../suppliers/SupplierFilters';
+import type { SupplierFilters } from '../suppliers/SupplierFilters';
 import { FastSearchLoadingAnimation } from '../animations/FastSearchLoadingAnimation';
 import { supabase } from '../../lib/supabaseClient';
 
@@ -14,7 +14,7 @@ interface NewSuppliersPanelProps {
 
 export function NewSuppliersPanel({ briefId, briefTitle, isFastSearchInProgress = false }: NewSuppliersPanelProps) {
   const { supplierGroups, isLoading, error } = useSupplierGroups({ briefId });
-  const [selectedSolutionNumber, setSelectedSolutionNumber] = useState<number | 'all'>('all');
+  const [filters, setFilters] = useState<SupplierFilters>({ ...DEFAULT_FILTERS });
   const [isExportingCSV, setIsExportingCSV] = useState(false);
   const [isExportingXLSX, setIsExportingXLSX] = useState(false);
 
@@ -92,7 +92,7 @@ export function NewSuppliersPanel({ briefId, briefTitle, isFastSearchInProgress 
     }
   };
 
-  // Créer une liste unique de toutes les solutions pour le filtre
+  // Derive unique solutions list for the filter
   const allSolutions = useMemo(() => {
     const solutionsMap = new Map<string, { id: string; name: string; number: number }>();
     supplierGroups.forEach(group => {
@@ -109,15 +109,10 @@ export function NewSuppliersPanel({ briefId, briefTitle, isFastSearchInProgress 
     return Array.from(solutionsMap.values()).sort((a, b) => a.number - b.number);
   }, [supplierGroups]);
 
-  // Filtrer les fournisseurs en fonction de la solution sélectionnée
+  // Apply all filters
   const filteredSupplierGroups = useMemo(() => {
-    if (selectedSolutionNumber === 'all') {
-      return supplierGroups;
-    }
-    return supplierGroups.filter(group => 
-      group.solutions.some(solution => solution.solution_number === selectedSolutionNumber)
-    );
-  }, [supplierGroups, selectedSolutionNumber]);
+    return applySupplierFilters(supplierGroups, filters);
+  }, [supplierGroups, filters]);
 
   // Show loading animation if initial loading OR if Fast Search is in progress with no suppliers yet
   if (isLoading || (isFastSearchInProgress && supplierGroups.length === 0)) {
@@ -153,98 +148,61 @@ export function NewSuppliersPanel({ briefId, briefTitle, isFastSearchInProgress 
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 pt-8">
-      {/* Header avec filtre et bouton d'export */}
-      <div className="mb-6 flex justify-between items-start">
-        {/* Filtre par solution */}
-        {allSolutions.length > 1 ? (
-          <div className="relative">
-            <label htmlFor="solution-filter" className="block text-sm font-medium text-gray-600 mb-2">
-              Filter by Solution
-            </label>
-            <div className="relative">
-              <select
-                id="solution-filter"
-                name="solution-filter"
-                className="appearance-none bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 text-gray-700 py-3 pl-4 pr-10 rounded-xl leading-tight focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-200 shadow-sm transition duration-200 ease-in-out min-w-[280px]"
-                value={selectedSolutionNumber}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  setSelectedSolutionNumber(value === 'all' ? 'all' : Number(value));
-                }}
-              >
-                <option value="all">🔍 All Solutions ({supplierGroups.length} suppliers)</option>
-                {allSolutions.map(solution => (
-                  <option key={solution.id} value={solution.number}>
-                    ✓ Solution {solution.number}: {solution.name}
-                  </option>
-                ))}
-              </select>
-              <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-blue-500">
-                <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                  <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                </svg>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div></div>
-        )}
-        
-        {/* Bouton d'export attractif */}
-        <div className="flex items-center gap-4">
-          {/* Bouton d'export CSV */}
-          <button
-            onClick={() => handleExport('csv')}
+      {/* Export buttons */}
+      <div className="mb-4 flex justify-end items-center gap-3">
+        <button
+          onClick={() => handleExport('csv')}
           disabled={isExportingCSV || filteredSupplierGroups.length === 0}
-          className="group relative overflow-hidden bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-            <div className="relative flex items-center gap-3">
-              {isExportingCSV ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Exporting...</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                  <span>Export CSV</span>
-                  <div className="bg-white/20 px-2 py-1 rounded-md text-xs">
-                    {filteredSupplierGroups.length}
-                  </div>
-                </>
-              )}
-            </div>
-          </button>
-
-          {/* Bouton d'export Excel */}
-          <button
-            onClick={() => handleExport('xlsx')}
-            disabled={isExportingXLSX || filteredSupplierGroups.length === 0}
-            className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-3 px-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-          >
-            <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
-            <div className="relative flex items-center gap-3">
-              {isExportingXLSX ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Exporting...</span>
-                </>
-              ) : (
-                <>
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                  <span>Export Excel</span>
-                  <div className="bg-white/20 px-2 py-1 rounded-md text-xs">
-                    {filteredSupplierGroups.length}
-                  </div>
-                </>
-              )}
-            </div>
-          </button>
-        </div>
+          className="group relative overflow-hidden bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          <div className="relative flex items-center gap-2">
+            {isExportingCSV ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm">Exporting...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                <span className="text-sm">Export CSV</span>
+                <span className="bg-white/20 px-1.5 py-0.5 rounded text-xs">{filteredSupplierGroups.length}</span>
+              </>
+            )}
+          </div>
+        </button>
+        <button
+          onClick={() => handleExport('xlsx')}
+          disabled={isExportingXLSX || filteredSupplierGroups.length === 0}
+          className="group relative overflow-hidden bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold py-2.5 px-5 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+        >
+          <div className="relative flex items-center gap-2">
+            {isExportingXLSX ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm">Exporting...</span>
+              </>
+            ) : (
+              <>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                <span className="text-sm">Export Excel</span>
+                <span className="bg-white/20 px-1.5 py-0.5 rounded text-xs">{filteredSupplierGroups.length}</span>
+              </>
+            )}
+          </div>
+        </button>
       </div>
-      
-      <SupplierCarousel supplierGroups={filteredSupplierGroups} onSolutionSelect={setSelectedSolutionNumber} />
+
+      {/* Filters */}
+      <SupplierFiltersBar
+        supplierGroups={supplierGroups}
+        filters={filters}
+        onFiltersChange={setFilters}
+        filteredCount={filteredSupplierGroups.length}
+        totalCount={supplierGroups.length}
+        solutions={allSolutions}
+      />
+
+      <SupplierCarousel supplierGroups={filteredSupplierGroups} />
     </div>
   );
 }

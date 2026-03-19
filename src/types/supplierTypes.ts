@@ -105,6 +105,7 @@ export interface SupplierGroup {
   match_insights?: MatchInsights;
   ai_explanation?: string;
   total_products: number;
+  max_product_score?: number; // Max ai_solution_fit_score across all products for this supplier
 }
 
 export interface SupplierGroupsResponse {

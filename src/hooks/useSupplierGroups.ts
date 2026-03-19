@@ -42,8 +42,21 @@ export const useSupplierGroups = ({
         return;
       }
 
+      // Fetch max product score per supplier for this brief
+      const supplierIds = [...new Set(supplierMatches.map((m: any) => m.supplier_id))];
+      let productScoreMap: Record<string, number> = {};
+      if (supplierIds.length > 0) {
+        const { data: productScores } = await supabase
+          .rpc('get_max_product_scores', { p_brief_id: briefId });
+        if (productScores) {
+          productScores.forEach((row: any) => {
+            productScoreMap[row.supplier_id] = row.max_score;
+          });
+        }
+      }
+
       // Grouper par fournisseur
-      const groupedSuppliers = groupSuppliersBySupplier(supplierMatches);
+      const groupedSuppliers = groupSuppliersBySupplier(supplierMatches, productScoreMap);
       setSupplierGroups(groupedSuppliers);
 
     } catch (err) {
@@ -93,7 +106,28 @@ export const useSupplierGroups = ({
 };
 
 // Fonction pour grouper les supplier_match_profiles par fournisseur
-function groupSuppliersBySupplier(supplierMatches: any[]): SupplierGroup[] {
+function normalizeCountry(country?: string): string {
+  if (!country) return 'N/A';
+  const c = country.trim();
+  const lower = c.toLowerCase();
+  if (lower === 'united states' || lower === 'united states of america' || lower === 'us') return 'USA';
+  if (lower === 'united kingdom' || lower === 'great britain' || lower === 'gb') return 'United Kingdom';
+  if (lower === '' || lower === 'unknown' || lower === 'n/a') return 'N/A';
+  // Capitalize first letter
+  return c.charAt(0).toUpperCase() + c.slice(1);
+}
+
+function normalizeCompanySize(size?: string): string {
+  if (!size) return 'N/A';
+  const lower = size.trim().toLowerCase();
+  if (lower === 'small' || lower === 'startup') return 'small';
+  if (lower === 'medium' || lower === 'sme' || lower === 'mid-size') return 'medium';
+  if (lower === 'large' || lower === 'enterprise' || lower === 'large_company') return 'large';
+  if (lower === '' || lower === 'unknown' || lower === 'n/a') return 'N/A';
+  return lower;
+}
+
+function groupSuppliersBySupplier(supplierMatches: any[], productScoreMap: Record<string, number> = {}): SupplierGroup[] {
   const supplierMap = new Map<string, SupplierGroup>();
 
   supplierMatches.forEach((match: any) => {
@@ -108,9 +142,9 @@ function groupSuppliersBySupplier(supplierMatches: any[]): SupplierGroup[] {
           name: supplier.name,
           description: supplier.description || 'No description available',
           overview: supplier.company_overview || supplier.description || 'No overview available',
-          country: supplier.country || 'N/A',
+          country: normalizeCountry(supplier.country),
           region: supplier.region || getRegionFromCountry(supplier.country),
-          company_size: supplier.company_size || 'N/A',
+          company_size: normalizeCompanySize(supplier.company_size),
           company_type: supplier.company_type || 'N/A',
           website: supplier.url, // Pour compatibilité
           url: supplier.url,
@@ -144,7 +178,8 @@ function groupSuppliersBySupplier(supplierMatches: any[]): SupplierGroup[] {
         },
         match_insights: match.match_insights && Object.keys(match.match_insights).length > 0 ? match.match_insights : undefined,
         ai_explanation: match.match_explanation || 'This supplier matches your requirements based on our analysis.',
-        total_products: 0
+        total_products: 0,
+        max_product_score: productScoreMap[supplierId] ?? undefined
       });
     }
 
