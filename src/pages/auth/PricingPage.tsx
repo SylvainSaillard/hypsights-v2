@@ -287,7 +287,7 @@ const PricingPage: React.FC = () => {
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-8">
               <h3 className="text-xl font-bold text-gray-900 mb-3">How can I provide feedback?</h3>
               <p className="text-gray-600 leading-relaxed">
-                Your feedback is crucial! You can reach us at <a href="mailto:feedback@hypsights.com" className="text-primary hover:text-primary-dark font-semibold">feedback@hypsights.com</a> or use the feedback features within the application.
+                Your feedback is crucial! You can reach us via our <Link to="/contact" className="text-primary hover:text-primary-dark font-semibold">contact page</Link> or use the feedback features within the application.
               </p>
             </div>
 
